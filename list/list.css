@@ -1,0 +1,124 @@
+body{
+    font-size:100%;
+    background: #17141f;
+}
+a{
+    color: white;
+}
+a:visited{
+    color: #a8d0c2;
+}
+
+.top-link{
+    position: absolute;
+    top: 0;
+}
+
+.top-link--left{
+    left: 0;
+}
+.top-link--right{
+    right: 0;
+}
+.results .list{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.results .more{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    display: none;
+}
+.results .more__button{
+    cursor: pointer;
+    padding: .5em 2em;
+    border: 1px solid #616161;
+    border-radius: 3px;
+    background-color: #dedddd;
+}
+.video-card{
+    margin: .7em;
+    max-width: 320px;
+    padding: 1em;
+    background: #2b2b2b;
+    border-radius: 5px;
+    color: #e8e8e8;
+}
+.video-card-thumb{
+}
+.video-card__title{
+    font-weight: bold;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+/*.video-card__title:hover{
+    white-space: init
+}*/
+.interface{
+    display: flex;
+    justify-content: center;
+}
+
+.interface form input{
+    font-size:30px;
+    border-radius: 4px;
+    background: #cecece;
+    border: none;
+    padding: 0 .3em;
+}
+.channelInput{
+    
+}
+.pre-results .link-list{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.pre-results .link-list .link-list__item{
+    margin-right: 15px;
+    /*background: #211c1c;*/
+    margin: .1em;
+    padding: .1em .2em;
+    border-radius: 3px;
+}
+.pre-results .link-list .link-list__link{
+}
+.pre-results .link-list .link-list__remove{
+    color: #a01a1a;
+    cursor: pointer;
+}
+.channel-title{
+    font-size: 25px;
+    color:  #eaeaea;
+    margin: 1em 0;
+    text-align: center;
+    font-weight: bold;
+}
+.video-card .thumb-container{
+    position: relative;
+    overflow: hidden;
+    width: 320px;
+    height: 180px;
+}
+.video-card .resume-bar{
+    position: absolute;
+    bottom: 0px;
+    background: #9a7fcc;
+    height: 6px;
+}
+.img-container{
+
+}
+.img-container.animated{
+    animation: preview-card-thumbnail__movement 6s steps(10) infinite
+}
+
+ @keyframes preview-card-thumbnail__movement {
+    to {
+        transform: translateY(-100%)
+    }
+}
+

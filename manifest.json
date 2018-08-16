@@ -1,0 +1,17 @@
+{
+   "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+   "description": "tw vods",
+
+   "incognito": "split",
+   "manifest_version": 2,
+   "name": "tw vods",
+   "permissions": [ "tabs", "http://*/*", "https://*/*" ],
+   "short_name": "vods",
+   "browser_action": {},
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1",
+   "web_accessible_resources": [ "player.html", "list.html"]
+}

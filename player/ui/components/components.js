@@ -1,0 +1,305 @@
+import { elements } from '../elements.js';
+import {ChatInterface} from './chat.js';
+import { utils } from '../../../utils/utils.js';
+
+
+class Component{
+    constructor(ui, elem){
+        this.ui = ui;
+        this.elem = elem;
+    }
+
+}
+
+
+class Slider extends Component{
+
+    handlers(){
+        this.elem.addEventListener("click", e=>{
+            let percentage = this.percentageFromXpos(e.clientX);
+            this.ui.player.currentTime = this.secsFromPercentage(percentage);
+        });
+
+        this.elem.addEventListener("mousemove", e=>{
+            this.showPreviewAndTime(e.clientX);
+        });
+        this.elem.addEventListener("mouseleave", e=>{
+            elements.previewAndTime.style.display = "none";
+        });
+    }
+
+    updateFromSecs(secs){
+        let percentage = this.percentageFromSecs(secs);
+        this.update(percentage);
+    }
+
+    update(percentage){
+        elements.sliderSeen.style.width = percentage * 100 + "%";
+    }
+
+    showPreviewAndTime(xPos, secs=0){
+        let percentage;
+        if(secs){
+            percentage = this.percentageFromSecs(secs);
+        }
+        else{
+            percentage = this.percentageFromXpos(xPos);
+            secs = this.secsFromPercentage(percentage);
+        }
+        let hms = utils.secsToHMS(secs);
+
+        if(this.info){
+            this.createPreviewImg(percentage);
+        }
+
+        let sliderWidth = this.widthFromPercentage(percentage);
+        elements.previewAndTime.style.display = "block";
+        let previewWidth = elements.previewAndTime.clientWidth;
+        elements.timeHover.textContent = hms;
+
+        let left = sliderWidth - previewWidth/2;
+        let barWidth = elements.slider.clientWidth;
+        if(left<0){left = 0;}
+        else if (left + previewWidth > barWidth){left = barWidth - previewWidth;}
+        elements.previewAndTime.style.left = left + "px";
+    }
+
+    getMutedSegmentElem(offset, duration){
+        let p1 = this.percentageFromSecs(offset);
+        let left = p1 * 100 + "%";
+
+        let p2 = this.percentageFromSecs(duration);
+        let width = p2 * 100 + "%";
+
+        let elem = document.createElement("span");
+        elem.className = "player-slider__muted";
+        elem.style.width = width;
+        elem.style.left = left;
+
+        return elem;
+    }
+
+    drawMutedSegments(){
+        let segs = this.ui.player.video.mutedSegments;
+        if(!segs){return;}
+        let elem, segment;
+        for(segment of segs){
+            elem = this.getMutedSegmentElem(segment.offset, segment.duration);
+            elements.mutedSegments.appendChild(elem);
+        }
+    }
+
+    createPreviewImg(p){
+        let thumbNr = Math.floor(p * this.info.count);
+        let imgIndex = Math.floor(thumbNr / this.info.per);
+        let url = this.info.urlTemplate + this.info.images[imgIndex];
+
+        thumbNr = thumbNr % this.info.per;
+
+        let [row, col] = [Math.floor(thumbNr / this.info.cols), thumbNr % this.info.cols];
+        let [left, top] = [col*this.info.width, row*this.info.height];
+        [left, top] = [left+"px", top+"px"];
+
+        elements.hoverPreviewImg.style.transform = `translate(-${left}, -${top})`;
+
+        elements.hoverPreviewContainer.style.width = this.info.width + "px";
+        elements.hoverPreviewContainer.style.height = this.info.height + "px";
+
+        elements.hoverPreviewImg.src = url;
+    }
+
+    getCurrentImgUrl(p){
+        let index = Math.floor(p * this.info.l);
+        return this.info.urlTemplate + this.info.images[index];
+    }
+
+    prepareHoverThumbs(info){
+        info.l = info.images.length;
+        info.per = info.rows * info.cols;
+        this.info = info;
+        elements.hoverPreviewContainer.style.display = "block";
+    }
+
+
+    // tools:
+    secsFromPercentage(percentage){
+        return parseInt(this.ui.player.video.lengthInSecs * percentage);
+    }
+
+    widthFromPercentage(percentage){
+        let width = this.elem.clientWidth;
+        return width*percentage;
+    }
+
+    percentageFromXpos(xPos){
+        let rect = this.elem.getBoundingClientRect();
+        xPos = xPos - rect.left;
+        let width = rect.width;
+        return xPos/width;
+    }
+    percentageFromSecs(secs){
+        return secs / this.ui.player.video.lengthInSecs;
+    }
+
+
+    // update buffer display on new segment appended to buffer:
+    initOnBufferAppended(){
+        this.ui.player.video.stream.onbufferappended(this.updateBufferDisplay.bind(this));
+    }
+    updateBufferDisplay(segmentEndTime){
+        let p = this.percentageFromSecs(segmentEndTime);
+        elements.sliderBuffer.style.width = p*100 + "%";
+    }
+}
+
+
+class QualityOptions extends Component{
+
+    handlers(){
+        this.elem.addEventListener("change", e=>{
+            let val = this.elem.options[this.elem.selectedIndex].value;
+            if(val === "Auto"){
+                this.ui.player.video.stream.hls.nextLevel = -1;
+            }
+            else{
+                let index = this.getQualityIndex(val);
+                this.ui.player.video.stream.hls.nextLevel = index;
+                utils.storage.setLastSetQuality(val);
+            }
+        });
+
+        this.elem.addEventListener("focus", e=>{
+            this.elem.blur();
+        });
+    }
+
+    makeOptionElem(name){
+        let elem = document.createElement("option");
+        elem.value = name;
+        if(name==="chunked"){
+                elem.textContent = "source";
+        }
+        else{
+            elem.textContent = name;
+        }
+        return elem;
+    }
+
+    loadQualityOptions(){
+        this.qualityOptions = this.ui.player.video.stream.hls.levels;
+        this.qualityOptions.forEach(q=>{
+            let name = q.attrs.VIDEO;
+            let elem = this.makeOptionElem(name);
+            this.elem.insertBefore(elem, this.elem.firstChild);
+        });
+        let autoOptionElem = this.makeOptionElem("Auto");
+        this.elem.appendChild(autoOptionElem);
+        this.elem.firstChild.selected = true;
+    }
+
+    updateCurrentQuality(level){
+        let q = this.qualityOptions[level].attrs.VIDEO;
+        let option = this.elem.querySelector(`option[value="${q}"]`);
+        option.selected = true;
+    }
+
+    getQualityIndex(name){
+        let l = this.qualityOptions.length;
+        for(let i=0;i<l;i++){
+            let q = this.qualityOptions[i];
+            if(name === q.attrs.VIDEO){
+                return this.qualityOptions.indexOf(q);
+            }
+        }
+    }
+
+    initOnLevelChange(){
+        this.ui.player.video.stream.onlevelchange(this.updateCurrentQuality.bind(this));
+    }
+}
+
+class PlayerButtons extends Component{
+
+    handlers(){
+        elements.playIcon.addEventListener("click", e=>{
+            this.ui.player.play();
+        });
+        elements.pauseIcon.addEventListener("click", e=>{
+            this.ui.player.pause();
+        });
+        elements.mutedIcon.addEventListener("click", e=>{
+            this.toggleMute();
+        });
+        elements.volumeIcon.addEventListener("click", e=>{
+            this.toggleMute();
+        });
+
+        elements.volumeControl.addEventListener("input", e=>{
+            this.ui.player.volume = parseFloat(elements.volumeControl.value);
+        });
+
+        this.ui.player.onvolumechange = ()=>{
+            let volume = this.ui.player.volume;
+            elements.volumeControl.value = volume;
+            utils.storage.setLastSetVolume(volume);
+        };
+        this.ui.player.onplay = ()=>{
+            this.showPlay();
+        }
+        this.ui.player.onpause = ()=>{
+            this.showPause();
+        }
+    }
+
+    showPlay(){
+        elements.playIcon.style.display = "none";
+        elements.pauseIcon.style.display = "block";
+    }
+    showPause(){
+        elements.pauseIcon.style.display = "none";
+        elements.playIcon.style.display = "block";
+    }
+    toggleMute(){
+        let display = elements.volumeIcon.style.display;
+        elements.volumeIcon.style.display = elements.mutedIcon.style.display;
+        elements.mutedIcon.style.display = display;
+        this.ui.player.muted = !this.ui.player.muted;
+    }
+
+}
+
+class PlayerControls extends Component{
+
+
+
+
+    handlers(){
+        this.hideTimeOut = 0;
+        this.showFn = e=>{
+            clearTimeout(this.hideTimeOut);
+            this.elem.style.opacity = "1";
+            elements.app.style.cursor = "initial";
+            this.hideTimeOut = setTimeout(()=>{
+                this.elem.style.opacity = "0";
+                elements.app.style.cursor = "none";
+            }, 3000);
+        };
+        elements.app.addEventListener("mousemove", this.showFn);
+        this.elem.addEventListener("mouseenter", e=>{
+            elements.app.removeEventListener("mousemove", this.showFn);
+            clearTimeout(this.hideTimeOut);
+            this.elem.style.opacity = "1";
+            elements.app.style.cursor = "initial";
+        });
+        this.elem.addEventListener("mouseleave", e=>{
+            elements.app.addEventListener("mousemove", this.showFn);
+            this.hideTimeOut = setTimeout(()=>{
+                this.elem.style.opacity = "0";
+                elements.app.style.cursor = "none";
+            }, 3000);
+        })
+    }
+}
+
+
+export {Component, Slider, QualityOptions, PlayerButtons, PlayerControls};
