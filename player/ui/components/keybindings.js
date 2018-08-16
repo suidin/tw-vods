@@ -50,20 +50,10 @@ class KeyBindings extends Component{
             else if(e.altKey){
                 switch(e.keyCode){
                     case 187:
-                        if (e.altKey){
-                            this.updateSeekingOverlay(1);
-                        }
-                        else{
-                            this.seekVideo(this.VIDEO_SEEK_AMOUNT);
-                        }
+                        this.updateSeekingOverlay(1);
                         break;
                     case 189:
-                        if (e.altKey){
-                            this.updateSeekingOverlay(-1);
-                        }
-                        else{
-                            this.seekVideo(-this.VIDEO_SEEK_AMOUNT);   
-                        }
+                        this.updateSeekingOverlay(-1);
                         break;
                     default:
                         return;
@@ -77,6 +67,11 @@ class KeyBindings extends Component{
                     case 37:
                         this.seekVideo(-5);
                         break;
+                    case 187:
+                        this.seekVideo(this.VIDEO_SEEK_AMOUNT);
+                        break;
+                    case 189:
+                        this.seekVideo(-this.VIDEO_SEEK_AMOUNT);
                     case 38:
                         volume = this.player.volume + 0.05;
                         if(volume>1){volume = 1;}
@@ -96,7 +91,6 @@ class KeyBindings extends Component{
                         }
                         break;
                     case 77:
-                        if(e.ctrlKey){return;}
                         this.ui.components.playerButtons.toggleMute();
                         break;
                     case 70:

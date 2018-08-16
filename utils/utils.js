@@ -19,17 +19,35 @@ class Uitility{
     constructor(){
         this.storage = storage;
         this.colors = colors;
-        settings.clientId = this.getClientId();
+        this.getClientId();
     }
 
     promptClientId(){
-        const promptText = "Please enter your twitch.tv Client ID";
-        const clientId = prompt(promptText);
-        if (clientId !== null) {
-            alert("Client ID was set to: " + clientId);
-            this.setClientId(clientId);
-            return clientId;
+        const promptText = "Please enter a valid twitch.tv Client ID or OAuth";
+        const entered = prompt(promptText);
+        if (entered !== null) {
+            if(entered.startsWith("oauth:")){
+                let token = entered.substring(6);
+                this.clientIdFromOauth(token);
+                alert("Using: " + entered);
+            }
+            else{
+                alert("Client ID was set to: " + entered);
+                this.setClientId(entered);
+            }
         }
+    }
+
+    clientIdFromOauth(token){
+        const url = "https://id.twitch.tv/oauth2/validate";
+        const params = {
+            headers: {"Authorization": `OAuth ${token}`},
+        }
+        this.fromOauth = this.fetch(url, params, "json").then(json=>{
+            if(json && json.client_id){
+                this.setClientId(json.client_id);
+            }
+        });
     }
 
     setClientId(clientId){
@@ -41,7 +59,7 @@ class Uitility{
         const storageClientId = this.storage.getItem("clientId");
         const clientId = storageClientId || settings.clientId;
         if(clientId && clientId.length){
-            return clientId;
+            settings.clientId = clientId;
         }
         else{
             return this.promptClientId();
@@ -49,12 +67,8 @@ class Uitility{
     }
 
     getRequestPromise(url, {then="jsonMap", method="GET", body="", mode="cors", includeClientId=true, headers={'Accept': 'application/vnd.twitchtv.v5+json'}} = {}){
-        console.log(headers);
         if(!then.startsWith("json")){
             headers["Accept"] = '*/*';
-        }
-        if(includeClientId){
-            headers['Client-ID'] = settings.clientId;
         }
         let params = {
             "method": method,
@@ -64,6 +78,25 @@ class Uitility{
         if(method === "POST" && body.length){
             params["body"] = body;
         }
+        if(includeClientId){
+            if(settings.clientId.length){
+                params["headers"]['Client-ID'] = settings.clientId;
+            }
+            else if(this.fromOauth){
+                return this.fromOauth.then(()=>{
+                    params["headers"]['Client-ID'] = settings.clientId;
+                    return this.fetch(url, params, then);
+                });
+            }
+            else{
+                alert("No client key set");
+            }
+        }
+
+        return this.fetch(url, params, then);
+    }
+
+    fetch(url, params, then){
         let promise = fetch(url, params);
         if(then.startsWith("json")){
             promise = promise.then(response => {
