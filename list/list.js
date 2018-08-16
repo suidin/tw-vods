@@ -119,7 +119,7 @@ class Ui{
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
-        let playerUrl = chrome.runtime.getURL("player/player.html");
+        let playerUrl = "/player/player.html";
         let popoutElem = `<a href="${url}" target="_blank">watch on twitch.tv</a>`;
         let lengthElem = this.makeInfoElem("Length", length);
         let gameElem = this.makeInfoElem("Game", game);
