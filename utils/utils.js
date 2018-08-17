@@ -87,9 +87,9 @@ class Uitility{
         this.getClientId();
     }
 
-    log(obj){
+    log(...objs){
         if(settings.DEBUG){
-            console.log(obj);
+            console.log(...objs);
         }
     }
 
