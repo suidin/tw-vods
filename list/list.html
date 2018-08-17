@@ -16,6 +16,25 @@
             <form>
                 <input class="channelInput" name="channel" type="text" placeholder="channel name">
                 <input type="submit">
+                <div class="search-options-button"></div>
+                <div class="search-options">
+                    <div class="search-option">
+                        <label>Number of Videos</label>
+                        <input min=1 max=100 value=10 type="number" class="search-option__limit">
+                    </div>
+                    <div class="search-option">
+                        <label>Start Offset</label>
+                        <input class="search-option__offset" type="number" value=0 min=0 max=9999>
+                    </div>
+                    <div class="search-option">
+                        <label>Type</label>
+                        <select class="search-option__type">
+                            <option value="archive">Past Broadcasts</option>
+                            <option value="highlight">Highlights</option>
+                            <option value="upload">Uploads</option>
+                        </select>
+                    </div>
+                </div>
             </form>
         </section>
 
@@ -27,7 +46,11 @@
             
         </section>
 
-        <section class="results"><div class="channel-title"></div>
+        <section class="results">
+            <div class="channel-title">
+                <div class="channel-title__channel"></div>
+                <div class="channel-title__info"></div>
+            </div>
             <div class="list">
 
             </div>

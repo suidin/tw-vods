@@ -42,13 +42,14 @@ class Api{
 }
 
 class VideosGetter{
-    constructor(user, type="archive", limit=10, sort="time"){
+    constructor(user, limit=10, offset=0, type="archive", sort="time"){
         this.api = new Api();
         this.user = user;
         this.type = type;
         this.limit = limit;
         this.sort = sort;
-        this.offset = 0;
+        this.initialOffset = offset;
+        this.offset = offset;
         this.hasNextPage = true;
         this.fetching = false;
     }
@@ -62,9 +63,8 @@ class VideosGetter{
         let promise = this.api.fetchVideos(this.user, this.type, this.limit, this.sort, this.offset);
         return promise.then(json=>{
             if(!json){return;}
-            if (this.offset === 0){
-                this.total = json["_total"];
-            }
+            this.total = json["_total"];
+            console.log(this.total);
             this.offset = this.offset + this.limit;
             this.hasNextPage = this.offset < (this.total-1);
             this.fetching = false;
@@ -81,7 +81,8 @@ class Ui{
     constructor(){
         this.resultList = document.querySelector(".results .list");
         this.more = document.querySelector(".results .more");
-        this.channelTitle = document.querySelector(".results .channel-title");
+        this.channelTitleChannel = document.querySelector(".results .channel-title__channel");
+        this.channelTitleInfo = document.querySelector(".results .channel-title__info");
         this.linkList = document.querySelector(".pre-results .link-list");
         let channels = getChannels();
         for(let index in channels){
@@ -139,7 +140,6 @@ class Ui{
             channelElem = this.makeChannelLink(channel);
         }
         this.linkList.insertBefore(channelElem, this.linkList.firstChild);
-        this.channelTitle.textContent = channel;
     }
 
     makeThumbUrl(video, height){
@@ -187,7 +187,8 @@ class Ui{
     clean(){
         this.more.style.display = "none";
         this.resultList.innerHTML = "";
-        this.channelTitle.textContent = "";
+        this.channelTitleInfo.textContent = "";
+        this.channelTitleChannel.textContent = "";
     }
 
     processVideos(videos, fromState=false){
@@ -213,9 +214,26 @@ class Ui{
 class Interface{
     constructor(){
         this.ui = new Ui();
-        let channelForm = document.querySelector(".interface form");
-        let channelInput = document.querySelector("input.channelInput");
-        let clientIdButton = document.querySelector(".client-id-button");
+        const channelForm = document.querySelector(".interface form");
+        const channelInput = document.querySelector("input.channelInput");
+        const clientIdButton = document.querySelector(".client-id-button");
+        const optionsButton = document.querySelector(".search-options-button");
+        const optionsElem = document.querySelector(".search-options");
+        const optionsLimit = channelForm.querySelector(".search-option__limit");
+        const optionsOffset = channelForm.querySelector(".search-option__offset");
+        const optionsType = channelForm.querySelector(".search-option__type");
+
+
+        this.loadParams = ()=>{
+            let selected = optionsType.options[optionsType.selectedIndex];
+            let params = {
+                limit: parseInt(optionsLimit.value),
+                offset: parseInt(optionsOffset.value),
+                type: selected.value,
+                typeName: selected.textContent
+            };
+            return params;
+        }
 
         clientIdButton.addEventListener("click", e=>{
             e.preventDefault();
@@ -248,6 +266,17 @@ class Interface{
                 }
             });
         });
+        optionsElem.hidden = true;
+        const className = "search-options-button--visible-options";
+        optionsButton.addEventListener("click", e=>{
+            optionsElem.hidden = !optionsElem.hidden;
+            if(optionsElem.hidden){
+                optionsButton.classList.remove(className);
+            }
+            else{
+                optionsButton.classList.add(className);
+            }
+        });
         window.onpopstate = (event) => {
             if(event.state){
                 let [channel, videos] = event.state;
@@ -268,19 +297,36 @@ class Interface{
         }
     }
 
+
+
     loadChannel(channel, videos){
         this.ui.clean();
         if(videos){
             this.ui.processVideos(videos, true);
         }
         else{
-            this.getter = new VideosGetter(channel);
+            let params = this.loadParams();
+            if(params){
+                this.getter = new VideosGetter(channel, params.limit, params.offset, params.type);
+            }
+            else{
+                this.getter = new VideosGetter(channel);
+            }
             this.getter.getNext().then(videos=>{
-                if(videos){
+                if(videos && videos.length){
                     this.ui.processVideos(videos);
+                    let showingCurrent = this.getter.offset - this.getter.initialOffset;
+                    let total = this.getter.total;
+                    if(showingCurrent>=total){
+                        showingCurrent=total;
+                        this.ui.more.style.display = "none";
+                    }
+                    this.ui.channelTitleChannel.textContent = `${channel}`;
+                    this.ui.channelTitleInfo.textContent = `Showing ${params.typeName} ${this.getter.initialOffset+1}-${showingCurrent} of ${this.getter.total}`;
                 }
                 else{
-                    this.ui.channelTitle.textContent = `No videos found for channel <${channel}>`;
+                    this.ui.channelTitleChannel.textContent = `<${channel}>`;
+                    this.ui.channelTitleInfo.textContent = `No videos found`;
                 }
             });
         }
