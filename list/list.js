@@ -56,7 +56,7 @@ class VideosGetter{
     getNext(callback){
         this.fetching = true;
         if (this.hasNextPage === false){
-            console.log("no next page");
+            utils.log("no next page");
             return
         }
         let promise = this.api.fetchVideos(this.user, this.type, this.limit, this.sort, this.offset);
@@ -192,7 +192,7 @@ class Ui{
 
     processVideos(videos, fromState=false){
         if(videos.length>0){
-            console.log(videos[0]);
+            utils.log(videos[0]);
             this.resumePositions = utils.storage.getItem("resumePositions");
             this.showVideos(videos);
             let channel = videos[0].channel.display_name;

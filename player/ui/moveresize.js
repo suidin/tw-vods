@@ -45,7 +45,6 @@ class Draggable{
     init(){
         let moveFn = this.moveHandler.bind(this);
         this.handle.addEventListener("mousedown", e=>{
-            console.log("dragging");
             pauseEvent(e);
             this.makeStartDiff(e);
             this.dragging = true;
@@ -117,7 +116,6 @@ class Resizable{
     init(){
         let moveFn = this.moveHandler.bind(this);
         this.handle.addEventListener("mousedown", e=>{
-            console.log("dragging");
             pauseEvent(e);
             this.makeStartDiff(e);
             this.dragging = true;
@@ -145,8 +143,6 @@ class Resizable{
     getNewPos(e){
         let movedX = this.startX - e.clientX;
         let movedY = this.startY - e.clientY;
-
-        console.log(movedX, movedY);
 
         let width = this.startWidth - movedX;
         let height = this.startHeight - movedY;

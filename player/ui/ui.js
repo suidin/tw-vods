@@ -46,7 +46,7 @@ class Ui{
         }
         let component;
         for(component in this.components){
-            console.log("loading: ", component);
+            utils.log("loading: ", component);
             this.components[component].handlers();
         }
     }

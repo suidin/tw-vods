@@ -61,9 +61,9 @@ class ChatData{
         this.chunkBuffer.set(ident, {"messages": messages, "next": chunk._next});
         let timeRange = [messages[0].time, messages[messages.length-1].time];
         this.chunkTimes.set(timeRange, ident);
-        console.log("chunkbuffersize: ", this.chunkBuffer.size);
+        utils.log("chunkbuffersize: ", this.chunkBuffer.size);
         if(this.chunkBuffer.size>this.maxChunkBuffer){
-            console.log("clearing half of buffer...");
+            utils.log("clearing half of buffer...");
             this.halfChunkBuffer();
         }
     }
@@ -94,7 +94,7 @@ class ChatData{
 
         let chunk = this.chunkFromBuffer(ident, offset);
         if(chunk){
-            console.log("got chunk from buffer");
+            utils.log("got chunk from buffer");
             this.messages.push(...chunk.messages);
             this.next = chunk.next;
             this.gettingident = undefined;

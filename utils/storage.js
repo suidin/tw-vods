@@ -17,7 +17,6 @@ class Storage{
             return parseInt(p1)-parseInt(p2);
         });
         if(positionsArr.length >= this.maxResumePositions){
-            console.log("max resume pos reached", positions.length);
             let toDelete = positionsArr.slice(0, this.maxResumePositions);
             for(let id of toDelete){
                 delete positions[id];

@@ -123,6 +123,7 @@ class Emotes{
                 loaded++;
             }).then(()=>{
                 utils.getRequestPromise("https://api.betterttv.net/2/channels/" + channel, {then:"json", headers:{}}).then(json=>{
+                    if(!json){return;}
                     let key, emote;
                     let emotes = json.emotes;
                     for(key in emotes){

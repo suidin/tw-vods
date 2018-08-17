@@ -57,11 +57,10 @@ class Stream{
         let videoElem = document.querySelector("video");
         hls.attachMedia(videoElem);
         hls.on(Hls.Events.MEDIA_ATTACHED,() => {
-          console.log("video and hls.js are now bound together !");
+          utils.log("video and hls.js are now bound together !");
           hls.loadSource(this.manifestUrl);
           hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-            console.log("manifest loaded, found " + data.levels.length + " quality level");
-            hls.nextLevel = this.config.startLevel;
+            utils.log("manifest loaded, found " + data.levels.length + " quality level");
             resolver();
           });
         });
@@ -115,7 +114,7 @@ class Video{
             }
             this.videoTitle = data.get("title");
             this.resolutions = Object.keys(data.get("resolutions"));
-            console.log("channel: ", this.channel);
+            utils.log("channel: ", this.channel);
         });
     }
 
@@ -134,7 +133,7 @@ class Video{
             let urlTemplate = infoUrl.split("/");
             urlTemplate.pop();
             q.urlTemplate = urlTemplate.join("/") + "/";
-            console.log(q);
+            utils.log(q);
             return q;
         });
         this.hoverThumbsInfoLoaded = promise;

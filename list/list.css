@@ -123,3 +123,40 @@ a:visited{
     }
 }
 
+
+
+dialog{
+    top: 100px;
+}
+dialog form{
+    margin: 0;
+}
+dialog menu{
+    margin: 0;
+    margin-top: .5em;
+    float:right;
+}
+dialog button{
+    color: #FFF;
+    background-color: #0095ff;
+    border: 1px solid transparent;
+    border-color: #07c;
+    padding: .5em 1.5em;
+    box-shadow: inset 0 1px 0 #66bfff;
+}
+dialog input{
+    box-shadow: 0 1px 2px rgba(12,13,14,0.1) inset;
+    border: 1px solid #888484;
+    padding: .5em;
+    width: 100%;
+}
+
+#prompt{
+    
+}
+#dialog input, #alert input{
+    display:none;
+}
+#alert .dialog-cancel{
+    display:none;
+}

@@ -11,31 +11,102 @@ const htmlEntities = {
     '`': '&#x60;'
 };
 
-const defaultFetchParams = {
-    then: "jsonMap",
-};
+
+class Dialog{
+    constructor(){
+    }
+
+    do(type, text){
+        if(!this.elems){
+            this.setup(type);
+        }
+        this.elems.elem.id = type;
+        this.elems.text.textContent = text;
+        this.elems.elem.showModal();
+        return new Promise(resolve=>{
+            this.handlers(resolve);
+        });
+    }
+
+    prompt(text){
+        return this.do("prompt", text);
+    }
+    alert(text){
+        return this.do("alert", text);
+    }
+    dialog(text){
+        return this.do("dialog", text);
+    }
+
+    setup(type){
+        let elem = document.createElement("dialog");
+        elem.innerHTML = `<form method="dialog">
+            <div>
+                <div class="dialog-text">:</div>
+                <input type="text">
+            </div>
+            <menu>
+                <button class="dialog-cancel" type="reset">Cancel</button>
+                <button class="dialog-submit" type="submit">Ok</button>
+            </menu>
+        </form>`;
+        document.body.appendChild(elem);
+        let elems = {"elem": elem};
+        elems.text = elem.querySelector(".dialog-text");
+        elems.input = elem.querySelector("input");
+        elems.cancel = elem.querySelector(".dialog-cancel");
+        elems.form = elem.querySelector("form");
+        this.elems = elems;
+    }
+
+    handlers(resolve){
+        let cancel = e=>{
+            this.elems.elem.close();
+            this.elems.cancel.removeEventListener("click", cancel);
+            resolve(null);
+        };
+
+        let submit = e=>{
+            let val = this.elems.input.value;
+            if(!val.length){val = true;}
+            this.elems.form.removeEventListener("submit", submit);
+            resolve(val);
+        }
+
+        this.elems.cancel.addEventListener("click", cancel);
+        this.elems.form.addEventListener("submit", submit);
+    }
+
+}
 
 class Uitility{
     constructor(){
         this.storage = storage;
         this.colors = colors;
+        this.dialog = new Dialog();
         this.getClientId();
+    }
+
+    log(obj){
+        if(settings.DEBUG){
+            console.log(obj);
+        }
     }
 
     promptClientId(){
         const promptText = "Please enter a valid twitch.tv Client ID or OAuth";
-        const entered = prompt(promptText);
-        if (entered !== null) {
-            if(entered.startsWith("oauth:")){
-                let token = entered.substring(6);
-                this.clientIdFromOauth(token);
-                alert("Using: " + entered);
+        const entered = this.dialog.prompt(promptText);
+        entered.then(val=>{
+            if (val !== null) {
+                if(val.startsWith("oauth:")){
+                    let token = val.substring(6);
+                    this.clientIdFromOauth(token);
+                }
+                else{
+                    this.setClientId(val);
+                }
             }
-            else{
-                alert("Client ID was set to: " + entered);
-                this.setClientId(entered);
-            }
-        }
+        });
     }
 
     clientIdFromOauth(token){
@@ -43,7 +114,7 @@ class Uitility{
         const params = {
             headers: {"Authorization": `OAuth ${token}`},
         }
-        this.fromOauth = this.fetch(url, params, "json").then(json=>{
+        this.fetch(url, params, "json").then(json=>{
             if(json && json.client_id){
                 this.setClientId(json.client_id);
             }
@@ -62,7 +133,7 @@ class Uitility{
             settings.clientId = clientId;
         }
         else{
-            return this.promptClientId();
+            this.promptClientId();
         }
     }
 
@@ -82,14 +153,10 @@ class Uitility{
             if(settings.clientId.length){
                 params["headers"]['Client-ID'] = settings.clientId;
             }
-            else if(this.fromOauth){
-                return this.fromOauth.then(()=>{
-                    params["headers"]['Client-ID'] = settings.clientId;
-                    return this.fetch(url, params, then);
-                });
-            }
+
             else{
                 alert("No client key set");
+                return;
             }
         }
 
@@ -105,7 +172,7 @@ class Uitility{
                 }
             });
             if(then === "jsonMap"){
-                console.log("creating jsonmap...");
+                utils.log("creating jsonmap...");
                 promise = promise.then(json => this.objToMap(json));
             }
         }
