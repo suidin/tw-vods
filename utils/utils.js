@@ -79,6 +79,45 @@ class Dialog{
 
 }
 
+class FixedSizeArray{
+    constructor(length){
+        this.arr = new Array(length);
+        this.length = 0;
+    }
+
+    get(i){
+        if(i >= this.length){
+            return undefined;
+        }
+        else{
+            return this.arr[i];
+        }
+    }
+
+    reset(){
+        this.length = 0;
+    }
+
+    combine(fixedSizeArray){
+        if(fixedSizeArray instanceof FixedSizeArray){
+            for(let item of fixedSizeArray.arr.slice(0, fixedSizeArray.length)){
+                this.arr[this.length++] = item;
+            }
+        }
+    }
+
+    push(...items){
+        for(let item of items){
+            this.arr[this.length++] = item;
+        }
+    }
+
+    shift(){
+        this.length--;
+        return this.arr.shift();
+    }
+}
+
 class Uitility{
     constructor(){
         this.storage = storage;
@@ -271,4 +310,4 @@ class Uitility{
     }
 }
 const utils = new Uitility();
-export {utils};
+export {utils, FixedSizeArray};

@@ -1,10 +1,12 @@
 import {ChatOptions} from './chatoptions.js';
 import {settings} from '../../../settings.js';
-import {utils} from '../../../utils/utils.js';
+import {utils, FixedSizeArray} from '../../../utils/utils.js';
 import {Emotes} from './emotes/emotes.js';
 import {Component} from './components.js';
 import {elements} from '../elements.js';
 import {Draggable, Resizable} from '../moveresize.js';
+
+
 
 
 
@@ -16,7 +18,8 @@ class ChatData{
         this.maxChunkBuffer = 100;
         this.chunkBuffer = new Map();
         this.chunkTimes = new Map();
-        this.messages = [];
+        this.messages = new FixedSizeArray(350);
+        this.currentChunkMessages = new FixedSizeArray(150);
         this.clear = false;
         this.failed = 0;
     }
@@ -43,7 +46,7 @@ class ChatData{
             return;
         }
         let comment, message;
-        let messages = [];
+        let messages = this.currentChunkMessages;
         for (comment of comments){
             message = {
                 "text": comment["message"]["body"],
@@ -54,18 +57,19 @@ class ChatData{
             };
             messages.push(message);
         }
-        this.messages.push(...messages);
+        this.messages.combine(messages);
 
 
         // buffer stuff:
         this.chunkBuffer.set(ident, {"messages": messages, "next": chunk._next});
-        let timeRange = [messages[0].time, messages[messages.length-1].time];
+        let timeRange = [messages.get(0).time, messages.get([messages.length-1]).time];
         this.chunkTimes.set(timeRange, ident);
         utils.log("chunkbuffersize: ", this.chunkBuffer.size);
         if(this.chunkBuffer.size>this.maxChunkBuffer){
             utils.log("clearing half of buffer...");
             this.halfChunkBuffer();
         }
+        this.currentChunkMessages.reset();
     }
 
     chunkFromBuffer(ident, offset){
@@ -95,7 +99,7 @@ class ChatData{
         let chunk = this.chunkFromBuffer(ident, offset);
         if(chunk){
             utils.log("got chunk from buffer");
-            this.messages.push(...chunk.messages);
+            this.messages.combine(chunk.messages);
             this.next = chunk.next;
             this.gettingident = undefined;
         }
@@ -122,7 +126,7 @@ class ChatData{
         if (this.next !== undefined && this.gettingIdentifier === undefined){
             if(this.clear){
                 this.clear = false;
-                this.messages = [];
+                this.messages.reset();
                 this.next = this.seekTime;
             }
             this.get(this.next);
@@ -236,7 +240,7 @@ class ChatInterface extends Component{
     }
 
     seek(secs){
-        let nextMsg = this.chat.data.messages[0];
+        let nextMsg = this.chat.data.messages.get(0);
         let nextMsgTime = nextMsg && nextMsg.time;
         let syncTime = this.getSyncTime();
         let diff = secs + syncTime - nextMsgTime;
@@ -299,7 +303,7 @@ class ChatInterface extends Component{
     }
 
     addNewMsgs(time){
-        let msg = this.chat.data.messages[0];
+        let msg = this.chat.data.messages.get(0);
         while (msg !== undefined){
             if (msg.time <= time){
                 this.addMsg(msg);
@@ -308,7 +312,7 @@ class ChatInterface extends Component{
             else{
                 break;
             }
-            msg = this.chat.data.messages[0];
+            msg = this.chat.data.messages.get(0);
         }
 
         this.removeOldLines()
