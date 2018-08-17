@@ -6,9 +6,9 @@ All media data is loaded from twitch.tv. Api calls are used to collect varous da
 
 This extension uses the hls streaming library hls.js from https://github.com/video-dev/hls.js.
 
-Right now you need to provide your own twitch.tv client ID or OAuth for it to work (you will be prompted on first start).
-After installing click on the new extension icon to load the vod list.
+After installing the vod list page will open. Otherwise click on the new extension icon to load the vod list.
 I recommend saving this site as a bookmark.
+Right now you need to provide your own twitch.tv client ID or OAuth for it to work (you will be prompted on first start).
 
 ## List
 Enter a channel name to see recent vods of that channel. By clicking a thumbnail the player will open.

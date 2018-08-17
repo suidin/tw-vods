@@ -239,7 +239,8 @@ class ChatInterface extends Component{
         let nextMsg = this.chat.data.messages[0];
         let nextMsgTime = nextMsg && nextMsg.time;
         let syncTime = this.getSyncTime();
-        if(!nextMsgTime || Math.abs((secs+syncTime) - nextMsgTime)>10){
+        let diff = secs + syncTime - nextMsgTime;
+        if(!nextMsgTime || diff > 40 || diff < -10){
             this.chat.seek(secs+syncTime);
             this.clearMessages();
         }

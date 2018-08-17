@@ -61,6 +61,7 @@ class Stream{
           hls.loadSource(this.manifestUrl);
           hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
             utils.log("manifest loaded, found " + data.levels.length + " quality level");
+            hls.nextLevel = this.config.startLevel;
             resolver();
           });
         });
