@@ -11,6 +11,25 @@ class Storage{
         this.cleanResumePositions();
     }
 
+    export(){
+        let s = JSON.stringify(localStorage);
+        return s;
+    }
+
+    import(s){
+        let locS
+        try{
+            locS = JSON.parse(s);
+        }
+        catch(e){
+            return false;
+        }
+        for(let key in locS){
+            localStorage.setItem(key, locS[key]);
+        }
+        return true;
+    }
+
     cleanResumePositions(){
         let positions = this.getItem("resumePositions");
         let positionsArr = Object.keys(positions).sort((p1,p2)=>{

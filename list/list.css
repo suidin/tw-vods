@@ -62,6 +62,7 @@ a:visited{
 .interface{
     display: flex;
     justify-content: center;
+    margin: 2em;
 }
 
 .interface form input{
@@ -135,6 +136,8 @@ a:visited{
 
 dialog{
     top: 100px;
+    word-break: break-all;
+    max-width: 900px;
 }
 dialog form{
     margin: 0;

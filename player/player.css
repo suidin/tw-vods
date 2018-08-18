@@ -363,6 +363,15 @@ body{
 .chat:hover .chat-buttons{
     display: block;
 }
+.chat-paused-indicator{
+    position: absolute;
+    bottom: 0;
+    color: #3a3a3a;
+    left: 0;
+    padding: .1em .2em;
+    background: rgba(214, 212, 212, .8);
+    display:none;
+}
 .seeking-overlay{
     display: none;
     position: absolute;

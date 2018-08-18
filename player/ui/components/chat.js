@@ -188,6 +188,7 @@ class ChatInterface extends Component{
         this.autoScroll = true;
         this.chatScrollElem = this.elem.querySelector(".chat-container");
         this.chatLines = this.elem.querySelector(".chat-lines");
+        this.pausedIndicator = this.elem.querySelector(".chat-paused-indicator");
         this.restoreChat();
         this.initMoveDrag();
         this.badges = {
@@ -199,9 +200,11 @@ class ChatInterface extends Component{
     handlers(){
         this.chatScrollElem.addEventListener("mouseenter", (e) => {
             this.autoScroll = false;
+            this.pausedIndicator.style.display = "block";
         });
         this.chatScrollElem.addEventListener("mouseleave", (e) => {
             this.autoScroll = true;
+            this.pausedIndicator.style.display = "none";
         });
         window.onresize = (event) => {
             this.scrollToBottom();

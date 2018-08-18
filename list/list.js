@@ -222,7 +222,8 @@ class Interface{
         const optionsLimit = channelForm.querySelector(".search-option__limit");
         const optionsOffset = channelForm.querySelector(".search-option__offset");
         const optionsType = channelForm.querySelector(".search-option__type");
-
+        const importButton = document.querySelector(".import-button");
+        const exportButton = document.querySelector(".export-button");
 
         this.loadParams = ()=>{
             let selected = optionsType.options[optionsType.selectedIndex];
@@ -234,6 +235,16 @@ class Interface{
             };
             return params;
         }
+
+        importButton.addEventListener("click", e=>{
+            e.preventDefault();
+            utils.import();
+        })
+
+        exportButton.addEventListener("click", e=>{
+            e.preventDefault();
+            utils.export();
+        })
 
         clientIdButton.addEventListener("click", e=>{
             e.preventDefault();

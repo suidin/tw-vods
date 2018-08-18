@@ -73,6 +73,7 @@ class Dialog{
         };
 
         let submit = e=>{
+            this.elems.elem.close();
             let val = this.elems.input.value;
             if(!val.length){val = true;}
             this.elems.form.removeEventListener("submit", submit);
@@ -127,6 +128,30 @@ class Uitility{
         this.dialog = new Dialog();
         this.getClientId();
     }
+
+    import(){
+        this.dialog.prompt("Please enter settings string").then(importString=>{
+            if(importString){
+                let success = this.storage.import(importString);
+                let returnMsg;
+                if(success){
+                    returnMsg = "successfully imported settings";
+                }
+                else{
+                    returnMsg = "could not import settings";
+                }
+                setTimeout(e=>{
+                    this.dialog.alert(returnMsg);
+                }, 100);
+            }
+        });
+    }
+
+    export(){
+        let s = this.storage.export();
+        this.dialog.alert(s);
+    }
+
 
     log(...objs){
         if(settings.DEBUG){
