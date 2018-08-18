@@ -88,6 +88,7 @@ class Dialog{
 class FixedSizeArray{
     constructor(length){
         this.arr = new Array(length);
+        this.max = length;
         this.length = 0;
     }
 
@@ -104,17 +105,12 @@ class FixedSizeArray{
         this.length = 0;
     }
 
-    combine(fixedSizeArray){
-        if(fixedSizeArray instanceof FixedSizeArray){
-            for(let item of fixedSizeArray.arr.slice(0, fixedSizeArray.length)){
-                this.arr[this.length++] = item;
-            }
-        }
-    }
-
     push(...items){
         for(let item of items){
             this.arr[this.length++] = item;
+        }
+        if(this.length > this.max){
+            console.warn("fixed array overflow");
         }
     }
 

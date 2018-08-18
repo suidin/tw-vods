@@ -19,7 +19,6 @@ class ChatData{
         this.chunkBuffer = new Map();
         this.chunkTimes = new Map();
         this.messages = new FixedSizeArray(350);
-        this.currentChunkMessages = new FixedSizeArray(150);
         this.clear = false;
         this.failed = 0;
     }
@@ -45,9 +44,9 @@ class ChatData{
         if (!(comments && comments[0])){
             return;
         }
-        let comment, message;
-        let messages = this.currentChunkMessages;
-        for (comment of comments){
+        let index, comment, message;
+        for (index in comments){
+            comment = comments[index];
             message = {
                 "text": comment["message"]["body"],
                 "from": comment["commenter"]["display_name"],
@@ -55,21 +54,20 @@ class ChatData{
                 "color": comment["message"]["user_color"],
                 "badges": comment["message"]["user_badges"]
             };
-            messages.push(message);
+            comments[index] = message;
         }
-        this.messages.combine(messages);
+        this.messages.push(...comments);
 
 
         // buffer stuff:
-        this.chunkBuffer.set(ident, {"messages": messages, "next": chunk._next});
-        let timeRange = [messages.get(0).time, messages.get([messages.length-1]).time];
+        this.chunkBuffer.set(ident, {"messages": comments, "next": chunk._next});
+        let timeRange = [comments[0].time, comments[comments.length-1].time];
         this.chunkTimes.set(timeRange, ident);
         utils.log("chunkbuffersize: ", this.chunkBuffer.size);
         if(this.chunkBuffer.size>this.maxChunkBuffer){
             utils.log("clearing half of buffer...");
             this.halfChunkBuffer();
         }
-        this.currentChunkMessages.reset();
     }
 
     chunkFromBuffer(ident, offset){
@@ -99,7 +97,7 @@ class ChatData{
         let chunk = this.chunkFromBuffer(ident, offset);
         if(chunk){
             utils.log("got chunk from buffer");
-            this.messages.combine(chunk.messages);
+            this.messages.push(...chunk.messages);
             this.next = chunk.next;
             this.gettingident = undefined;
         }

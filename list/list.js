@@ -228,7 +228,7 @@ class Interface{
             let selected = optionsType.options[optionsType.selectedIndex];
             let params = {
                 limit: parseInt(optionsLimit.value),
-                offset: parseInt(optionsOffset.value),
+                offset: parseInt(optionsOffset.value)-1,
                 type: selected.value,
                 typeName: selected.textContent
             };
@@ -263,7 +263,7 @@ class Interface{
             this.getter.getNext().then(videos=>{
                 if(videos){
                     this.ui.showVideos(videos);
-                    this.updateChannelTitle(this.getter.user);
+                    this.updateChannelTitle(this.getter.user, this.loadParams().typeName);
                 }
             });
         });
@@ -298,15 +298,15 @@ class Interface{
         }
     }
 
-    updateChannelTitle(channel){
-        let showingCurrent = this.getter.offset - this.getter.initialOffset;
+    updateChannelTitle(channel, typeName){
+        let showingCurrent = this.getter.offset;
         let total = this.getter.total;
         if(showingCurrent>=total){
             showingCurrent=total;
             this.ui.more.style.display = "none";
         }
         this.ui.channelTitleChannel.textContent = `${channel}`;
-        this.ui.channelTitleInfo.textContent = `Showing Videos ${this.getter.initialOffset+1}-${showingCurrent} of ${this.getter.total}`;
+        this.ui.channelTitleInfo.textContent = `Showing ${typeName} ${this.getter.initialOffset+1}-${showingCurrent} of ${this.getter.total}`;
     }
 
     loadChannel(channel, videos){
@@ -326,7 +326,7 @@ class Interface{
                 if(videos && videos.length){
                     this.ui.processVideos(videos);
                     
-                    this.updateChannelTitle(channel);
+                    this.updateChannelTitle(channel, params.typeName);
                 }
                 else{
                     this.ui.channelTitleChannel.textContent = `<${channel}>`;
