@@ -116,7 +116,7 @@ class Ui{
         let url = video.url;
         let thumbUrl = video.thumb;
         let date = video.recorded_at;
-        let timePassed = utils.twTimeStrToPassed(date, "d") + " ago";
+        let when = utils.twTimeStrToReadable(date);
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
@@ -126,7 +126,7 @@ class Ui{
         let gameElem = this.makeInfoElem("Game", game);
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumbUrl}" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div></a>`;
-        let timePassedElem = `<div class="video-card__date">${timePassed} ${popoutElem}</div>`;
+        let timePassedElem = `<div class="video-card__date">${when} ${popoutElem}</div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
         elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${lengthElem}${timePassedElem}`;
@@ -263,6 +263,7 @@ class Interface{
             this.getter.getNext().then(videos=>{
                 if(videos){
                     this.ui.showVideos(videos);
+                    this.updateChannelTitle(this.getter.user);
                 }
             });
         });
@@ -297,7 +298,16 @@ class Interface{
         }
     }
 
-
+    updateChannelTitle(channel){
+        let showingCurrent = this.getter.offset - this.getter.initialOffset;
+        let total = this.getter.total;
+        if(showingCurrent>=total){
+            showingCurrent=total;
+            this.ui.more.style.display = "none";
+        }
+        this.ui.channelTitleChannel.textContent = `${channel}`;
+        this.ui.channelTitleInfo.textContent = `Showing Videos ${this.getter.initialOffset+1}-${showingCurrent} of ${this.getter.total}`;
+    }
 
     loadChannel(channel, videos){
         this.ui.clean();
@@ -315,14 +325,8 @@ class Interface{
             this.getter.getNext().then(videos=>{
                 if(videos && videos.length){
                     this.ui.processVideos(videos);
-                    let showingCurrent = this.getter.offset - this.getter.initialOffset;
-                    let total = this.getter.total;
-                    if(showingCurrent>=total){
-                        showingCurrent=total;
-                        this.ui.more.style.display = "none";
-                    }
-                    this.ui.channelTitleChannel.textContent = `${channel}`;
-                    this.ui.channelTitleInfo.textContent = `Showing ${params.typeName} ${this.getter.initialOffset+1}-${showingCurrent} of ${this.getter.total}`;
+                    
+                    this.updateChannelTitle(channel);
                 }
                 else{
                     this.ui.channelTitleChannel.textContent = `<${channel}>`;

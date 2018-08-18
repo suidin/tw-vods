@@ -115,6 +115,9 @@ a:visited{
     background: #9a7fcc;
     height: 6px;
 }
+.video-card__date a{
+    float: right;
+}
 .img-container{
 
 }

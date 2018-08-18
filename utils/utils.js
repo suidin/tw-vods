@@ -11,6 +11,12 @@ const htmlEntities = {
     '`': '&#x60;'
 };
 
+const week = 60*60*24*7;
+
+const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
 
 class Dialog{
     constructor(){
@@ -254,15 +260,13 @@ class Uitility{
 
         let str = "";
         for(let index in units){
-            if(!units.hasOwnProperty(index)){continue;}
-            index = parseInt(index);
             let unit = units[index];
             if(units.indexOf(highest)<=index){
                 let multiplier = values.get(unit);
                 let value = Math.floor(seconds / multiplier);
                 seconds -= multiplier*value;
                 values.set(unit, value);
-                if(value>0 || str){
+                if(value>0){
                         str += value + unit + " ";
                 }
             }
@@ -285,15 +289,23 @@ class Uitility{
         return values.map(v => v.toString().padStart(2, "0")).join(":");
     }
 
-    twTimeStrToSecs(str){
-        let then = new Date(Date.parse(str));
+    twTimeStrToDate(str){
+        let date = new Date(Date.parse(str));
+        return date;
+    }
+
+    getSecsFromDate(then){
         let now = new Date();
         return parseInt((now - then) / 1000);
     }
 
-    twTimeStrToPassed(str, highest="h"){
-        let secs = this.twTimeStrToSecs(str);
-        return this.secsToReadable(secs, highest);
+    twTimeStrToReadable(str){
+        let date = this.twTimeStrToDate(str);
+        let secs = this.getSecsFromDate(date);
+        if(secs > week){
+            return `${monthShortNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+        }
+        return this.secsToReadable(secs, "d") + " ago";
     }
 
     findGetParameter(parameterName) {
