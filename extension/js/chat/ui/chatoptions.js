@@ -1,5 +1,4 @@
-import {utils} from '../../../utils/utils.js';
-import {elements} from '../elements.js';
+import {utils} from '../../utils/utils.js';
 
 
 const options = [
@@ -11,7 +10,7 @@ const options = [
         "max": 32,
         "default": 17,
         "changeFn": (val) => {
-            elements.chatCont.style.fontSize = val+"px";
+            document.querySelector(".chat-container").style.fontSize = val+"px";
         },
         "clean": (val) => {
             val = parseInt(val);
@@ -34,7 +33,7 @@ const options = [
         "changeFn": (val) => {
             let opacity = val / 100
             let color = `rgba(41,41,41, ${opacity})`;
-            elements.chatCont.style.backgroundColor = color;
+            document.querySelector(".chat-container").style.backgroundColor = color;
         },
         "clean": function(val) {
             val = parseInt(val);

@@ -1,0 +1,8 @@
+### hls.js ###
+https://github.com/video-dev/hls.js
+Licence: http://www.apache.org/licenses/LICENSE-2.0
+##############
+
+### awesomplete.min.js ###
+https://leaverou.github.io/awesomplete/
+Licence: https://raw.githubusercontent.com/LeaVerou/awesomplete/gh-pages/LICENSE

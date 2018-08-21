@@ -1,5 +1,5 @@
-import {settings} from '../../../settings.js';
-import {utils} from '../../../utils/utils.js';
+import {settings} from '../../settings.js';
+import {utils} from '../../utils/utils.js';
 
 
 const twGlobalEmoteApi = "https://twitchemotes.com/api_cache/v3/global.json";

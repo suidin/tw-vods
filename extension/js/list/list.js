@@ -237,7 +237,7 @@ class Ui{
     }
 
     loadVideos(channel, params, fromPopState, first){
-        if(!channel)return;
+        if(!channel && first)return;
         if(first && !fromPopState){
             this.clean();
             if(!params){

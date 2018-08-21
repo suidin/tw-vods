@@ -1,5 +1,4 @@
 import { elements } from '../elements.js';
-import {ChatInterface} from './chat.js';
 import { utils } from '../../../utils/utils.js';
 
 

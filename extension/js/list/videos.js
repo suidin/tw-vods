@@ -43,7 +43,7 @@ class Videos{
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
-        let playerUrl = "/player/player.html";
+        let playerUrl = "player.html";
         let popoutElem = `<a href="${url}" target="_blank">watch on twitch.tv</a>`;
         let lengthElem = `<div class="video-card__overlay video-length">${length}</div>`;
         let gameElem = this.makeInfoElem("Game", game);

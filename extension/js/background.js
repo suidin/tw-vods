@@ -1,7 +1,7 @@
 
 
 function openList(){
-    let newUrl = chrome.runtime.getURL("list/list.html");
+    let newUrl = chrome.runtime.getURL("../list.html");
     chrome.tabs.create({ url: newUrl });
 }
 

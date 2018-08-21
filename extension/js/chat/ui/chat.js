@@ -1,17 +1,16 @@
+import {Chat} from '../chat.js';
 import {ChatOptions} from './chatoptions.js';
-import {settings} from '../../../settings.js';
-import {utils} from '../../../utils/utils.js';
+import {settings} from '../../settings.js';
+import {utils} from '../../utils/utils.js';
 import {Emotes} from './emotes.js';
-import {Component} from './components.js';
-import {elements} from '../elements.js';
-import {Draggable, Resizable} from '../moveresize.js';
+import {Draggable, Resizable} from '../../utils/moveresize.js';
 
 
 
-class ChatInterface extends Component{
-    constructor(player, elem){
-        super(player, elem);
-
+class ChatInterface{
+    constructor(vid, elem){
+        this.chat = new Chat(vid);
+        this.elem = elem;
         this.chatCont = this.elem.querySelector(".chat-container");
         this.chatPausedIndicator = this.chatCont.querySelector(".chat-paused-indicator");
         this.chatLines = this.chatCont.querySelector(".chat-lines");
@@ -31,6 +30,8 @@ class ChatInterface extends Component{
         }
 
         this.autoScroll = true;
+
+        this.handlers();
     }
 
     handlers(){
@@ -42,6 +43,14 @@ class ChatInterface extends Component{
             this.autoScroll = true;
             this.chatPausedIndicator.style.display = "none";
         });
+
+        document.addEventListener("keydown", e=>{
+            if(e.shiftKey || e.altKey || e.ctrlKey)return;
+            if(e.keyCode === 67){
+                this.toggleChat();
+            }
+        });
+
         window.onresize = (event) => {
             this.scrollToBottom();
         }
@@ -76,19 +85,19 @@ class ChatInterface extends Component{
     }
 
     seek(secs){
-        let nextMsg = this.player.chat.messages.get(0);
+        let nextMsg = this.chat.messages.get(0);
         let nextMsgTime = nextMsg && nextMsg.time;
         let syncTime = this.getSyncTime();
         let diff = secs + syncTime - nextMsgTime;
         if(!nextMsgTime || diff > 40 || diff < -10){
-            this.player.chat.seek(secs+syncTime);
+            this.chat.seek(secs+syncTime);
             this.clearMessages();
         }
     }
 
     iterate(secs){
         this.addNewMsgs(secs+this.getSyncTime());
-        this.player.chat.getNext();
+        this.chat.getNext();
     }
 
     msgElem(msg){
@@ -141,11 +150,11 @@ class ChatInterface extends Component{
     }
 
     addNewMsgs(time){
-        let msg = this.player.chat.messages.get(0);
+        let msg = this.chat.messages.get(0);
         while (msg !== undefined){
             if (msg.time <= time){
                 this.addMsg(msg);
-                msg = this.player.chat.messages.shift();
+                msg = this.chat.messages.shift();
             }
             else{
                 break;
@@ -180,7 +189,7 @@ class ChatInterface extends Component{
         this.draggable.init();
 
         let resizableConfig = {
-            outer: elements.app,
+            outer: document.querySelector(".app"),
             handle: document.querySelector(".resize-handle"),
             onEnd: ()=>{
                 utils.storage.setLastChatDim(this.elem.style.width, this.elem.style.height);

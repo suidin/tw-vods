@@ -1,2 +1,0 @@
-https://github.com/video-dev/hls.js
-Licence: http://www.apache.org/licenses/LICENSE-2.0

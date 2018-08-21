@@ -1,6 +1,6 @@
 {
    "background": {
-        "scripts": ["background.js"],
+        "scripts": ["js/background.js"],
         "persistent": false
     },
    "description": "Browse and Watch Twitch Videos",

@@ -1,5 +1,5 @@
 import { getPlayer } from '../player.js';
-import { ChatInterface } from './components/chat.js';
+import { ChatInterface } from '../../chat/ui/chat.js';
 import { elements } from './elements.js';
 import * as components from './components/components.js';
 import {KeyBindings} from './keybindings.js'
@@ -11,14 +11,12 @@ import { settings } from '../../settings.js';
 class Ui{
     constructor(){
         this.player = getPlayer(elements.video);
-
         // components
         this.components = {
             "slider": new components.Slider(this.player, elements.slider),
             "qualityOptions": new components.QualityOptions(this.player, elements.qualitySelector),
             "playerButtons": new components.PlayerButtons(this.player),
-            "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom),
-            "chat": new ChatInterface(this.player, elements.chat)
+            "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom)
         }
 
         this.keyBindings = new KeyBindings(this.player, this.components);
@@ -61,6 +59,7 @@ class Ui{
 
 
     loadVideo(vid){
+        this.chatInterface = new ChatInterface(vid, elements.chat);
         this.player.start(vid).then(()=>{
             this.components.qualityOptions.loadQualityOptions();
             this.player.play();
@@ -79,8 +78,8 @@ class Ui{
             }
             this.setTotalTime();
             this.components.slider.drawMutedSegments();
-            this.components.chat.getSubBadge(this.player.video.channelId);
-            this.components.chat.emotes.loadEmoteData(this.player.video.channel);
+            this.chatInterface.getSubBadge(this.player.video.channelId);
+            this.chatInterface.emotes.loadEmoteData(this.player.video.channel);
 
             document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
         });
@@ -89,7 +88,7 @@ class Ui{
 
     seek(secs){
         this.components.slider.updateFromSecs(secs);
-        this.components.chat.seek(secs);
+        this.chatInterface.seek(secs);
         this.updateResumePoint(secs);
     }
 
@@ -112,7 +111,7 @@ class Ui{
     updateAll(){
         let secs = this.player.currentTime;
         this.updateCurrentTime(secs);
-        this.components.chat.iterate(secs);
+        this.chatInterface.iterate(secs);
     }
 }
 

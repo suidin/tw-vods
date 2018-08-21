@@ -96,9 +96,6 @@ class KeyBindings{
                     case 70:
                         this.components.playerControls.toggleFullscreen();
                         break;
-                    case 67:
-                        this.components.chat.toggleChat();
-                        break;
                     default:
                         return;
                 }
