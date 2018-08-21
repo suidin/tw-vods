@@ -3,15 +3,14 @@
         "scripts": ["background.js"],
         "persistent": false
     },
-   "description": "tw vods",
+   "description": "Browse and Watch Twitch Videos",
 
    "incognito": "split",
    "manifest_version": 2,
-   "name": "tw vods",
+   "name": "Simple Twitch Videos",
    "permissions": [ "tabs", "http://*/*", "https://*/*" ],
-   "short_name": "vods",
+   "short_name": "TVids",
    "browser_action": {},
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "1",
-   "web_accessible_resources": [ "player.html", "list.html"]
+   "version": "1"
 }

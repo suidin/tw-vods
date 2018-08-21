@@ -148,7 +148,8 @@ class ChatOption{
 }
 
 class ChatOptions{
-    constructor(){
+    constructor(elem){
+        this.elem = elem;
         this.makeOptions();
         this.init();
     }
@@ -171,7 +172,7 @@ class ChatOptions{
         for (index in this.options){
             option = this.options[index];
             option.init();
-            elements.chatOptions.appendChild(option.elem);
+            this.elem.appendChild(option.elem);
             option.addHandler();
         }
     }

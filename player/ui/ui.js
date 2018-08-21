@@ -2,10 +2,9 @@ import { getPlayer } from '../player.js';
 import { ChatInterface } from './components/chat.js';
 import { elements } from './elements.js';
 import * as components from './components/components.js';
-import {KeyBindings} from './components/keybindings.js'
+import {KeyBindings} from './keybindings.js'
 import { utils } from '../../utils/utils.js';
 import { settings } from '../../settings.js';
-
 
 
 
@@ -15,13 +14,14 @@ class Ui{
 
         // components
         this.components = {
-            "slider": new components.Slider(this, elements.slider),
-            "qualityOptions": new components.QualityOptions(this, elements.qualitySelector),
-            "playerButtons": new components.PlayerButtons(this),
-            "playerControls": new components.PlayerControls(this, elements.interfaceBottom),
-            "keybindings": new KeyBindings(this),
-            "chat": new ChatInterface(this, elements.chat)
+            "slider": new components.Slider(this.player, elements.slider),
+            "qualityOptions": new components.QualityOptions(this.player, elements.qualitySelector),
+            "playerButtons": new components.PlayerButtons(this.player),
+            "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom),
+            "chat": new ChatInterface(this.player, elements.chat)
         }
+
+        this.keyBindings = new KeyBindings(this.player, this.components);
 
         this.uiInitialized = false;
         this.loadVideoFromGET();
@@ -49,6 +49,7 @@ class Ui{
             utils.log("loading: ", component);
             this.components[component].handlers();
         }
+        this.keyBindings.handlers();
     }
 
     init(){
@@ -57,26 +58,18 @@ class Ui{
         this.currentTimeInterval = setInterval(this.updateAll.bind(this), 1000);
     }
 
-    toggleFullscreen(){
-        if(document.webkitIsFullScreen){
-            document.webkitCancelFullScreen();
-        }
-        else{
-            elements.app.webkitRequestFullScreen();
-        }
-    }
+
 
     loadVideo(vid){
-        this.player.setVideoId(vid).then(()=>{
+        this.player.start(vid).then(()=>{
             this.components.qualityOptions.loadQualityOptions();
             this.player.play();
             if(!this.uiInitialized){
-                this.uiInitialized = true;
                 this.init();
+                this.uiInitialized = true;
             }
             this.components.qualityOptions.initOnLevelChange();
             this.components.slider.initOnBufferAppended();
-            this.components.chat.chat.bindToVideo(this.player.video, this.player.video.config.startPosition);
         });
         this.player.video.loaded.then(()=>{
             if(this.player.video.hoverThumbsInfoLoaded){
@@ -86,7 +79,9 @@ class Ui{
             }
             this.setTotalTime();
             this.components.slider.drawMutedSegments();
-            this.components.chat.getSubBadge();
+            this.components.chat.getSubBadge(this.player.video.channelId);
+            this.components.chat.emotes.loadEmoteData(this.player.video.channel);
+
             document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
         });
 
@@ -104,7 +99,7 @@ class Ui{
 
     updateCurrentTime(secs){
         elements.currentTime.textContent = utils.secsToHMS(secs);
-        if(!(parseInt(secs) % 7)){
+        if(!(Math.floor(secs) % 7)){
             this.components.slider.updateFromSecs(secs);
             this.updateResumePoint(secs);
         }

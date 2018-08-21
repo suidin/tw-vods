@@ -3,9 +3,11 @@ import {ChatInterface} from './chat.js';
 import { utils } from '../../../utils/utils.js';
 
 
+
+
 class Component{
-    constructor(ui, elem){
-        this.ui = ui;
+    constructor(player, elem){
+        this.player = player;
         this.elem = elem;
     }
 
@@ -17,7 +19,7 @@ class Slider extends Component{
     handlers(){
         this.elem.addEventListener("click", e=>{
             let percentage = this.percentageFromXpos(e.clientX);
-            this.ui.player.currentTime = this.secsFromPercentage(percentage);
+            this.player.currentTime = this.secsFromPercentage(percentage);
         });
 
         this.elem.addEventListener("mousemove", e=>{
@@ -80,7 +82,7 @@ class Slider extends Component{
     }
 
     drawMutedSegments(){
-        let segs = this.ui.player.video.mutedSegments;
+        let segs = this.player.video.mutedSegments;
         if(!segs){return;}
         let elem, segment;
         for(segment of segs){
@@ -123,7 +125,7 @@ class Slider extends Component{
 
     // tools:
     secsFromPercentage(percentage){
-        return parseInt(this.ui.player.video.lengthInSecs * percentage);
+        return Math.floor(this.player.video.lengthInSecs * percentage);
     }
 
     widthFromPercentage(percentage){
@@ -138,13 +140,13 @@ class Slider extends Component{
         return xPos/width;
     }
     percentageFromSecs(secs){
-        return secs / this.ui.player.video.lengthInSecs;
+        return secs / this.player.video.lengthInSecs;
     }
 
 
     // update buffer display on new segment appended to buffer:
     initOnBufferAppended(){
-        this.ui.player.video.stream.onbufferappended(this.updateBufferDisplay.bind(this));
+        this.player.video.stream.onbufferappended(this.updateBufferDisplay.bind(this));
     }
     updateBufferDisplay(segmentEndTime){
         let p = this.percentageFromSecs(segmentEndTime);
@@ -159,11 +161,11 @@ class QualityOptions extends Component{
         this.elem.addEventListener("change", e=>{
             let val = this.elem.options[this.elem.selectedIndex].value;
             if(val === "Auto"){
-                this.ui.player.video.stream.hls.nextLevel = -1;
+                this.player.video.stream.hls.nextLevel = -1;
             }
             else{
                 let index = this.getQualityIndex(val);
-                this.ui.player.video.stream.hls.nextLevel = index;
+                this.player.video.stream.hls.nextLevel = index;
                 utils.storage.setLastSetQuality(val);
             }
         });
@@ -186,7 +188,7 @@ class QualityOptions extends Component{
     }
 
     loadQualityOptions(){
-        this.qualityOptions = this.ui.player.video.stream.hls.levels;
+        this.qualityOptions = this.player.video.stream.hls.levels;
         this.qualityOptions.forEach(q=>{
             let name = q.attrs.VIDEO;
             let elem = this.makeOptionElem(name);
@@ -214,7 +216,7 @@ class QualityOptions extends Component{
     }
 
     initOnLevelChange(){
-        this.ui.player.video.stream.onlevelchange(this.updateCurrentQuality.bind(this));
+        this.player.video.stream.onlevelchange(this.updateCurrentQuality.bind(this));
     }
 }
 
@@ -222,10 +224,10 @@ class PlayerButtons extends Component{
 
     handlers(){
         elements.playIcon.addEventListener("click", e=>{
-            this.ui.player.play();
+            this.player.play();
         });
         elements.pauseIcon.addEventListener("click", e=>{
-            this.ui.player.pause();
+            this.player.pause();
         });
         elements.mutedIcon.addEventListener("click", e=>{
             this.toggleMute();
@@ -235,18 +237,18 @@ class PlayerButtons extends Component{
         });
 
         elements.volumeControl.addEventListener("input", e=>{
-            this.ui.player.volume = parseFloat(elements.volumeControl.value);
+            this.player.volume = parseFloat(elements.volumeControl.value);
         });
 
-        this.ui.player.onvolumechange = ()=>{
-            let volume = this.ui.player.volume;
+        this.player.onvolumechange = ()=>{
+            let volume = this.player.volume;
             elements.volumeControl.value = volume;
             utils.storage.setLastSetVolume(volume);
         };
-        this.ui.player.onplay = ()=>{
+        this.player.onplay = ()=>{
             this.showPlay();
         }
-        this.ui.player.onpause = ()=>{
+        this.player.onpause = ()=>{
             this.showPause();
         }
     }
@@ -263,14 +265,12 @@ class PlayerButtons extends Component{
         let display = elements.volumeIcon.style.display;
         elements.volumeIcon.style.display = elements.mutedIcon.style.display;
         elements.mutedIcon.style.display = display;
-        this.ui.player.muted = !this.ui.player.muted;
+        this.player.muted = !this.player.muted;
     }
 
 }
 
 class PlayerControls extends Component{
-
-
 
 
     handlers(){
@@ -298,6 +298,17 @@ class PlayerControls extends Component{
                 elements.app.style.cursor = "none";
             }, 3000);
         })
+
+        elements.playerOverlay.addEventListener("dblclick", this.toggleFullscreen);
+    }
+
+    toggleFullscreen(){
+        if(document.webkitIsFullScreen){
+            document.webkitCancelFullScreen();
+        }
+        else{
+            elements.app.webkitRequestFullScreen();
+        }
     }
 }
 

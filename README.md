@@ -6,7 +6,7 @@ All media data is loaded from twitch.tv. Api calls are used to collect varous da
 
 This extension uses the hls streaming library hls.js from https://github.com/video-dev/hls.js.
 
-After installing the vod list page will open. Otherwise click on the new extension icon to load the vod list.
+After installing the List page will open. Otherwise click on the new extension icon to load the List.
 I recommend saving this site as a bookmark.
 Right now you need to provide your own twitch.tv client ID or OAuth for it to work (you will be prompted on first start).
 
@@ -15,7 +15,14 @@ Enter a channel name to see recent vods of that channel. By clicking a thumbnail
 
 Entered channels will be saved for quick access.
 
+### Keybindings
+
 ## Player
+
+* ```tab``` select the next video in the list
+* ```shift+tab``` select the previous video in the list
+
+Press ```Enter``` open the selected video. 
 
 ### Keybindings
 
@@ -42,9 +49,8 @@ If you increase the time the chat will catch up to the video.
 Values < 0 are almost never needed unless you want to see chat with a delay.
 
 
-# Missing Features:
+# Known Issues
 
-These features are missing because I didn't find them important enough for the required work (keep in mind thant I only intendet to make this for myself). I may or may not implement those in the future. I also wanted to keep this extension pretty lightweight.
-
-* emotes: right now global bttv, ffz and twitch.tv emotes are loaded. Sub emotes of the current channel are also loaded but no emotes from other channels. Emote permissions are also not checked.
-* badges: only staff, mod and subscriber badges are loaded.
+* Affiliate Emotes are not shown. Some other Emotes might be missing aswell.
+* Memory consumption can get very high over time. Especially when alot of vods where opened. Close all extension pages and wait 5 seconds to clear memory.
+* Preview Thumbnails are sometimes not shown

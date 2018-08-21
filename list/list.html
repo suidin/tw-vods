@@ -1,25 +1,33 @@
 <head>
-    <title>vod-list</title>
-    <script type=module src="list.js"></script>
+    <title>Video-List</title>
+    <script type=module src="awesomplete.min.js"></script>
+    <script type=module src="entry.js"></script>
+    <link rel="stylesheet" type="text/css" href="awesomplete.css">
     <link rel="stylesheet" type="text/css" href="list.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
 
 <body>
     <main>
         <section class="interface">
-            <a class="top-link top-link--left" href="/list/list.html" target="_blank">
-                <div class="home-button">New Tab</div>
-            </a>
-            <a class="top-link top-link--right" href="" target="_blank">
-                <div class="client-id-button">Set Client ID</div>
-                <div class="import-button">Import Settings</div>
-                <div class="export-button">Export Settings</div>
-            </a>
+            <div class="top-links">
+                <a class="home-button" href="/list/list.html" target="_blank">
+                    New Tab
+                </a>
+
+                <span class="client-id-button">Set Client ID</span>
+                <span class="import-button">Import Settings</span>
+                <span class="export-button">Export Settings</span>
+                </div>
+            </div>
             <form>
-                <input class="channelInput" name="channel" type="text" placeholder="channel name">
-                <input type="submit">
-                <div class="search-options-button"></div>
-                <div class="search-options">
+                <div class="form-head">
+                    <input class="channelInput" name="channel" type="text" placeholder="channel name">
+                    <input type="submit">
+                    <div class="search-options-button"></div>
+                </div>
+                <div class="search-options" hidden>
                     <div class="search-option">
                         <label>Number of Videos</label>
                         <input min=1 max=100 value=10 type="number" class="search-option__limit">

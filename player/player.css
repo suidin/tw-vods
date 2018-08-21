@@ -261,7 +261,7 @@ body{
 .chat-container{
     display: flex;
     flex: 1 1 auto;
-    overflow-y: auto;
+    overflow-y: overlay;
     overflow-x: hidden;
     height: 100%;
     font-size: 17px;
@@ -270,8 +270,18 @@ body{
     text-shadow: 0 1px 1px black;
     padding: 1em;
 }
-.chat-container::-webkit-scrollbar {
+::-webkit-scrollbar {
+    width: 10px;
     display: none;
+}
+.chat:hover .chat-container::-webkit-scrollbar{
+    display: initial;
+}
+::-webkit-scrollbar-track {
+    background: #888; 
+}
+::-webkit-scrollbar-thumb {
+    background: #f1f1f1; 
 }
 .chat-lines{
     height: 100%;
@@ -310,7 +320,7 @@ body{
     width: 30px;
     height: 30px;
     cursor: se-resize;
-    right: 0;
+    right: 10px;
     bottom: 0;
     background-color: rgba(255, 255, 255, 0.4);
     border-radius: 50%;
@@ -326,7 +336,7 @@ body{
     height: 30px;
     background-position: center;
     /*cursor: pointer;*/
-    right: 0;
+    right: 10px;
     top: 0;
     background-color: rgba(255, 255, 255, 0.4);
     border-radius: 50%;
@@ -337,7 +347,7 @@ body{
     border: 1px solid black;
     padding: 1em;
     position: absolute;
-    right: 0;
+    right: 10px;
     top: 0;
     display:none;
 }

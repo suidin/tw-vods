@@ -1,5 +1,6 @@
 body{
     font-size:100%;
+    margin: 0;
     background: #17141f;
     font-family: "Noto Sans", Arial, sans-serif;
     color: #e8e8e8;
@@ -11,16 +12,17 @@ a:visited{
     color: #a8d0c2;
 }
 
-.top-link{
-    position: absolute;
-    top: 0;
+.top-links{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    cursor: pointer;
+    justify-content: flex-end;
+    align-content: center;
+    margin-bottom: 1em;
 }
-
-.top-link--left{
-    left: 0;
-}
-.top-link--right{
-    right: 0;
+.top-links>*{
+    margin: 2px 7px;
 }
 .results .list{
     display: flex;
@@ -30,6 +32,7 @@ a:visited{
 .results .more{
     display: flex;
     flex-wrap: wrap;
+    margin-bottom: 5px;
     justify-content: center;
     display: none;
 }
@@ -47,6 +50,15 @@ a:visited{
     padding: 1em;
     background: #2b2b2b;
     border-radius: 5px;
+    position: relative;
+}
+@media screen and (max-width: 350px){
+    .video-card{
+        padding: 1em 0;
+    }
+}
+.video-card--selected{
+    background: #1c4a75;
 }
 .video-card-thumb{
 }
@@ -56,15 +68,33 @@ a:visited{
     text-overflow: ellipsis;
     overflow: hidden;
 }
-/*.video-card__title:hover{
-    white-space: init
-}*/
+.video-card__overlay{
+    position: absolute; 
+    background-color: rgba(0,0,0,.6);   
+    padding: 0 .2em;
+    font-size: .8em;
+    color: white;
+}
+.video-card__overlay.video-length{
+    top:25px;
+    right: 25px;
+}
 .interface{
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    margin: 2em;
+    margin: 0;
+}
+.form-head{
+    display:flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
 }
 
+.form-head>*{
+    margin: 5px;
+}
 .interface form input{
     font-size:30px;
     border-radius: 4px;
@@ -73,7 +103,7 @@ a:visited{
     padding: 0 .3em;
 }
 .channelInput{
-    
+    max-width: 220px;
 }
 .pre-results .link-list{
     display: flex;
@@ -176,7 +206,6 @@ dialog input{
     display: inline-block;
     width: 25px;
     height: 22px;
-    margin-left: 10px;
     cursor: pointer;
     border-radius: 4px;
     border: none;
@@ -209,4 +238,7 @@ dialog input{
     background: #cecece;
     border: none;
     padding: 0 .3em;
+}
+.awesomplete > ul > li{
+    color: black;
 }

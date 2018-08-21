@@ -1,3 +1,4 @@
+import {Chat} from './chat.js';
 import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
 
@@ -184,10 +185,12 @@ class Video{
 }
 
 function getPlayer(vElem){
-    vElem.setVideoId = (vid, time)=>{
-        vElem.video = new Video(vid);
+    vElem.start = (vId, time)=>{
+        vElem.video = new Video(vId);
+        vElem.chat = new Chat(vId);
         return vElem.video.init().then(() => {
             vElem.volume = vElem.video.config.volume;
+            vElem.chat.start(vElem.video.config.startPosition);
         });
     }
     return vElem;

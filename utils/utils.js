@@ -90,7 +90,8 @@ class FixedSizeArray{
     constructor(length){
         this.arr = new Array(length);
         this.max = length;
-        this.length = 0;
+        this.canPushPoint = Math.floor(this.max / 2) - 1;
+        this.reset();
     }
 
     get(i){
@@ -98,26 +99,52 @@ class FixedSizeArray{
             return undefined;
         }
         else{
-            return this.arr[i];
+            return this.arr[this.i(i)];
         }
+    }
+
+    i(i){
+        return (this.startIndex + i) % this.length;
     }
 
     reset(){
         this.length = 0;
+        this.startIndex = 0;
+        this.entries = 0;
+    }
+
+    canPush(){
+        return this.entries < this.canPushPoint;
+    }
+
+    advanceStart(){
+        this.startIndex = (this.startIndex + 1) % this.length;
+        this.entries--;
+    }
+
+    endIndex(){
+        return this.i(this.entries);
+    }
+
+    shift(){
+        if(this.entries){
+            this.advanceStart();
+            let elem = this.get(0);
+            return elem;
+        }
     }
 
     push(...items){
         for(let item of items){
-            this.arr[this.length++] = item;
+            if(this.length<this.max){
+                this.arr[this.length++] = item;
+            }
+            else{
+                this.arr[this.endIndex()] = item;
+                // this.advanceStart();
+            }
+            this.entries++;
         }
-        if(this.length > this.max){
-            console.warn("fixed array overflow");
-        }
-    }
-
-    shift(){
-        this.length--;
-        return this.arr.shift();
     }
 }
 
@@ -265,6 +292,10 @@ class Uitility{
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    uncapitalize(str){
+        return str.charAt(0).toLowerCase() + str.slice(1);
+    }
+
     padDigits(number, digits) {
         return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number;
     }
@@ -317,7 +348,7 @@ class Uitility{
 
     getSecsFromDate(then){
         let now = new Date();
-        return parseInt((now - then) / 1000);
+        return Math.floor((now - then) / 1000);
     }
 
     twTimeStrToReadable(str){

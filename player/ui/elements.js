@@ -20,9 +20,9 @@ class Elements{
         this.mutedIcon = document.querySelector("#icon_volumemute");
         this.mutedSegments = document.querySelector(".player-time-slider__muted-segments");
         this.seekingOverlay = document.querySelector(".seeking-overlay");
+        this.playerOverlay = document.querySelector(".player-overlay");
         this.chat = document.querySelector(".chat");
         this.chatCont = this.chat.querySelector(".chat-container");
-        this.chatOptions = this.chat.querySelector(".chat-options");
         this.previewAndTime = document.querySelector(".preview-and-time");
         this.hoverPreviewContainer = this.previewAndTime.querySelector(".hover-preview-container");
         this.hoverPreviewImg = this.hoverPreviewContainer.querySelector(".hover-preview-img");
