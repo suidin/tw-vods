@@ -171,10 +171,12 @@ body{
     padding: 0 0 1em;
     border: none;
     outline: none;
-    cursor: pointer;
     font-size: 1em;
     float: left;
     overflow: visible;
+}
+.player-button svg{
+    cursor: pointer;
 }
 .player-button svg:hover{
     fill: #9a7fcc;

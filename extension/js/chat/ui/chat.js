@@ -78,7 +78,7 @@ class ChatInterface{
         if(!id){return;}
         let url = `https://api.twitch.tv/kraken/chat/${id}/badges`;
         utils.getRequestPromise(url, {then:"json"}).then(json=>{
-            if(json){
+            if(json && json["subscriber"]){
                 this.badges["subscriber"] = json["subscriber"]["image"];
             }
         });
