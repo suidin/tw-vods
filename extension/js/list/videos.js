@@ -46,13 +46,11 @@ class Videos{
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
-        let playerUrl = "player.html";
-        let popoutElem = `<a href="${url}" target="_blank">watch on twitch.tv</a>`;
         let lengthElem = `<div class="video-card__overlay video-length">${length}</div>`;
         let gameElem = this.makeInfoElem("Game", game);
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${lengthElem}</a>`;
-        let timePassedElem = `<div class="video-card__date">${when} ${popoutElem}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${url}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${lengthElem}</a>`;
+        let timePassedElem = `<div class="video-card__date">${when}</div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
         elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}`;
