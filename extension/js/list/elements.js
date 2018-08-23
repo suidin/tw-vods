@@ -4,7 +4,6 @@ class Elements{
     constructor(){   
         this.channelForm = document.querySelector(".interface form");
         this.optionsLimit = this.channelForm.querySelector(".search-option__limit");
-        this.optionsOffset = this.channelForm.querySelector(".search-option__offset");
         this.optionsType = this.channelForm.querySelector(".search-option__type");
         this.channelInput = this.channelForm.querySelector("input.channelInput");
         this.clientIdButton = document.querySelector(".client-id-button");
@@ -17,6 +16,7 @@ class Elements{
         this.channelTitleChannel = document.querySelector(".results .channel-title__channel");
         this.channelTitleInfo = document.querySelector(".results .channel-title__info");
         this.linkList = document.querySelector(".pre-results .link-list");
+        this.paginationPages = document.querySelector(".pagination-pages");
     }
 }
 

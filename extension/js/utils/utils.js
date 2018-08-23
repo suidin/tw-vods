@@ -307,6 +307,31 @@ class Uitility{
         });
         return result;
     }
+
+    getStrToObj(){
+        let obj = {};
+        let key, val;
+        let getStr = location.search;
+        if(!getStr.length)return false;
+        getStr
+        .substr(1)
+        .split("&")
+        .forEach(function (item) {
+            [key, val] = item.split("=");
+            obj[key] = val;
+        });
+        return obj;
+    }
+
+    objToGetStr(obj){
+        let arr = [];
+        let key, val;      
+        for(key in obj){
+            val = obj[key];
+            arr.push(`${key}=${val}`);
+        }
+        return "?" + arr.join("&");
+    }
 }
 const utils = new Uitility();
 export {utils, FixedSizeArray};

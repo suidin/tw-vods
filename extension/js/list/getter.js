@@ -13,34 +13,40 @@ class Api{
 }
 
 class VideosGetter{
-    constructor(channel, limit=10, offset=0, type="archive", sort="time"){
+    constructor(channel, perPage=10, page=1, type="archive", sort="time"){
         this.api = new Api();
         this.channel = channel;
         this.type = type;
-        this.limit = limit;
         this.sort = sort;
-        this.initialOffset = offset;
-        this.offset = offset;
+        this.perPage = perPage;
+        this.page = page;
         this.hasNextPage = true;
         this.fetching = false;
     }
 
-    getNext(callback){
+    get(callback){
         this.fetching = true;
-        if (this.hasNextPage === false){
-            utils.log("no next page");
+        if (this.page > this.lastPage){
+            utils.log("page out of range");
             return
         }
-        let promise = this.api.fetchVideos(this.channel, this.type, this.limit, this.sort, this.offset);
+        let promise = this.api.fetchVideos(this.channel, this.type, this.perPage, this.sort, this.currentOffset());
         return promise.then(json=>{
             if(!json){return;}
             this.total = json["_total"];
-            this.offset = this.offset + this.limit;
-            this.hasNextPage = this.offset < (this.total-1);
+            this.lastPage = Math.ceil(this.total/this.perPage);
             this.fetching = false;
             return json.videos;
 
         });
+    }
+
+    currentOffset(){
+        return this.offsetFromPage(this.page);
+    }
+
+    offsetFromPage(page){
+        return this.perPage * (page - 1)
     }
 }
 

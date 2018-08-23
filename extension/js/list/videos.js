@@ -5,17 +5,20 @@ import {utils} from '../utils/utils.js';
 
 
 class Videos{
-    constructor(channel, params){
-        this.channel = channel;
-        this.getter = new VideosGetter(channel, params.limit, params.offset, params.type);
+    constructor(params){
+        this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
         this.resumePositions = utils.storage.getItem("resumePositions");
     }
 
-    load(){
-        return this.getter.getNext().then(videos=>{
+    load(pageNr){
+        if(pageNr){
+            this.getter.page = pageNr;
+        }
+        return this.getter.get().then(videos=>{
             if(videos && videos.length){
+                this.currentVideoData = videos;
                 this.processVideos(videos);
-                return true;
+                return videos[0].channel.display_name;
             }
             else{
                 return false;

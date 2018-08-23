@@ -1,7 +1,11 @@
 import {Videos} from './videos.js';
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
+import {Pagination} from '../utils/pagination.js';
 import {utils} from '../utils/utils.js';
+
+
+
 
 
 class Channels{
@@ -51,8 +55,8 @@ class Channels{
         if(index>=0){
             this.channels.splice(index, 1);
             utils.storage.setItem("channels", this.channels);
+            this.removeChannelElem(channel);
         }
-        this.removeChannelElem(channel);
     }
 
     removeChannelElem(channel){
@@ -68,14 +72,15 @@ const typeNames = {
     "upload": "Uploads"
 }
 const defaultParams = {
-    limit: 10,
-    offset: 0,
+    perPage: 10,
+    page: 1,
     type: "archive"
 };
 
 class Ui{
     constructor(){
         this.channels = new Channels();
+        this.pagination = new Pagination(elements.paginationPages);
         new Awesomplete(elements.channelInput, {list: this.channels.channels, autoFirst: true, minChars: 1});
         elements.channelInput.focus();
         this.handlers();
@@ -98,16 +103,16 @@ class Ui{
         });
         elements.channelForm.addEventListener("submit", (e)=>{
             e.preventDefault();
-            let channel = elements.channelInput.value;
-            let params = this.loadParams(channel);
-            this.loadVideos(channel, params, false, true);
+            let params = this.loadParams();
+            this.loadVideos(params, true);
         });
         elements.linkList.addEventListener("click", (e)=>{
             e.preventDefault();
             if(e.target.className === "link-list__link"){
                 let channel = e.target.textContent;
-                let params = this.loadParams(channel);
-                this.loadVideos(channel, params, false, true);
+                elements.channelInput.value = channel;
+                let params = this.loadParams();
+                this.loadVideos(params, true);
             }
         });
         elements.linkList.addEventListener("click", (e)=>{
@@ -117,8 +122,27 @@ class Ui{
                 this.channels.removeChannel(channel);
             }
         });
-        elements.more.querySelector(".more__button").addEventListener("click", (e)=>{
-            this.loadVideos(null, null, false, false);
+        elements.paginationPages.addEventListener("click", (e)=>{
+            let elem = e.target;
+            if(elem.className === "pagination-page"){
+                let params = {
+                    channel: this.videos.getter.channel,
+                    perPage: this.videos.getter.perPage,
+                    page: parseInt(elem.textContent),
+                    type: this.videos.getter.type
+                };
+                this.loadVideos(params, false);
+            }
+            else if(elem.classList.contains("pagination-page-gap")){
+                let direction;
+                if(elem.previousSibling.textContent === "1"){
+                    direction = -1;
+                }
+                else{
+                    direction = 1;
+                }
+                this.pagination.rotate(direction);
+            }
         });
         const className = "search-options-button--visible-options";
         elements.optionsButton.addEventListener("click", e=>{
@@ -130,16 +154,7 @@ class Ui{
                 elements.optionsButton.classList.add(className);
             }
         });
-        window.onpopstate = (event) => {
-            if(event.state){
-                let [channel, videos] = event.state;
-                this.videos = videos;
-                this.loadVideos(channel, null, true, true);
-            }
-            else{
-                this.clean();
-            }
-        };
+
         document.addEventListener("keydown", e=>{
             if(e.ctrlKey || e.altKey)return;
             if(e.keyCode === 9){
@@ -153,13 +168,13 @@ class Ui{
                 }
                 this.changeSelectedCard(i);
             }
-        })
+        });
 
         this.loadVideosFromGET();
     }
 
     clean(){
-        elements.more.style.display = "none";
+        elements.paginationPages.innerHTML = "";
         elements.resultList.innerHTML = "";
         elements.channelTitleInfo.textContent = "";
         elements.channelTitleChannel.textContent = "";
@@ -198,37 +213,48 @@ class Ui{
     loadParams(){
         let selected = elements.optionsType.options[elements.optionsType.selectedIndex];
         let params = {
-            limit: parseInt(elements.optionsLimit.value),
-            offset: parseInt(elements.optionsOffset.value)-1,
+            channel: elements.channelInput.value,
+            perPage: parseInt(elements.optionsLimit.value),
+            page: defaultParams.page,
             type: selected.value
         };
         return params;
     }
 
     loadVideosFromGET(){
-        let channel = utils.findGetParameter("channel");
-        if(channel){
-            this.loadVideos(channel, null, false, true);
+        let params = utils.getStrToObj();
+        if(params){
+            params["perPage"] = parseInt(params["perPage"]) || defaultParams["perPage"];
+            params["page"] = parseInt(params["page"]) || defaultParams["page"];
+            params["type"] = params["type"] || defaultParams["type"];
+            this.updateOptionsElem(params);
+            this.loadVideos(params, true);
         }
     }
 
-    pushState(channel, videos){
-        history.pushState([channel, videos], "vod-list | " + channel, "?channel=" + channel);
+    updateOptionsElem(params){
+        elements.channelInput.value = params.channel;
+        elements.optionsLimit.value = params.perPage;
+        elements.optionsType.value = params.type;
     }
 
-    updateChannelTitle(success){
+    replaceState(params){
+        let getStr = utils.objToGetStr(params);
+        history.replaceState(params, "vod-list | " + params.channel, getStr);
+    }
+
+    updateChannelTitle(channel, success){
         if(success){
-            let channel = this.videos.getter.channel;
-            let showingCurrent = this.videos.getter.offset;
             let total = this.videos.getter.total;
+            let page = this.videos.getter.page;
+            let perPage = this.videos.getter.perPage;
+            let currentFrom = (page-1)*perPage+1;
+            let currentTo = page*perPage;
+            currentTo = currentTo>total ? total : currentTo;
             let typeName = typeNames[this.videos.getter.type];
-            if(showingCurrent>=total){
-                showingCurrent=total;
-                elements.more.style.display = "none";
-            }
             document.title = channel + " " + typeName;
             elements.channelTitleChannel.textContent = `${channel}`;
-            elements.channelTitleInfo.textContent = `Showing ${typeName} ${this.videos.getter.initialOffset+1}-${showingCurrent} of ${this.videos.getter.total}`;
+            elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
         }
         else{
             elements.channelTitleChannel.textContent = `<${channel}>`;
@@ -236,33 +262,36 @@ class Ui{
         }
     }
 
-    loadVideos(channel, params, fromPopState, first){
-        if(!channel && first)return;
-        if(first && !fromPopState){
-            this.clean();
+    loadVideos(params, first){
+        this.clean();
+        if(first){
             if(!params){
                 params = defaultParams;
             }
-            this.videos = new Videos(channel, params);
+            this.videos = new Videos(params);
         }
 
-        let loaded = this.videos.load();
-        loaded.then(success => {
-            if(this.videos.getter.hasNextPage){
-                elements.more.style.display = "flex";
+        let loaded = this.videos.load(params.page);
+        loaded.then(channel => {
+            if(channel){
+                this.updatePagination();
                 if(first){
                     this.channels.updateChannels(channel);
                 }
-                if(first && !fromPopState){
-                    this.pushState(channel, this.videos);
-                }
+                this.updateChannelTitle(channel, true);
             }
             else{
-                elements.more.style.display = "none";
+                this.updateChannelTitle(params.channel, false);
             }
-            this.updateChannelTitle(success);
-        });        
+            this.replaceState(params);
+        });
+    }
+
+    updatePagination(){
+        this.pagination.update(this.videos.getter.lastPage, this.videos.getter.page);
     }
 }
 
 export {Ui};
+
+

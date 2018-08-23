@@ -15,6 +15,21 @@ class Colors{
         this.factor = factor;
     }
 
+    // getRandomColor(){
+    //     const usable = '89ABCDEF'.split('');
+    //     const l = usable.length;
+    //     let color = '#';
+    //     let i;
+    //     for (let i = 0; i < 6; i++ ) {
+    //         color += usable[Math.floor(Math.random() * l)];
+    //     }
+    //     return color;
+    // }
+
+    getRandomColor(lightness) {
+      return `hsl(${Math.floor(Math.random()*360)}, ${Math.floor(Math.random()*100)}%, ${lightness}%)`;
+    }
+
     convertColor(hex){
         // const colorRgb = COLOR_REGEX.exec(raw);
         // let color = colorRgb ? colors.getHex({r: colorRgb[1], g: colorRgb[2], b: colorRgb[3]}) : null;
