@@ -168,12 +168,18 @@ class Ui{
                 }
                 this.changeSelectedCard(i);
             }
+            else if(e.keyCode === 73 && elements.channelInput !== document.activeElement){
+                e.preventDefault();
+                elements.channelInput.value = "";
+                elements.channelInput.focus();
+            }
         });
 
         this.loadVideosFromGET();
     }
 
     clean(){
+        this.selectedCard = undefined;
         elements.paginationPages.innerHTML = "";
         elements.resultList.innerHTML = "";
         elements.channelTitleInfo.textContent = "";
