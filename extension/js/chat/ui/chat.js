@@ -1,3 +1,4 @@
+import {Video} from '../../video/video.js';
 import {Chat} from '../chat.js';
 import {ChatOptions} from './chatoptions.js';
 import {settings} from '../../settings.js';
@@ -8,8 +9,7 @@ import {Draggable, Resizable} from '../../utils/moveresize.js';
 
 
 class ChatInterface{
-    constructor(vid, elem){
-        this.chat = new Chat(vid);
+    constructor(elem){
         this.elem = elem;
         this.chatCont = this.elem.querySelector(".chat-container");
         this.chatPausedIndicator = this.chatCont.querySelector(".chat-paused-indicator");
@@ -72,6 +72,33 @@ class ChatInterface{
             this.elem.style.width = dim.width;
             this.elem.style.height = dim.height;
         }
+        this.elem.style.display = "block";
+    }
+
+    startFromGET(){
+        let vid = utils.findGetParameter("vid");
+        if(vid){
+            this.queueStart(vid);
+        }
+    }
+
+    queueStart(vid, channel, channelId){
+        this.chat = new Chat(vid);
+        if(!channel){
+            this.video = new Video(vid);
+            this.video.loaded.then(()=>{
+                this.start(this.video.channel, this.video.channelId);
+            });
+        }
+        else{
+            this.start(channel, channelId);
+        }
+    }
+
+    start(channel, channelId, offset=0){
+        this.chat.start(offset);
+        this.getSubBadge(channelId);
+        this.emotes.loadEmoteData(channel);
     }
 
     getSubBadge(id){
@@ -96,6 +123,7 @@ class ChatInterface{
     }
 
     iterate(secs){
+        if(this.addingMsgs)return;
         this.addNewMsgs(secs+this.getSyncTime());
         this.chat.getNext();
     }
@@ -153,6 +181,7 @@ class ChatInterface{
     }
 
     addNewMsgs(time){
+        this.addingMsgs = true;
         let msg = this.chat.messages.get(0);
         while (msg !== undefined){
             if (msg.time <= time){
@@ -165,6 +194,7 @@ class ChatInterface{
         }
 
         this.removeOldLines()
+        this.addingMsgs = false;
     }
 
     scrollToBottom(){

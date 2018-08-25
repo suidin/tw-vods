@@ -2,7 +2,7 @@ body{
     font-size:100%;
     margin: 0;
     background: #17141f;
-    font-family: "Noto Sans", Arial, sans-serif;
+    font-family: Helvetica, Verdana, Arial;
     color: #e8e8e8;
 }
 a{
@@ -54,8 +54,8 @@ a:visited{
     overflow: hidden;
 }
 .video-card__overlay{
-    position: absolute; 
-    background-color: rgba(0,0,0,.6);   
+    position: absolute;
+    background-color: rgba(0,0,0,.6);
     padding: 0 .2em;
     font-size: .8em;
     color: white;
@@ -80,14 +80,17 @@ a:visited{
 .form-head>*{
     margin: 5px;
 }
+input{
+    font-family: Helvetica, Verdana, Arial;
+}
 .interface form input{
     color: #e8e8e8;
     font-size:25px;
     border-radius: 4px;
     background: #383838;
     border: none;
-    padding: 0 .3em;
-    padding-top: .2em;
+    padding: .1em .3em;
+
     border: 1px solid #6f6f6f;
 }
 .interface form input:focus{
@@ -133,6 +136,7 @@ a:visited{
     overflow: hidden;
     width: 320px;
     height: 180px;
+    margin-bottom: .2em;
 }
 .video-card .resume-bar{
     position: absolute;
@@ -187,7 +191,7 @@ dialog input{
 }
 
 #prompt{
-    
+
 }
 #dialog input, #alert input{
     display:none;
@@ -198,7 +202,7 @@ dialog input{
 
 .search-options-button{
     width: 25px;
-    height: 23px;
+    height: 25px;
     cursor: pointer;
     border-radius: 4px;
     border: none;
