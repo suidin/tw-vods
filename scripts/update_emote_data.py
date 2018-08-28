@@ -37,7 +37,7 @@ def convert_bttv(json_dict):
 
 def save(converted, filename):
     with open(EMOTE_PATH + filename, "w", encoding='utf-8') as f:
-           json.dump(converted, f, ensure_ascii=False) 
+           json.dump(converted, f, ensure_ascii=False, indent=2) 
 
 DEFS = {
     "sub_emotes": {

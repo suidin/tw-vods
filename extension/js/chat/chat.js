@@ -113,7 +113,7 @@ class Chat{
     }
 
     getNext(){
-        if (this.next !== undefined && this.gettingIdentifier === undefined){
+        if (this.next !== undefined && this.gettingident === undefined){
             if(this.clear){
                 this.clear = false;
                 this.messages.reset();
