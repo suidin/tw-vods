@@ -136,9 +136,9 @@ class ChatInterface{
             color = utils.colors.convertColor(color);
         }
         else{
-            color = utils.colors.getRandomColor(75);
+            color = "#C4BBBF";
         }
-        let text = this.emotes.replaceWithEmotes(msg.text);
+        let text = this.emotes.replaceWithEmotes(msg.fragments);
         let badges = "";
         if(msg.badges){
             badges = this.getBadgeElems(msg.badges); 

@@ -51,5 +51,4 @@ Values < 0 are almost never needed unless you want to see chat with a delay.
 
 # Known Issues
 
-* Affiliate Emotes are not shown. Some other Emotes might be missing aswell.
 * Memory consumption can get very high over time. Especially when alot of vods where opened. Close all extension pages and wait 5 seconds to clear memory.

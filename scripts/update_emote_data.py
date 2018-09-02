@@ -57,9 +57,12 @@ DEFS = {
     }
 }
 
+update = ["bttv_global"]
 
 def main():
     for key, val in DEFS.items():
+        if key not in update:
+            continue
         json_dict = getJson(val["url"])
         converted = val["convert_fn"](json_dict)
         save(converted, val["filename"])
