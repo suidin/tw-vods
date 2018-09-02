@@ -238,6 +238,9 @@ class PlayerButtons extends Component{
         elements.volumeControl.addEventListener("input", e=>{
             this.player.volume = parseFloat(elements.volumeControl.value);
         });
+        elements.volumeControl.addEventListener("focus", e=>{
+            elements.volumeControl.blur();
+        });
 
         this.player.onvolumechange = ()=>{
             let volume = this.player.volume;

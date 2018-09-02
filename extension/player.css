@@ -5,7 +5,7 @@ html{
 body{
     margin: 0;
     padding: 0;
-    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-family: Helvetica, Verdana, Arial;
     font-size: 1.2rem;
     overflow:hidden;
     background: black;
@@ -255,6 +255,7 @@ body{
     position: fixed;
     left: 0;
     top: 0;
+    display:none;
     width: 350px;
     height: 500px;
     min-width: 200px;
@@ -280,10 +281,10 @@ body{
     display: initial;
 }
 ::-webkit-scrollbar-track {
-    background: #888; 
+    background: #888;
 }
 ::-webkit-scrollbar-thumb {
-    background: #f1f1f1; 
+    background: #f1f1f1;
 }
 .chat-lines{
     height: 100%;
@@ -366,7 +367,7 @@ body{
     display: block;
 }
 .chat-options .chat-option .input{
-    
+
 }
 .chat .chat-buttons{
     display: none;
@@ -427,7 +428,7 @@ body{
 .hover-preview-img{
 }
 .player-hover-time{
-    padding-top: .5em;
+    padding-top: .2em;
     line-height: 1em;
 }
 .user-badges{

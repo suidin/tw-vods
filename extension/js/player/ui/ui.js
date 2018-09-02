@@ -53,13 +53,13 @@ class Ui{
     init(){
         this.handlers();
 
-        this.currentTimeInterval = setInterval(this.updateAll.bind(this), 1000);
+        this.currentTimeInterval = setInterval(this.updateAll.bind(this), 500);
     }
 
 
 
     loadVideo(vid){
-        this.chatInterface = new ChatInterface(vid, elements.chat);
+        this.chatInterface = new ChatInterface(elements.chat);
         this.player.start(vid).then(()=>{
             this.components.qualityOptions.loadQualityOptions();
             this.player.play();
@@ -78,8 +78,7 @@ class Ui{
             }
             this.setTotalTime();
             this.components.slider.drawMutedSegments();
-            this.chatInterface.getSubBadge(this.player.video.channelId);
-            this.chatInterface.emotes.loadEmoteData(this.player.video.channel);
+            this.chatInterface.queueStart(vid, this.player.video.channel, this.player.video.channelId, this.player.video.startPosition);
 
             document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
         });

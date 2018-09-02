@@ -9,10 +9,9 @@ const bttvEmoteApi = "https://api.betterttv.net/2/emotes";
 class Emotes{
     constructor(){
         this.urls = {
-            twGlobal: "https://static-cdn.jtvnw.net/emoticons/v1/",
+            twitch: "https://static-cdn.jtvnw.net/emoticons/v1/",
             bttv: "https://cdn.betterttv.net/emote/",
-            ffz: "https://api.frankerfacez.com/v1/room/",
-            sub: "https://static-cdn.jtvnw.net/emoticons/v1/"
+            ffz: "https://api.frankerfacez.com/v1/room/"
         };
         this.emotes = {
             "ffz": new Map()
@@ -24,7 +23,7 @@ class Emotes{
         if(type === "bttv"){
             return this.scale + "x";
         }
-        else if(type === "twGlobal" || type === "sub"){
+        else if(type === "twitch"){
             return this.scale + ".0";
         }
     }
@@ -43,7 +42,7 @@ class Emotes{
         }
     }
 
-    getSrcUrl(id, type="twGlobal"){
+    getSrcUrl(id, type="twitch"){
         let scale = this.getScaleStr(type);
         return this.urls[type] + id + "/" + scale;
     }
@@ -69,7 +68,24 @@ class Emotes{
         return `<img class="chat-emote" title="${emoteName}" src="${src}" />`;
     }
 
-    replaceWithEmotes(msg){
+    replaceWithEmotes(fragments){
+        let parts = [];
+        let fragment, text, emoticon, url;
+        for(fragment of fragments){
+            text = fragment.text;
+            emoticon = fragment.emoticon;
+            if(emoticon){
+                url = this.getSrcUrl(emoticon.emoticon_id);
+                parts.push(this.getEmoteStr(url, fragment.text));
+            }
+            else{
+                parts.push(this.replaceNonNativeEmotes(utils.escape(text)));
+            }
+        }
+        return parts.join(" ");
+    }
+
+    replaceNonNativeEmotes(msg){
         let parts = msg.split(" ");
         let index, part, url, emote;
         for(index in parts){
@@ -114,17 +130,8 @@ class Emotes{
                     }
                 });
             });
-            utils.getRequestPromise("/resources/emotes/twGlobal.json", {then:"jsonMap", headers:{}}).then(jsonMap=>{
-                this.emotes["twGlobal"] = jsonMap;
-                loaded++;
-            });
-            utils.getRequestPromise("/resources/emotes/partner_sub_emotes.json", {then:"jsonMap", headers:{}}).then(jsonMap=>{
-                this.emotes["sub"] = jsonMap;
-                utils.log("converted");
-                loaded++;
-            });
             let i = setInterval(()=>{
-                if(loaded===3){
+                if(loaded===2){
                     clearInterval(i);
                     resolve();
                 }

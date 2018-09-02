@@ -40,7 +40,7 @@ class Chat{
         for (index in comments){
             comment = comments[index];
             message = {
-                "text": comment["message"]["body"],
+                "fragments": comment["message"]["fragments"],
                 "from": comment["commenter"]["display_name"],
                 "time": comment["content_offset_seconds"],
                 "color": comment["message"]["user_color"],
@@ -113,7 +113,7 @@ class Chat{
     }
 
     getNext(){
-        if (this.next !== undefined && this.gettingIdentifier === undefined){
+        if (this.next !== undefined && this.gettingident === undefined){
             if(this.clear){
                 this.clear = false;
                 this.messages.reset();
