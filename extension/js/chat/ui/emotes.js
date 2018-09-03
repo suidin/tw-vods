@@ -2,8 +2,8 @@ import {settings} from '../../settings.js';
 import {utils} from '../../utils/utils.js';
 
 
-const twGlobalEmoteApi = "https://twitchemotes.com/api_cache/v3/global.json";
-const bttvEmoteApi = "https://api.betterttv.net/2/emotes";
+const bttvGlobalJson = "https://api.betterttv.net/2/emotes";
+const bttvChannelJson = "https://api.betterttv.net/2/channels/";
 
 
 class Emotes{
@@ -14,7 +14,8 @@ class Emotes{
             ffz: "https://api.frankerfacez.com/v1/room/"
         };
         this.emotes = {
-            "ffz": new Map()
+            "ffz": new Map(),
+            "bttv": new Map()
         };
         this.scale = 1;
     }
@@ -100,6 +101,16 @@ class Emotes{
         return newMsg;
     }
 
+    convertBttvEmotes(json){
+        if(!json){return;}
+        let key, emote;
+        let emotes = json.emotes;
+        for(key in emotes){
+            emote = emotes[key];
+            this.emotes["bttv"].set(emote["code"], emote["id"]);
+        }
+    }
+
     loadEmoteData(channel){
         let loaded = 0;
         return new Promise(resolve=>{
@@ -116,22 +127,17 @@ class Emotes{
                 loaded++;
             });
  
-            utils.getRequestPromise("/resources/emotes/bttv.json", {then:"jsonMap", headers:{}}).then(jsonMap=>{
-                this.emotes["bttv"] = jsonMap;
+            utils.getRequestPromise(bttvGlobalJson, {then:"json", headers:{}}).then(json=>{
+                this.convertBttvEmotes(json);
                 loaded++;
-            }).then(()=>{
-                utils.getRequestPromise("https://api.betterttv.net/2/channels/" + channel, {then:"json", headers:{}}).then(json=>{
-                    if(!json){return;}
-                    let key, emote;
-                    let emotes = json.emotes;
-                    for(key in emotes){
-                        emote = emotes[key];
-                        this.emotes["bttv"].set(emote["code"], emote["id"]);
-                    }
-                });
             });
+            utils.getRequestPromise(bttvChannelJson + channel, {then:"json", headers:{}}).then(json=>{
+                this.convertBttvEmotes(json);
+                loaded++;
+            });
+
             let i = setInterval(()=>{
-                if(loaded===2){
+                if(loaded===3){
                     clearInterval(i);
                     resolve();
                 }
