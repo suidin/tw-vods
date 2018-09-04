@@ -18,7 +18,7 @@ class Slider extends Component{
     handlers(){
         this.elem.addEventListener("click", e=>{
             let percentage = this.percentageFromXpos(e.clientX);
-            this.player.currentTime = this.secsFromPercentage(percentage);
+            this.player.seek(this.secsFromPercentage(percentage));
         });
 
         this.elem.addEventListener("mousemove", e=>{

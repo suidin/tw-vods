@@ -13,6 +13,10 @@ function getPlayer(vElem){
             vElem.volume = vElem.video.config.volume;
         });
     }
+    vElem.seek = (secs)=>{
+        vElem.timeBeforeSeek = vElem.currentTime;
+        vElem.currentTime = secs;
+    }
     return vElem;
 }
 

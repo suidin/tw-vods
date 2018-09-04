@@ -57,6 +57,7 @@ class FixedSizeArray{
         this.entries--;
     }
 
+
     endIndex(){
         return this.i(this.entries);
     }
@@ -66,6 +67,17 @@ class FixedSizeArray{
             this.advanceStart();
             let elem = this.get(0);
             return elem;
+        }
+    }
+
+    revertShift(){
+        if(this.length - this.entries){
+            this.startIndex = (this.startIndex - 1) % this.length;
+            this.entries++;
+            return true;
+        }
+        else{
+            return false;
         }
     }
 

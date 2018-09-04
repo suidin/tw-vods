@@ -87,7 +87,7 @@ class Ui{
 
     seek(secs){
         this.components.slider.updateFromSecs(secs);
-        this.chatInterface.seek(secs);
+        this.chatInterface.seek(secs, this.player.timeBeforeSeek);
         this.updateResumePoint(secs);
     }
 
