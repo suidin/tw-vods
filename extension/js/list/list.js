@@ -11,7 +11,7 @@ import {utils} from '../utils/utils.js';
 class Channels{
     constructor(){
         this.initChannels();
-        this.channelsMaxSize = 30;
+        this.channelsMaxSize = 200;
 
 
     }
@@ -90,12 +90,23 @@ class Ui{
         elements.importButton.addEventListener("click", e=>{
             e.preventDefault();
             utils.import();
-        })
+        });
+
+        elements.importFollowsButton.addEventListener("click", e=>{
+            e.preventDefault();
+            let p = utils.importFollows();
+            p.then(names=>{
+                if(names && names.length){
+                    names.map(name=>this.channels.updateChannels(name));
+                }
+            });
+        });
+
 
         elements.exportButton.addEventListener("click", e=>{
             e.preventDefault();
             utils.export();
-        })
+        });
 
         elements.clientIdButton.addEventListener("click", e=>{
             e.preventDefault();
@@ -168,7 +179,7 @@ class Ui{
                 }
                 this.changeSelectedCard(i);
             }
-            else if(e.keyCode === 73 && elements.channelInput !== document.activeElement){
+            else if(e.keyCode === 73 && document.activeElement.nodeName != "INPUT"){
                 e.preventDefault();
                 elements.channelInput.value = "";
                 elements.channelInput.focus();

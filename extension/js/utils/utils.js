@@ -121,6 +121,32 @@ class Uitility{
         });
     }
 
+    importFollows(){
+        let p = this.dialog.prompt("Please enter your username");
+        p = p.then(username=>{
+            if(username && username.length){
+                return this.getUserFollows(username);
+            }
+            else{
+                return false;
+            }
+        });
+        p = p.then(names=>{
+            let returnMsg;
+            if(names){
+                returnMsg = "successfully imported follows";
+            }
+            else{
+                returnMsg = "could not import settings";
+            }
+            setTimeout(e=>{
+                this.dialog.alert(returnMsg);
+            }, 100);
+            return names;
+        });
+        return p;
+    }
+
     export(){
         let s = this.storage.export();
         this.dialog.alert(s);
@@ -131,6 +157,28 @@ class Uitility{
         if(settings.DEBUG){
             console.log(...objs);
         }
+    }
+
+    getUserFollows(username, limit=25){
+        return this.getRequestPromise(`https://api.twitch.tv/kraken/users/${username}/follows/channels?limit=${limit}`, {then: "json", headers:{}}).then(json=>{
+            if(json && json.follows && json.follows.length){
+                return json.follows.map(i=>i.channel.display_name);
+            }
+            else{
+                return false;
+            }
+        });
+    }
+
+    userIdFromUsername(name){
+        return this.getRequestPromise("https://api.twitch.tv/kraken/users?login="+name, {then: "json"}).then(json=>{
+            if(json && json.users && json.users.length){
+                return json.users[0]["_id"];
+            }
+            else{
+                return false;
+            }
+        });
     }
 
     promptClientId(){

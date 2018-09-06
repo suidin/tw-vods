@@ -11,8 +11,8 @@ class Elements{
         this.optionsElem = document.querySelector(".search-options");
         this.importButton = document.querySelector(".import-button");
         this.exportButton = document.querySelector(".export-button");
+        this.importFollowsButton = document.querySelector(".import-follows-button");
         this.resultList = document.querySelector(".results .list");
-        this.more = document.querySelector(".results .more");
         this.channelTitleChannel = document.querySelector(".results .channel-title__channel");
         this.channelTitleInfo = document.querySelector(".results .channel-title__info");
         this.linkList = document.querySelector(".pre-results .link-list");
