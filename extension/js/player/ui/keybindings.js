@@ -14,7 +14,7 @@ class KeyBindings{
         let newTime = this.player.currentTime + seconds;
         if(newTime<0){newTime=0;}
         if(newTime>=this.player.duration){newTime=this.player.duration-1;}
-        this.player.currentTime = newTime;
+        this.player.seek(newTime);
     }
 
     getSeekStr(seconds){

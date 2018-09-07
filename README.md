@@ -1,5 +1,4 @@
-Chrome Extension to list and watch twitch vods (past broadcasts) with recorded chat.
- from https://twitch.tv
+Chrome Extension to list and watch twitch.tv vods (past broadcasts) with recorded chat.
 
 # General
 All media data is loaded from twitch.tv. Api calls are used to collect varous datasets from twitch.tv.
@@ -52,3 +51,4 @@ Values < 0 are almost never needed unless you want to see chat with a delay.
 # Known Issues
 
 * Memory consumption can get very high over time. Especially when alot of vods where opened. Close all extension pages and wait 5 seconds to clear memory.
+* Some Badges and Bit Emotes are missing

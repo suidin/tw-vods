@@ -111,14 +111,36 @@ class ChatInterface{
         });
     }
 
-    seek(secs){
-        let nextMsg = this.chat.messages.get(0);
-        let nextMsgTime = nextMsg && nextMsg.time;
+    seek(secs, before){
         let syncTime = this.getSyncTime();
-        let diff = secs + syncTime - nextMsgTime;
-        if(!nextMsgTime || diff > 40 || diff < -10){
+        let diff = secs + syncTime - before;
+        if(-33 < diff && diff < 0){
+            this.revertUntilAlign(secs);
+        }
+        else if(0 < diff && diff < 33){
+        
+        }
+        else{
             this.chat.seek(secs+syncTime);
             this.clearMessages();
+        }
+    }
+
+    revertUntilAlign(secs){
+        let shifted, msg;
+        while (true){
+            shifted = this.chat.messages.revertShift();
+            msg = this.chat.messages.get(0);
+            if(!shifted || !msg){break;}
+            if(msg.time <= secs){
+                this.chat.messages.advanceStart();
+                break;
+            }
+            else{
+                if(this.chatLines.contains(msg.elem)){
+                    msg.elem.remove();
+                }
+            }
         }
     }
 
@@ -145,6 +167,32 @@ class ChatInterface{
         }
         elem.innerHTML = `${badges}<span style="color:${color};" class="from">${msg.from}: </span><span class="text">${text}</span>`;
         return elem;
+    }
+
+    addMsg(msg){
+        let elem = msg.elem;
+        if(!elem){
+            elem = this.msgElem(msg);
+            msg.elem = elem;
+        }
+        this.chatLines.appendChild(elem);
+    }
+
+    addNewMsgs(time){
+        this.addingMsgs = true;
+        let msg = this.chat.messages.get(0);
+        while (msg !== undefined){
+            if (msg.time <= time){
+                this.addMsg(msg);
+                msg = this.chat.messages.shift();
+            }
+            else{
+                break;
+            }
+        }
+
+        this.removeOldLines()
+        this.addingMsgs = false;
     }
 
     getBadgeElem(name, path){
@@ -180,31 +228,10 @@ class ChatInterface{
         }
     }
 
-    addNewMsgs(time){
-        this.addingMsgs = true;
-        let msg = this.chat.messages.get(0);
-        while (msg !== undefined){
-            if (msg.time <= time){
-                this.addMsg(msg);
-                msg = this.chat.messages.shift();
-            }
-            else{
-                break;
-            }
-        }
-
-        this.removeOldLines()
-        this.addingMsgs = false;
-    }
-
     scrollToBottom(){
         this.chatCont.scrollTo(0,this.chatCont.scrollHeight);
     }
 
-    addMsg(msg){
-        let elem = this.msgElem(msg);
-        this.chatLines.appendChild(elem);
-    }
 
     clearMessages(){
         this.chatLines.innerHTML = "";
