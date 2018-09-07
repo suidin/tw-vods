@@ -155,7 +155,7 @@ class Streams{
         let game = stream.game;
         let thumb = stream.preview["medium"];
         let title = stream["channel"]["status"];
-        let url = stream["channel"]["url"] + "?twitch5=0";
+        let url = stream["channel"]["url"];
         let viewers = stream["viewers"].toString();
         if(viewers.length > 3){
             viewers = viewers.substring(0, viewers.length-3) + "," + viewers.substring(viewers.length-3);
@@ -170,7 +170,7 @@ class Streams{
         let gameElem = `<div class="video-card__game">${game}</div>`;
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}" /></div></div>${viewersElem}${lengthElem}</a>`;
-        let nameElem = `<div class="video-card__name"><a target="_blank" href="${url}">${displayName}</a></div>`;
+        let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a></div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
         elem.innerHTML = `${thumbElem}${logoElem}${titleElem}${nameElem}${gameElem}`;
