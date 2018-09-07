@@ -352,7 +352,7 @@ class Uitility{
         if(secs > week){
             return `${monthShortNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
         }
-        return this.secsToReadable(secs, "d") + " ago";
+        return this.secsToReadable(secs, "d");
     }
 
     findGetParameter(parameterName) {

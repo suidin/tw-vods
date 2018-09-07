@@ -1,5 +1,6 @@
-import {VideosGetter} from './getter.js';
+import {VideosGetter, LiveStreamsGetter} from './getter.js';
 import {elements} from './elements.js';
+import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
 
 
@@ -42,7 +43,7 @@ class Videos{
         let title = video.title;
         let url = video.url;
         let date = video.recorded_at;
-        let when = utils.twTimeStrToReadable(date);
+        let when = utils.twTimeStrToReadable(date) + " ago";
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
@@ -123,4 +124,72 @@ class Videos{
 }
 
 
-export {Videos};
+class Streams{
+    constructor(params){
+        this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
+    }
+
+    load(pageNr){
+        if(pageNr){
+            this.getter.page = pageNr;
+        }
+        return this.getter.get().then(streams=>{
+            if(streams && streams.length){
+                this.currentStreamsData = streams;
+                this.processStreams(streams);
+                return true;
+            }
+            else{
+                return false;
+            }
+        });
+    }
+
+    processStreams(streams){
+        utils.log(streams[0]);
+        this.addStreams(streams);
+    }
+
+    createStreamCard(stream){
+        let uptime = utils.twTimeStrToReadable(stream.created_at);
+        let game = stream.game;
+        let thumb = stream.preview["medium"];
+        let title = stream["channel"]["status"];
+        let url = stream["channel"]["url"] + "?twitch5=0";
+        let viewers = stream["viewers"].toString();
+        if(viewers.length > 3){
+            viewers = viewers.substring(0, viewers.length-3) + "," + viewers.substring(viewers.length-3);
+        }
+        let channel = stream["channel"]["name"];
+        let displayName = stream["channel"]["display_name"];
+        let logoUrl = stream["channel"]["logo"];
+        let playerUrl = settings.altPlayerExtId && settings.altPlayerExtId.length ? `chrome-extension://${settings.altPlayerExtId}/player.html?channel=${channel}` : url;
+        let logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
+        let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
+        let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
+        let gameElem = `<div class="video-card__game">${game}</div>`;
+        let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}" /></div></div>${viewersElem}${lengthElem}</a>`;
+        let nameElem = `<div class="video-card__name"><a target="_blank" href="${url}">${displayName}</a></div>`;
+        let elem = document.createElement("div");
+        elem.className = "video-card";
+        elem.innerHTML = `${thumbElem}${logoElem}${titleElem}${nameElem}${gameElem}`;
+
+        return elem;
+    }
+
+    addStream(stream){
+        let card = this.createStreamCard(stream);
+        elements.resultList.appendChild(card);
+    }
+
+    addStreams(streams){
+        let stream;
+        for(stream of streams){
+            this.addStream(stream);
+        }
+    }
+}
+
+
+export {Videos, Streams};

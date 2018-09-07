@@ -24,27 +24,32 @@
             </div>
             <form>
                 <div class="form-head">
-                    <input class="channelInput" name="channel" type="text" placeholder="channel name">
-                    <input class="channelSubmit" type="submit" value="Show">
-                    <div class="search-options-button"></div>
-                </div>
-                <div class="search-options" hidden>
-                    <div class="search-option">
-                        <label>Videos per Page</label>
-                        <input min=1 max=100 value=10 type="number" class="search-option__limit">
-                    </div>
-                    <div class="search-option" hidden>
-                        <label>page</label>
-                        <input value=1 type="number" class="search-option__limit">
-                    </div>
                     <div class="search-option">
                         <label>Type</label>
                         <select class="search-option__type">
+                            <option value="live">Live</option>
                             <option value="archive">Past Broadcasts</option>
                             <option value="highlight">Highlights</option>
                             <option value="upload">Uploads</option>
                         </select>
                     </div>
+                    <div class="search-option search-option--vod">
+                        <label>Channel</label>
+                        <input class="search-option__channel" name="channel" type="text" placeholder="required">
+                    </div>
+                    <div class="search-option search-option--live">
+                        <label>Game</label>
+                        <input placeholder="optional" type="text" class="search-option__game">
+                    </div>
+                    <div class="search-option">
+                        <label>Per Page</label>
+                        <input min=1 max=100 value=30 type="number" class="search-option__limit">
+                    </div>
+                    <div class="search-option">
+                        <label>Page</label>
+                        <input value=1 max=9999 min=1 type="number" class="search-option__page">
+                    </div>
+                    <input class="search-submit" type="submit" value="Show">
                 </div>
             </form>
         </section>

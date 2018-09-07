@@ -2,13 +2,15 @@
 
 class Elements{
     constructor(){   
-        this.channelForm = document.querySelector(".interface form");
-        this.optionsLimit = this.channelForm.querySelector(".search-option__limit");
-        this.optionsType = this.channelForm.querySelector(".search-option__type");
-        this.channelInput = this.channelForm.querySelector("input.channelInput");
-        this.clientIdButton = document.querySelector(".client-id-button");
-        this.optionsButton = document.querySelector(".search-options-button");
+        this.form = document.querySelector(".interface form");
+        this.optionsType = this.form.querySelector(".search-option__type");
+        this.optionsChannel = this.form.querySelector(".search-option__channel");
+        this.optionsGame = this.form.querySelector(".search-option__game");
+        this.optionsLimit = this.form.querySelector(".search-option__limit");
+        this.optionsPage = this.form.querySelector(".search-option__page");
         this.optionsElem = document.querySelector(".search-options");
+        
+        this.clientIdButton = document.querySelector(".client-id-button");
         this.importButton = document.querySelector(".import-button");
         this.exportButton = document.querySelector(".export-button");
         this.importFollowsButton = document.querySelector(".import-follows-button");
