@@ -9,7 +9,7 @@ a{
     color: white;
 }
 a:visited{
-    color: #a8d0c2;
+    color: inherit;
 }
 
 .top-links{
@@ -62,6 +62,9 @@ a:visited{
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+.video-card__game a {
+    color: white;
 }
 .video-card__overlay{
     position: absolute;
@@ -139,6 +142,10 @@ input{
     border-radius: 3px;
 }
 .pre-results .link-list .link-list__link{
+    color: #a8d0c2;
+}
+.pre-results .link-list .link-list__link--live{
+    color: #a8d0c2;
 }
 .pre-results .link-list .link-list__remove{
     color: #a01a1a;
@@ -247,6 +254,7 @@ dialog input{
 
 .pagination-pages{
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     color: white;
     margin-top: 10px;

@@ -43,7 +43,7 @@ class Videos{
         let title = video.title;
         let url = video.url;
         let date = video.recorded_at;
-        let when = utils.twTimeStrToReadable(date) + " ago";
+        let when = utils.twTimeStrToReadable(date);
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
@@ -151,7 +151,7 @@ class Streams{
     }
 
     createStreamCard(stream){
-        let uptime = utils.twTimeStrToReadable(stream.created_at);
+        let uptime = utils.twTimeStrToTimePassed(stream.created_at);
         let game = stream.game;
         let thumb = stream.preview["medium"];
         let title = stream["channel"]["status"];
@@ -167,7 +167,7 @@ class Streams{
         let logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
         let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
         let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
-        let gameElem = `<div class="video-card__game">${game}</div>`;
+        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURI(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}" /></div></div>${viewersElem}${lengthElem}</a>`;
         let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a></div>`;

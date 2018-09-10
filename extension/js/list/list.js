@@ -27,7 +27,7 @@ class Channels{
     makeChannelLink(channel){
         let channelElem = document.createElement("div");
         channelElem.className = "link-list__item " + channel;
-        channelElem.innerHTML = `<a href="?channel=${channel}" class="link-list__link">${channel}</a><span class="link-list__remove"> X</span>`;
+        channelElem.innerHTML = `<a href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}" class="link-list__link">${channel}</a><span class="link-list__remove"> X</span>`;
         return channelElem;
     }
 
@@ -122,6 +122,7 @@ class Ui{
             this.load(params, true);
         });
         elements.optionsType.addEventListener("input", e=>{
+            elements.optionsPage.value = 1;
             this.updateFormElements();
         });
         this.updateFormElements();
@@ -333,11 +334,11 @@ class Ui{
             else{
                 let game = this.media.getter.game;
                 let text = "Live Channels";
-                if(game.length){
-                    text += ` for game: ${game}`;
-                }
+                document.title = "Live Channels";
                 elements.channelTitleChannel.textContent = text;
-                elements.channelTitleInfo.textContent = "";
+                if(game.length){
+                    elements.channelTitleInfo.textContent = game;
+                }
             }
         }
         else{

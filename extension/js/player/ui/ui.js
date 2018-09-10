@@ -73,7 +73,9 @@ class Ui{
         this.player.video.loaded.then(()=>{
             if(this.player.video.hoverThumbsInfoLoaded){
                 this.player.video.hoverThumbsInfoLoaded.then(info=>{
-                    this.components.slider.prepareHoverThumbs(info);
+                    if(info && info.images && info.images.length){
+                        this.components.slider.prepareHoverThumbs(info);
+                    }
                 });
             }
             this.setTotalTime();

@@ -112,6 +112,7 @@ class ChatInterface{
     }
 
     seek(secs, before){
+        this.seeking = true;
         let syncTime = this.getSyncTime();
         let diff = secs + syncTime - before;
         if(-33 < diff && diff < 0){
@@ -124,6 +125,7 @@ class ChatInterface{
             this.chat.seek(secs+syncTime);
             this.clearMessages();
         }
+        this.seeking = false;
     }
 
     revertUntilAlign(secs){
@@ -145,7 +147,7 @@ class ChatInterface{
     }
 
     iterate(secs){
-        if(this.addingMsgs)return;
+        if(this.addingMsgs || this.seeking)return;
         this.addNewMsgs(secs+this.getSyncTime());
         this.chat.getNext();
     }

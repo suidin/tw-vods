@@ -39,6 +39,7 @@ class Chat{
         let index, comment, message;
         for (index in comments){
             comment = comments[index];
+            // if(comment.source !== "chat"){continue;}
             message = {
                 "fragments": comment["message"]["fragments"],
                 "from": comment["commenter"]["display_name"],

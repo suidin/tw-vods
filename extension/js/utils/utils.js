@@ -352,6 +352,12 @@ class Uitility{
         if(secs > week){
             return `${monthShortNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
         }
+        return this.secsToReadable(secs, "d") + " ago";
+    }
+
+    twTimeStrToTimePassed(str){
+        let date = this.twTimeStrToDate(str);
+        let secs = this.getSecsFromDate(date);
         return this.secsToReadable(secs, "d");
     }
 
@@ -376,12 +382,13 @@ class Uitility{
         getStr
         .substr(1)
         .split("&")
-        .forEach(function (item) {
+        .forEach((item) => {
             [key, val] = item.split("=");
-            obj[key] = val;
+            obj[key] = decodeURIComponent(val);
         });
         return obj;
     }
+
 
     objToGetStr(obj){
         let arr = [];
