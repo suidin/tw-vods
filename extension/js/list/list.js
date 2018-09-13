@@ -106,6 +106,14 @@ class Ui{
             });
         });
 
+        elements.wlButton.addEventListener("click", e=>{
+            e.preventDefault();
+            this.clean();
+            this.media = new Videos(null, true);
+            elements.channelTitleChannel.textContent = "Watch Later";
+            elements.channelTitleInfo.textContent = "";
+        });
+
 
         elements.exportButton.addEventListener("click", e=>{
             e.preventDefault();

@@ -1,14 +1,27 @@
 import {VideosGetter, LiveStreamsGetter} from './getter.js';
+import {WatchLater} from './watchlater.js';
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
 
 
+const watchLater = new WatchLater();
 
 class Videos{
-    constructor(params){
-        this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
+    constructor(params, wl=false){
         this.resumePositions = utils.storage.getItem("resumePositions");
+        if(wl){
+            this.loadWatchLater();
+        }
+        else{
+            this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
+        }
+    }
+
+    loadWatchLater(){
+        this.drawingWatchLaterList = true;
+        this.processVideos(watchLater.get());
+        this.drawingWatchLaterList = false;
     }
 
     load(pageNr){
@@ -48,15 +61,18 @@ class Videos{
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
         let playerUrl = "player.html";
-        let popoutElem = `<a href="${url}" target="_blank">watch on twitch.tv</a>`;
+        let displayName = video.channel.display_name;
+        let nameElem = this.drawingWatchLaterList ? `<a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a>`: "";
         let lengthElem = `<div class="video-card__overlay video-length">${length}</div>`;
+        let watchLaterIcon = this.drawingWatchLaterList ? "remove-icon.png" : "add-icon.png";
+        let watchLaterOverlay = `<div class="video-card__overlay video-wl"><img src="/resources/icons/${watchLaterIcon}"></div>`;
         let gameElem = this.makeInfoElem("Game", game);
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${lengthElem}</a>`;
-        let timePassedElem = `<div class="video-card__date">${when} ${popoutElem}</div>`;
+        let timePassedElem = `<div class="video-card__date">${when} ${nameElem}</div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
-        elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}`;
+        elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}${watchLaterOverlay}`;
 
         return elem;
     }
@@ -111,6 +127,17 @@ class Videos{
 
     addVideo(video){
         let card = this.createVideoCard(video);
+        // card.video = video;
+        let wl = this.drawingWatchLaterList;
+        card.querySelector(".video-card__overlay.video-wl").addEventListener("click", e=>{
+            if(wl){
+                watchLater.remove(video);
+                card.remove();
+            }
+            else{
+                watchLater.add(video);
+            }
+        });
         this.prepareThumb(video, card);
         elements.resultList.appendChild(card);
     }

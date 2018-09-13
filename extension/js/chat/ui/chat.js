@@ -119,7 +119,7 @@ class ChatInterface{
             this.revertUntilAlign(secs);
         }
         else if(0 < diff && diff < 33){
-        
+            this.addNewMsgs(secs);
         }
         else{
             this.chat.seek(secs+syncTime);

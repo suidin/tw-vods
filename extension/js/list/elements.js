@@ -11,6 +11,7 @@ class Elements{
         this.optionsElem = document.querySelector(".search-options");
         
         this.clientIdButton = document.querySelector(".client-id-button");
+        this.wlButton = document.querySelector(".watch-later-button");
         this.importButton = document.querySelector(".import-button");
         this.exportButton = document.querySelector(".export-button");
         this.importFollowsButton = document.querySelector(".import-follows-button");

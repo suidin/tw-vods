@@ -53,7 +53,7 @@ class FixedSizeArray{
     }
 
     advanceStart(){
-        this.startIndex = (this.startIndex + 1) % this.length;
+        this.startIndex = this.i(1);
         this.entries--;
     }
 
@@ -64,15 +64,15 @@ class FixedSizeArray{
 
     shift(){
         if(this.entries){
-            this.advanceStart();
             let elem = this.get(0);
+            this.advanceStart();
             return elem;
         }
     }
 
     revertShift(){
         if(this.length - this.entries){
-            this.startIndex = (this.startIndex - 1) % this.length;
+            this.startIndex = this.i(-1);
             this.entries++;
             return true;
         }
@@ -137,7 +137,7 @@ class Uitility{
                 returnMsg = "successfully imported follows";
             }
             else{
-                returnMsg = "could not import settings";
+                returnMsg = "could not import follows";
             }
             setTimeout(e=>{
                 this.dialog.alert(returnMsg);

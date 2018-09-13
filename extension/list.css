@@ -81,6 +81,20 @@ a:visited{
     top:176px;
     left: 20px;
 }
+.video-card__overlay.video-wl{
+    top: 17px;
+    left: 16px;
+    background:none;
+    cursor:pointer;
+    display: none;
+}
+.video-card:hover .video-card__overlay.video-wl{
+    display: block;
+}
+.video-card__overlay.video-wl img{
+    width: 25px;    
+    height: 25px;
+}
 .video-card__viewers a{
     float: right;
 }
