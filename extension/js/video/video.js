@@ -7,17 +7,30 @@ class VideoConnector{
         this.vid = vid;
     }
 
-    getVideoAuth(){
-        let url = `https://api.twitch.tv/api/vods/${this.vid}/access_token.json?as3=t&adblock=false&need_https=true&platform=web&player_type=site`;
+    getAuth(mode){
+        let url = `https://api.twitch.tv/api/${mode}/${this.vid}/access_token.json?as3=t&adblock=false&need_https=true&platform=web&player_type=site`;
         return utils.getRequestPromise(url);
     }
 
     getManifestUrl(){
-        return this.getVideoAuth().then(map => {
+        let mode;
+        if(settings.mode==="video"){
+            mode = "vod";
+        }
+        else{
+            mode = "channel";
+        }
+        return this.getAuth(mode+"s").then(map => {
             let sig = map.get("sig");
             let token = map.get("token");
             let p = parseInt(Math.random() * 999999);
-            let url = `https://usher.ttvnw.net/vod/${this.vid}?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&nauthsig=${sig}&nauth=${token}`;
+            let url;
+            if(mode === "channel"){
+                url = `https://usher.ttvnw.net/api/${mode}/hls/${this.vid.toLowerCase()}.m3u8?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&nauthsig=${sig}&nauth=${token}`;
+            }
+            else{
+                url = `https://usher.ttvnw.net/${mode}/${this.vid}?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&nauthsig=${sig}&nauth=${token}`;
+            }
             return url;
         });
     }
@@ -30,6 +43,11 @@ class VideoConnector{
         let url = `https://api.twitch.tv/kraken/videos/${this.vid}.json`;
         return utils.getRequestPromise(url);
     }
+
+    // getStreamData(){
+    //     let url = `https://api.twitch.tv/kraken/streams/${this.vid}`;
+    //     return 
+    // }
 
     getStreamManifest(){
         return getManifestUrl.then(url=>{
@@ -46,11 +64,13 @@ class Stream{
         this.manifestUrl = manifestUrl;
         let hlsConfig = settings.hlsConfig;
         hlsConfig.startLevel = config.startLevel;
-        hlsConfig.startPosition = config.startPosition;
+        if(settings.mode === "video"){
+            hlsConfig.startPosition = config.startPosition;
+        }
         this.hls = new Hls(hlsConfig);
     }
 
-    loadHls(resolver){
+    loadHls(resolver,cb){
         let hls = this.hls;
         let videoElem = document.querySelector("video");
         hls.attachMedia(videoElem);
@@ -60,6 +80,7 @@ class Stream{
           hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
             utils.log("manifest loaded, found " + data.levels.length + " quality level");
             hls.nextLevel = this.config.startLevel;
+            cb && cb();
             resolver();
           });
         });
@@ -181,4 +202,67 @@ class Video{
     }
 }
 
-export {Video, VideoConnector};
+
+class Live{
+    constructor(vid){
+        this.vid = vid;
+        this.connector = new VideoConnector(vid);
+        this.makeConfig();
+    }
+
+    startStream(){
+        return this.connector.getManifestUrl().then(url => {
+            this.stream = new Stream(url, this.config);
+            return new Promise(resolve=>{
+                this.stream.loadHls(resolve, ()=>{
+                    let lvl = this.getClosestQuality(utils.storage.getLastSetQuality());
+                    lvl = parseInt(lvl);
+                    this.stream.hls.nextLevel = lvl;
+                });
+            });
+        });
+    }
+
+    loadData(){
+    }
+
+    makeConfig(){
+        let config = {};
+        config.startLevel = 0;
+        let volume = utils.storage.getLastSetVolume() || 0.5;
+        config.volume = volume;
+
+        this.config = config;
+    }
+    
+    getClosestQuality(desired){
+        if(desired === "Auto"){
+            return -1;
+        }
+        let qualityToNumber = (str)=>{
+            if(str === "chunked"){return 10000;}
+            let [res, fps] = str.split("p");
+            return parseInt(res)*parseInt(fps)/30;
+        }
+        let q, i, n;
+        let dNum = qualityToNumber(desired);
+        let resos = this.stream.hls.levels.map(l=>l.attrs.VIDEO);
+        let nums = resos.map(qualityToNumber);
+        for(i in resos){
+            q = resos[i];
+            n = nums[i];
+            if(q === desired){return i;}
+            if(n > dNum){
+                if(i===0){
+                    return 0;
+                }
+                else{
+                    return i-1;
+                }
+            }
+        }
+        return i;
+    }
+}
+
+export {Video, Live, VideoConnector};

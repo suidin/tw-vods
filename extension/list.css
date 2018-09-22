@@ -17,12 +17,13 @@ a:visited{
     display: flex;
     flex-wrap: wrap;
     cursor: pointer;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-content: center;
     margin-bottom: 1em;
+    margin-top: 5px;
 }
-.top-links>*{
-    margin: 2px 7px;
+.top-link{
+    margin: 0px 7px;
 }
 .results .list{
     display: flex;

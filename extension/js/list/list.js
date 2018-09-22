@@ -108,10 +108,7 @@ class Ui{
 
         elements.wlButton.addEventListener("click", e=>{
             e.preventDefault();
-            this.clean();
-            this.media = new Videos(null, true);
-            elements.channelTitleChannel.textContent = "Watch Later";
-            elements.channelTitleInfo.textContent = "";
+            this.loadWatchLater();
         });
 
 
@@ -191,6 +188,15 @@ class Ui{
                 }
             }
         });
+    }
+
+    loadWatchLater(){
+        this.clean();
+        this.media = new Videos(null, true);
+        elements.channelTitleChannel.textContent = "Watch Later";
+        elements.channelTitleInfo.textContent = "";
+        history.replaceState("watchlater", "twitch-list | Watch Later", "?type=watchlater");
+        document.title = "Watch Later";
     }
 
     updateFormElements(){
@@ -289,6 +295,10 @@ class Ui{
     loadFromGET(){
         let params = utils.getStrToObj();
         let type = params["type"] || defaultParams["type"];
+        if(type === "watchlater"){
+            this.loadWatchLater();
+            return true;
+        }
         if(params){
             params["perPage"] = parseInt(params["perPage"]) || defaultParams["perPage"];
             params["page"] = parseInt(params["page"]) || defaultParams["page"];
@@ -356,7 +366,7 @@ class Ui{
             }
             else{
                 elements.channelTitleChannel.textContent = `<No Live Channels could be found>`;
-                elements.channelTitleInfo.textContent = "";
+                elements.channelTitleInfo.textContent = "page number probably too high";
             }
         }
     }
@@ -390,7 +400,7 @@ class Ui{
                 this.updateResultsTitle(success, true);
             }
             else{
-                this.updateResultsTitle(success, false);
+                this.updateResultsTitle(params.channel, false);
             }
             this.replaceState(params);
             this.loading = false;

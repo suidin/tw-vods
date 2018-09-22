@@ -39,7 +39,7 @@ class FixedSizeArray{
     }
 
     i(i){
-        return (this.startIndex + i) % this.length;
+        return (this.length + this.startIndex + i) % this.length;
     }
 
     reset(){
@@ -64,8 +64,8 @@ class FixedSizeArray{
 
     shift(){
         if(this.entries){
-            let elem = this.get(0);
             this.advanceStart();
+            let elem = this.get(0);
             return elem;
         }
     }

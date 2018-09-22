@@ -1,5 +1,5 @@
 import { getPlayer } from '../player.js';
-import { ChatInterface } from '../../chat/ui/chat.js';
+import { ReChatInterface, LiveChatInterface } from '../../chat/ui/chat.js';
 import { elements } from './elements.js';
 import * as components from './components/components.js';
 import {KeyBindings} from './keybindings.js'
@@ -10,10 +10,20 @@ import { settings } from '../../settings.js';
 
 class Ui{
     constructor(){
+        let vid = utils.findGetParameter("vid");
+        let channel = utils.findGetParameter("channel");
+        let channelID = utils.findGetParameter("channelID");
+        if(vid){
+            settings.mode = "video";
+        }
+        else if(channel){
+            settings.mode = "live";
+            elements.app.classList.add("live");
+        }
         this.player = getPlayer(elements.video);
         // components
         this.components = {
-            "slider": new components.Slider(this.player, elements.slider),
+            "slider": settings.mode === "video" ? new components.Slider(this.player, elements.slider) : undefined,
             "qualityOptions": new components.QualityOptions(this.player, elements.qualitySelector),
             "playerButtons": new components.PlayerButtons(this.player),
             "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom)
@@ -22,7 +32,13 @@ class Ui{
         this.keyBindings = new KeyBindings(this.player, this.components);
 
         this.uiInitialized = false;
-        this.loadVideoFromGET();
+
+        if(settings.mode === "video"){
+            this.loadVideo(vid);
+        }
+        else{
+            this.loadChannel(channel, channelID);  
+        }
 
         if(settings.DEBUG){
             window.appInterface = this;
@@ -37,13 +53,24 @@ class Ui{
         }
     }
 
+    loadChannelFromGET(){
+        let channel = utils.findGetParameter("channel");
+
+        if(channel){
+            this.loadChannel(channel);
+        }
+    }
+
     handlers(){
-        this.player.onseeking = (e)=>{
-            let secs = this.player.currentTime;
-            this.seek(secs);
+        if(settings.mode === "video"){
+            this.player.onseeking = (e)=>{
+                let secs = this.player.currentTime;
+                this.seek(secs);
+            }
         }
         let component;
         for(component in this.components){
+            if(!this.components[component]){continue;}
             utils.log("loading: ", component);
             this.components[component].handlers();
         }
@@ -56,10 +83,23 @@ class Ui{
         this.currentTimeInterval = setInterval(this.updateAll.bind(this), 500);
     }
 
+    loadChannel(channel, channelID){
+        this.chatInterface = new LiveChatInterface(elements.chat);
+        this.player.start(channel).then(e=>{
+            this.components.qualityOptions.loadQualityOptions();
+            this.player.play();
+            if(!this.uiInitialized){
+                this.init();
+                this.uiInitialized = true;
+            }
+            this.components.qualityOptions.initOnLevelChange();
+        });
+        this.chatInterface.queueStart(channel.toLowerCase(), channelID);
 
+    }
 
     loadVideo(vid){
-        this.chatInterface = new ChatInterface(elements.chat);
+        this.chatInterface = new ReChatInterface(elements.chat);
         this.player.start(vid).then(()=>{
             this.components.qualityOptions.loadQualityOptions();
             this.player.play();
@@ -110,9 +150,13 @@ class Ui{
     }
 
     updateAll(){
-        let secs = this.player.currentTime;
-        this.updateCurrentTime(secs);
-        this.chatInterface.iterate(secs);
+        if(settings.mode === "video"){
+            let secs = this.player.currentTime;
+            this.updateCurrentTime(secs);
+            this.chatInterface.iterate(secs);
+
+        }
+        this.chatInterface.iterate();
     }
 }
 

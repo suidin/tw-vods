@@ -6,19 +6,20 @@ import {utils} from '../utils/utils.js';
 
 class WatchLater{
     constructor(){
+        this.videos = this.get();
     }
 
     get(){
         return utils.storage.getItem("watchlater");
     }
 
-    set(videos){
-        utils.storage.setItem("watchlater", videos);
+    set(){
+        utils.storage.setItem("watchlater", this.videos);
     }
 
-    contains(videos, video){
-        for(let i in videos){
-            if(videos[i]._id === video._id){
+    contains(video){
+        for(let i in this.videos){
+            if(this.videos[i]._id === video._id){
                 return i;
             }
         }
@@ -26,19 +27,24 @@ class WatchLater{
     }
 
     add(video){
-        let videos = this.get();
-        if(this.contains(videos, video)<0){
-            videos.unshift(video);
-            this.set(videos);
+        this.videos = this.get();
+        if(this.contains(video)<0){
+            delete video._links;
+            delete video.fps;
+            delete video.resolutions;
+            delete video.preview;
+            video.thumbnails = [video.thumbnails[0]];
+            this.videos.unshift(video);
+            this.set();
         }
     }
 
     remove(video){
-        let videos = this.get();
-        let index = this.contains(videos, video);
+        this.videos = this.get();
+        let index = this.contains(video);
         if(index >= 0){
-            videos.splice(index, 1);
-            this.set(videos);
+            this.videos.splice(index, 1);
+            this.set();
         }
     }
 }

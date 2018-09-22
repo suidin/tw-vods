@@ -1,7 +1,7 @@
 export const settings = {
     DEBUG: true,
     clientId: "",
-    altPlayerExtId: "bhplkbgoehhhddaoolmakpocnenplmhf",
+    mode: "video",
     hlsConfig: {
         "maxMaxBufferLength": 180
     }
