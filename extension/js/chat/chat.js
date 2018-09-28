@@ -247,16 +247,12 @@ class LiveParser{
 class LiveChat{
     constructor(channel){
         this.channel = channel;
-        this.messages = new FixedSizeArray(128);
         this.parser = new LiveParser();
     }
 
-    start(){
+    start(onMsg){
+        this.onMsg = onMsg;
         this.connect();
-    }
-
-    getNext(){
-        
     }
 
     connect(){
@@ -281,7 +277,7 @@ class LiveChat{
     process(msg){
         let data = this.parser.parse(msg);
         if(data){
-            this.messages.push(data);
+            this.onMsg(data);
         }
     }
 }

@@ -399,6 +399,17 @@ class Uitility{
         }
         return "?" + arr.join("&");
     }
+
+    isElementInViewport(el) {
+        let rect = el.getBoundingClientRect();
+
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight) &&
+            rect.right <= (window.innerWidth)
+        );
+    }
 }
 const utils = new Uitility();
 export {utils, FixedSizeArray};

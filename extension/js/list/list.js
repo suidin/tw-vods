@@ -273,7 +273,9 @@ class Ui{
             cont.classList.add("animated");
         }
         selected.querySelector(".ext-player-link").focus();
-        selected.scrollIntoView();
+        if(!utils.isElementInViewport(selected)){
+            selected.scrollIntoView();
+        }
     }
 
     loadParams(){

@@ -148,6 +148,9 @@ class ChatInterface{
         }
 
         this.removeOldLines()
+        if(this.autoScroll){
+            this.scrollToBottom();
+        }
         this.addingMsgs = false;
     }
 
@@ -178,9 +181,6 @@ class ChatInterface{
                 elems[0].remove();
                 i++;
             }
-        }
-        if(this.autoScroll){
-            this.scrollToBottom();
         }
     }
 
@@ -316,21 +316,21 @@ class LiveChatInterface extends ChatInterface{
     }
 
     start(channel, channelId){
-        this.chat.start();
+        this.chat.start(this.onMsg.bind(this));
         this.getSubBadge(channelId);
         this.emotes.loadEmoteData(channel);
     }
 
-    addNewMsgs(time){
-        this.addingMsgs = true;
-        let msg = this.chat.messages.get(0);
-        while (msg !== undefined){
-            this.addMsg(msg);
-            msg = this.chat.messages.shift();
+    onMsg(msg){
+        this.messageCounter++;
+        if(this.messageCounter>200){
+            this.messageCounter = 0;
+            this.removeOldLines();
         }
-
-        this.removeOldLines()
-        this.addingMsgs = false;
+        this.addMsg(msg);
+        if(this.autoScroll){
+            this.scrollToBottom();
+        }
     }
 
     getBadgeElems(badges){
@@ -344,12 +344,6 @@ class LiveChatInterface extends ChatInterface{
             return `<span class="user-badges">${elems.join("")}</span>`;
         }
         return "";
-    }
-
-    iterate(){
-        if(this.addingMsgs || this.seeking)return;
-        this.addNewMsgs();
-        this.chat.getNext();
     }
 }
 

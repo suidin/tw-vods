@@ -156,7 +156,6 @@ class Ui{
             this.chatInterface.iterate(secs);
 
         }
-        this.chatInterface.iterate();
     }
 }
 
