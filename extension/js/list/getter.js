@@ -13,6 +13,7 @@ class Api{
 
     fetchLiveChannels(limit=25, offset=0, language="en", game=""){
         let url = `https://api.twitch.tv/kraken/streams/?limit=${limit}&offset=${offset}&language=${language}&game=${game}`;
+        // let url = `https://api.twitch.tv/kraken/streams/?limit=${limit}&offset=${offset}&game=${game}`;
         return utils.getRequestPromise(url, {then:"json", headers:{}});
     }
 }
@@ -60,7 +61,8 @@ class LiveStreamsGetter{
         this.api = new Api();
         this.perPage = perPage;
         this.page = page;
-        this.game = game;
+        this.game = encodeURIComponent(game);
+        this.language = language;
         this.fetching = false;
     }
 

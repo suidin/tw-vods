@@ -9,7 +9,7 @@ a{
     color: white;
 }
 a:visited{
-    color: #a8d0c2;
+    color: inherit;
 }
 
 .top-links{
@@ -17,12 +17,13 @@ a:visited{
     display: flex;
     flex-wrap: wrap;
     cursor: pointer;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-content: center;
     margin-bottom: 1em;
+    margin-top: 5px;
 }
-.top-links>*{
-    margin: 2px 7px;
+.top-link{
+    margin: 0px 7px;
 }
 .results .list{
     display: flex;
@@ -63,6 +64,9 @@ a:visited{
     text-overflow: ellipsis;
     overflow: hidden;
 }
+.video-card__game a {
+    color: white;
+}
 .video-card__overlay{
     position: absolute;
     background-color: rgba(0,0,0,.6);
@@ -77,6 +81,20 @@ a:visited{
 .video-card__overlay.video-viewers{
     top:176px;
     left: 20px;
+}
+.video-card__overlay.video-wl{
+    top: 17px;
+    left: 16px;
+    background:none;
+    cursor:pointer;
+    display: none;
+}
+.video-card:hover .video-card__overlay.video-wl{
+    display: block;
+}
+.video-card__overlay.video-wl img{
+    width: 25px;    
+    height: 25px;
 }
 .video-card__viewers a{
     float: right;
@@ -139,6 +157,10 @@ input{
     border-radius: 3px;
 }
 .pre-results .link-list .link-list__link{
+    color: #a8d0c2;
+}
+.pre-results .link-list .link-list__link--live{
+    color: #a8d0c2;
 }
 .pre-results .link-list .link-list__remove{
     color: #a01a1a;
@@ -247,6 +269,7 @@ dialog input{
 
 .pagination-pages{
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     color: white;
     margin-top: 10px;

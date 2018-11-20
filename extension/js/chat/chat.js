@@ -2,11 +2,10 @@ import {settings} from '../settings.js';
 import {utils, FixedSizeArray} from '../utils/utils.js';
 
 
-class Chat{
+class ReChat{
     constructor(vid){
         this.vid = vid;
         this.next = 0;
-        this.maxMessages = 200;
         this.maxChunkBuffer = 80;
         this.chunkBuffer = new Map();
         this.chunkTimes = new Map();
@@ -36,9 +35,12 @@ class Chat{
         if (!(comments && comments[0])){
             return;
         }
-        let index, comment, message;
-        for (index in comments){
-            comment = comments[index];
+        let index = 0;
+        let comment, message;
+        for (comment of comments){
+            if(comment.source !== "chat"){
+                continue;
+            }
             message = {
                 "fragments": comment["message"]["fragments"],
                 "from": comment["commenter"]["display_name"],
@@ -47,7 +49,9 @@ class Chat{
                 "badges": comment["message"]["user_badges"]
             };
             comments[index] = message;
+            index++;
         }
+        comments = comments.slice(0, index);
         this.messages.push(...comments);
 
 
@@ -158,5 +162,128 @@ class Chat{
 }
 
 
+class LiveParser{
+    constructor(){
+        const msgFormat = "@badges=subscriber/0,premium/1;color=;display-name=mcnuta;emotes=;flags=;id=343ff700-03ae-4651-9b47-114a1403a333;mod=0;room-id=36769016;subscriber=1;tmi-sent-ts=1537499122964;turbo=0;user-id=258270338;user-type= :mcnuta!mcnuta@mcnuta.tmi.twitch.tv PRIVMSG #timthetatman :Pog";
+        this.order = ["badges", "color", "display-name", "emotes", "flags", "id", "mod", "room-id", "subscriber", "tmi-sent-ts", "turbo", "user-id", "user-type"];
+        const sepStr = "=(.*?);.*?";
+        this.regex = new RegExp("@" + this.order.join(sepStr) + "=(.*?) :.*?:(.*)");
+    }
 
-export {Chat};
+    parse(string){
+        let match = string.match(this.regex);
+        if(!match || !match.length){return false;}
+        let i, key, val;
+        let data = {};
+        for(i=1;i<match.length;i++){
+            key = this.order[i-1] || "text";
+            val = match[i];
+            data[key] = val;
+        }
+
+        data = this.convert(data);
+        return data;
+    }
+
+    convert(data){
+        let converted = {};
+        // converted["text"] = data.["text"];
+        converted["from"] = data["display-name"];
+
+        let badges = [];
+        let badgesString = data["badges"];
+        let arr = badgesString.split(",");
+        for(let item of arr){
+            if(!item.length){continue;}
+            let [name, val] = item.split("/");
+            // TODO: do something with val here:
+            val = parseInt(val);
+            badges.push(name);
+        }
+        converted["badges"] = badges;
+
+        converted["color"] = data["color"];
+
+        //"185316:0-6,16-22,32-38,48-54,64-70/1360600:8-14,24-30,40-46,56-62,72-78"
+        let emotesString = data["emotes"];
+        let emotes = [];
+        arr = emotesString.split("/");
+        let emote, id, position, positions;
+        for(emote of arr){
+            if(!emote.length){continue;}
+            [id, positions] = emote.split(":");
+            positions = positions.split(",");
+            for(position of positions){
+                let [begin, end] = position.split("-").map(i => parseInt(i));
+                emotes.push({"id": id, "begin": begin, "end": end});
+            }
+        }
+        emotes.sort((a,b)=>{
+            return a.begin - b.begin;
+        });
+
+        converted.fragments = this.buildFragments(data["text"], emotes);
+        return converted;
+    }
+
+    buildFragments(msg, emotes){
+        let fragments = [];
+        let previousPosition = 0;
+        let emote, between, emoteName, id, position;
+        for(emote of emotes){
+            id = emote.id;
+            between = msg.substring(previousPosition, emote.begin);
+            emoteName = msg.substring(emote.begin, emote.end+1);
+            if(between.length){
+                fragments.push({"text": between});
+            }
+            fragments.push({"text": emoteName, "emoticon": {"emoticon_id": id}});
+            previousPosition = emote.end+1;
+        }
+        if(previousPosition<msg.length){
+            fragments.push({"text": msg.substring(previousPosition, msg.length)});
+        }
+        return fragments;
+    }
+}
+
+
+class LiveChat{
+    constructor(channel){
+        this.channel = channel;
+        this.parser = new LiveParser();
+    }
+
+    start(onMsg){
+        this.onMsg = onMsg;
+        this.connect();
+    }
+
+    connect(){
+        const wsAddress = "wss://irc-ws.chat.twitch.tv/";
+        let c = new WebSocket(wsAddress);
+        c.onmessage = e=>{
+            // console.log(e);
+            this.process(e.data);
+        }
+        setTimeout(()=>{
+            // anon credens:
+            let nick = "justinfan" + Math.floor(8e4*Math.random()+1e3);
+            c.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
+            c.send("PASS SCHMOOPIIE");
+            c.send(`NICK ${nick}`);
+            c.send(`USER ${nick} 8 * :${nick}`);
+
+            c.send("JOIN #"+this.channel);
+        }, 1500);
+    }
+
+    process(msg){
+        let data = this.parser.parse(msg);
+        if(data){
+            this.onMsg(data);
+        }
+    }
+}
+
+export {ReChat, LiveChat};

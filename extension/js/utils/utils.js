@@ -39,7 +39,7 @@ class FixedSizeArray{
     }
 
     i(i){
-        return (this.startIndex + i) % this.length;
+        return (this.length + this.startIndex + i) % this.length;
     }
 
     reset(){
@@ -53,7 +53,7 @@ class FixedSizeArray{
     }
 
     advanceStart(){
-        this.startIndex = (this.startIndex + 1) % this.length;
+        this.startIndex = this.i(1);
         this.entries--;
     }
 
@@ -72,7 +72,7 @@ class FixedSizeArray{
 
     revertShift(){
         if(this.length - this.entries){
-            this.startIndex = (this.startIndex - 1) % this.length;
+            this.startIndex = this.i(-1);
             this.entries++;
             return true;
         }
@@ -137,7 +137,7 @@ class Uitility{
                 returnMsg = "successfully imported follows";
             }
             else{
-                returnMsg = "could not import settings";
+                returnMsg = "could not import follows";
             }
             setTimeout(e=>{
                 this.dialog.alert(returnMsg);
@@ -352,6 +352,12 @@ class Uitility{
         if(secs > week){
             return `${monthShortNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
         }
+        return this.secsToReadable(secs, "d") + " ago";
+    }
+
+    twTimeStrToTimePassed(str){
+        let date = this.twTimeStrToDate(str);
+        let secs = this.getSecsFromDate(date);
         return this.secsToReadable(secs, "d");
     }
 
@@ -376,21 +382,33 @@ class Uitility{
         getStr
         .substr(1)
         .split("&")
-        .forEach(function (item) {
+        .forEach((item) => {
             [key, val] = item.split("=");
-            obj[key] = val;
+            obj[key] = decodeURIComponent(val);
         });
         return obj;
     }
 
+
     objToGetStr(obj){
         let arr = [];
-        let key, val;      
+        let key, val;
         for(key in obj){
-            val = obj[key];
+            val = encodeURIComponent(obj[key]);
             arr.push(`${key}=${val}`);
         }
         return "?" + arr.join("&");
+    }
+
+    isElementInViewport(el) {
+        let rect = el.getBoundingClientRect();
+
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight) &&
+            rect.right <= (window.innerWidth)
+        );
     }
 }
 const utils = new Uitility();

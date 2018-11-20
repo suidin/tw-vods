@@ -70,6 +70,9 @@ body{
     flex: 0 1 auto;
     max-width: 100%;
 }
+.app.live .player-interface .player-time{
+    display:none;
+}
 .player-interface .player-time-display{
     line-height: 1.4em;
     margin: 0 .5em;

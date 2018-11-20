@@ -1,14 +1,27 @@
 import {VideosGetter, LiveStreamsGetter} from './getter.js';
+import {WatchLater} from './watchlater.js';
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
 
 
+const watchLater = new WatchLater();
 
 class Videos{
-    constructor(params){
-        this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
+    constructor(params, wl=false){
         this.resumePositions = utils.storage.getItem("resumePositions");
+        if(wl){
+            this.loadWatchLater();
+        }
+        else{
+            this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
+        }
+    }
+
+    loadWatchLater(){
+        this.drawingWatchLaterList = true;
+        this.processVideos(watchLater.get());
+        this.drawingWatchLaterList = false;
     }
 
     load(pageNr){
@@ -39,22 +52,45 @@ class Videos{
 
     createVideoCard(video){
         let length = utils.secsToReadable(video.length);
+        if(this.drawingWatchLaterList && video.status === "recording"){
+            length = ">"+length;
+        }
         let game = video.game;
-        let title = video.title;
+        let title = utils.escape(video.title);
         let url = video.url;
         let date = video.recorded_at;
-        let when = utils.twTimeStrToReadable(date) + " ago";
+        let when = utils.twTimeStrToReadable(date);
         let id = video["_id"].substr(1);
         let resumePos = this.resumePositions[id] || 0;
         let resumeBarWidth = (resumePos / video.length) * 100;
+        let playerUrl = "player.html";
+        let displayName = video.channel.display_name;
+        let nameElem = this.drawingWatchLaterList ? `<a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a>`: "";
         let lengthElem = `<div class="video-card__overlay video-length">${length}</div>`;
+        let watchLaterIcon;
+        let watchLaterTitle;
+        if(this.drawingWatchLaterList){
+            watchLaterIcon = "remove-icon.png";
+            watchLaterTitle = "Remove from Watch Later";
+        }
+        else{
+            if(watchLater.contains(video)>=0){
+                watchLaterIcon = "added-icon.png";
+                watchLaterTitle = "Already in Watch Later";
+            }
+            else{
+                watchLaterIcon = "add-icon.png";
+                watchLaterTitle = "Add to Watch Later";
+            }
+        }
+        let watchLaterOverlay = `<div class="video-card__overlay video-wl"><img title="${watchLaterTitle}" src="/resources/icons/${watchLaterIcon}"></div>`;
         let gameElem = this.makeInfoElem("Game", game);
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${url}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${lengthElem}</a>`;
-        let timePassedElem = `<div class="video-card__date">${when}</div>`;
+        let timePassedElem = `<div class="video-card__date">${when} ${nameElem}</div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
-        elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}`;
+        elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}${watchLaterOverlay}`;
 
         return elem;
     }
@@ -109,6 +145,19 @@ class Videos{
 
     addVideo(video){
         let card = this.createVideoCard(video);
+        // card.video = video;
+        let wl = this.drawingWatchLaterList;
+        let wlButton = card.querySelector(".video-card__overlay.video-wl");
+        wlButton.addEventListener("click", e=>{
+            if(wl){
+                watchLater.remove(video);
+                card.remove();
+            }
+            else{
+                watchLater.add(video);
+                wlButton.querySelector("img").src = "/resources/icons/added-icon.png";
+            }
+        });
         this.prepareThumb(video, card);
         elements.resultList.appendChild(card);
     }
@@ -123,8 +172,30 @@ class Videos{
 
 
 class Streams{
-    constructor(params){
-        this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
+    constructor(params, nonlisted=false){
+        if(nonlisted){
+            this.nonlisted = true;
+            this.loadnonlisted();
+        }
+        else{
+            this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
+        }
+
+    }
+
+    loadnonlisted(){
+        this.getter = new LiveStreamsGetter(100, 1, "", "en");
+        let tryPages = 50;
+        let delay = 5000;
+        let fn = p=>{
+            if(p<=tryPages && !this.noresults){
+                this.load(p);
+                setTimeout(()=>{
+                    fn(p+1);
+                }, delay);
+            }
+        };
+        fn(1);
     }
 
     load(pageNr){
@@ -133,11 +204,26 @@ class Streams{
         }
         return this.getter.get().then(streams=>{
             if(streams && streams.length){
+                let s = [];
+                if(this.nonlisted){
+                    let i;
+                    for(i of streams){
+                        if(!i.game){
+                            s.push(i);
+                        }
+                    }
+                    streams = s;
+                    if(!streams.length){
+                        return false;
+                    }
+                }
+
                 this.currentStreamsData = streams;
                 this.processStreams(streams);
                 return true;
             }
             else{
+                this.noresults = true;
                 return false;
             }
         });
@@ -149,10 +235,10 @@ class Streams{
     }
 
     createStreamCard(stream){
-        let uptime = utils.twTimeStrToReadable(stream.created_at);
+        let uptime = utils.twTimeStrToTimePassed(stream.created_at);
         let game = stream.game;
         let thumb = stream.preview["medium"];
-        let title = stream["channel"]["status"];
+        let title = utils.escape(stream["channel"]["status"]);
         let url = stream["channel"]["url"];
         let viewers = stream["viewers"].toString();
         if(viewers.length > 3){
@@ -161,14 +247,15 @@ class Streams{
         let channel = stream["channel"]["name"];
         let displayName = stream["channel"]["display_name"];
         let logoUrl = stream["channel"]["logo"];
-        let playerUrl = settings.altPlayerExtId && settings.altPlayerExtId.length ? `chrome-extension://${settings.altPlayerExtId}/player.html?channel=${channel}` : url;
+        logoUrl = logoUrl.replace("300x300", "50x50");
+        let playerUrl = `player.html?channel=${channel}&channelID=${stream["channel"]["_id"]}`;
         let logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
         let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
         let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
-        let gameElem = `<div class="video-card__game">${game}</div>`;
+        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}" /></div></div>${viewersElem}${lengthElem}</a>`;
-        let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a></div>`;
+        let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${displayName}</a></div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
         elem.innerHTML = `${thumbElem}${logoElem}${titleElem}${nameElem}${gameElem}`;

@@ -27,7 +27,7 @@ class Channels{
     makeChannelLink(channel){
         let channelElem = document.createElement("div");
         channelElem.className = "link-list__item " + channel;
-        channelElem.innerHTML = `<a href="?channel=${channel}" class="link-list__link">${channel}</a><span class="link-list__remove"> X</span>`;
+        channelElem.innerHTML = `<a href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}" class="link-list__link">${channel}</a><span class="link-list__remove"> X</span>`;
         return channelElem;
     }
 
@@ -106,6 +106,15 @@ class Ui{
             });
         });
 
+        elements.wlButton.addEventListener("click", e=>{
+            e.preventDefault();
+            this.loadWatchLater();
+        });
+
+        elements.nlButton.addEventListener("click", e=>{
+            e.preventDefault();
+            this.loadNonlisted();
+        });
 
         elements.exportButton.addEventListener("click", e=>{
             e.preventDefault();
@@ -122,6 +131,7 @@ class Ui{
             this.load(params, true);
         });
         elements.optionsType.addEventListener("input", e=>{
+            elements.optionsPage.value = 1;
             this.updateFormElements();
         });
         this.updateFormElements();
@@ -184,6 +194,24 @@ class Ui{
         });
     }
 
+    loadWatchLater(){
+        this.clean();
+        this.media = new Videos(null, true);
+        elements.channelTitleChannel.textContent = "Watch Later";
+        elements.channelTitleInfo.textContent = "";
+        history.replaceState("watchlater", "twitch-list | Watch Later", "?type=watchlater");
+        document.title = "Watch Later";
+    }
+
+    loadNonlisted(){
+        this.clean();
+        this.media = new Streams(null, true);
+        elements.channelTitleChannel.textContent = "Fetching nonlisted Streams";
+        elements.channelTitleInfo.textContent = "this can take some time...";
+        history.replaceState("nonlisted", "twitch-list | Nonlisted Streams", "?type=nonlisted");
+        document.title = "Nonlisted Streams";
+    }
+
     updateFormElements(){
         let type = elements.optionsType.options[elements.optionsType.selectedIndex].value;
         let hideElems, showElems;
@@ -214,7 +242,7 @@ class Ui{
             "page": page
         };
         if(this.media.getter.type === "live"){
-            params["game"] = this.media.getter.game;
+            params["game"] = decodeURIComponent(this.media.getter.game);
         }
         else{
             params["channel"] = this.media.getter.channel;
@@ -258,7 +286,9 @@ class Ui{
             cont.classList.add("animated");
         }
         selected.querySelector(".ext-player-link").focus();
-        selected.scrollIntoView();
+        if(!utils.isElementInViewport(selected)){
+            selected.scrollIntoView();
+        }
     }
 
     loadParams(){
@@ -280,13 +310,21 @@ class Ui{
     loadFromGET(){
         let params = utils.getStrToObj();
         let type = params["type"] || defaultParams["type"];
+        if(type === "watchlater"){
+            this.loadWatchLater();
+            return true;
+        }
+        if(type === "nonlisted"){
+        	this.loadNonlisted();
+        	return true;
+        }
         if(params){
             params["perPage"] = parseInt(params["perPage"]) || defaultParams["perPage"];
             params["page"] = parseInt(params["page"]) || defaultParams["page"];
             if(type === "live"){
                 params["game"] = params["game"] || defaultParams["game"];
             }
-            else{                
+            else{
                 params["type"] = type;
             }
             this.updateOptionsElem(params);
@@ -331,13 +369,13 @@ class Ui{
                 elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
             }
             else{
-                let game = this.media.getter.game;
+                let game = decodeURIComponent(this.media.getter.game);
                 let text = "Live Channels";
-                if(game.length){
-                    text += ` for game: ${game}`;
-                }
+                document.title = "Live Channels";
                 elements.channelTitleChannel.textContent = text;
-                elements.channelTitleInfo.textContent = "";
+                if(game.length){
+                    elements.channelTitleInfo.textContent = game;
+                }
             }
         }
         else{
@@ -347,7 +385,7 @@ class Ui{
             }
             else{
                 elements.channelTitleChannel.textContent = `<No Live Channels could be found>`;
-                elements.channelTitleInfo.textContent = "";
+                elements.channelTitleInfo.textContent = "page number probably too high";
             }
         }
     }
@@ -381,7 +419,7 @@ class Ui{
                 this.updateResultsTitle(success, true);
             }
             else{
-                this.updateResultsTitle(success, false);
+                this.updateResultsTitle(params.channel, false);
             }
             this.replaceState(params);
             this.loading = false;

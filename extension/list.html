@@ -1,7 +1,7 @@
 <head>
     <title>Video List</title>
     <script src="js/external/awesomplete.min.js"></script>
-    
+
     <script type=module src="js/list/entry.js"></script>
     <link rel="stylesheet" type="text/css" href="awesomplete.css">
     <link rel="stylesheet" type="text/css" href="list.css">
@@ -13,14 +13,20 @@
     <main>
         <section class="interface">
             <div class="top-links">
-                <a class="home-button" href="list.html" target="_blank">
-                    New Tab
-                </a>
-                <span class="client-id-button">Set Client ID</span>
-                <span class="import-follows-button">Import Follows</span>
+                <div class="top-links-left">
+                    <span class="top-link watch-later-button">Watch Later</span>
+                    <span class="top-link nonlisted-button">Nonlisted</span>
+                </div>
+                <div class="top-links-right">
+                    <a class="top-link home-button" href="list.html" target="_blank">
+                        New Tab
+                    </a>
+                    <span class="top-link client-id-button">Set Client ID</span>
+                    <span class="top-link import-follows-button">Import Follows</span>
 
-                <span class="import-button">Import Settings</span>
-                <span class="export-button">Export Settings</span>
+                    <span class="top-link import-button">Import Settings</span>
+                    <span class="top-link export-button">Export Settings</span>
+                </div>
             </div>
             <form>
                 <div class="form-head">
@@ -59,7 +65,7 @@
 
             </div>
 
-            
+
         </section>
 
         <section class="results">
