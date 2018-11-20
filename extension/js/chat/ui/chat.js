@@ -322,11 +322,7 @@ class LiveChatInterface extends ChatInterface{
     }
 
     onMsg(msg){
-        this.messageCounter++;
-        if(this.messageCounter>200){
-            this.messageCounter = 0;
-            this.removeOldLines();
-        }
+        this.removeOldLines();
         this.addMsg(msg);
         if(this.autoScroll){
             this.scrollToBottom();
