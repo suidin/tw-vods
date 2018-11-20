@@ -61,7 +61,8 @@ class LiveStreamsGetter{
         this.api = new Api();
         this.perPage = perPage;
         this.page = page;
-        this.game = game;
+        this.game = encodeURIComponent(game);
+        this.language = language;
         this.fetching = false;
     }
 

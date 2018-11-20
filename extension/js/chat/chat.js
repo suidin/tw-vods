@@ -35,10 +35,12 @@ class ReChat{
         if (!(comments && comments[0])){
             return;
         }
-        let index, comment, message;
-        for (index in comments){
-            comment = comments[index];
-            // if(comment.source !== "chat"){continue;}
+        let index = 0;
+        let comment, message;
+        for (comment of comments){
+            if(comment.source !== "chat"){
+                continue;
+            }
             message = {
                 "fragments": comment["message"]["fragments"],
                 "from": comment["commenter"]["display_name"],
@@ -47,7 +49,9 @@ class ReChat{
                 "badges": comment["message"]["user_badges"]
             };
             comments[index] = message;
+            index++;
         }
+        comments = comments.slice(0, index);
         this.messages.push(...comments);
 
 
@@ -269,7 +273,7 @@ class LiveChat{
             c.send("PASS SCHMOOPIIE");
             c.send(`NICK ${nick}`);
             c.send(`USER ${nick} 8 * :${nick}`);
-            
+
             c.send("JOIN #"+this.channel);
         }, 1500);
     }

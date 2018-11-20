@@ -56,7 +56,7 @@ class Videos{
             length = ">"+length;
         }
         let game = video.game;
-        let title = video.title;
+        let title = utils.escape(video.title);
         let url = video.url;
         let date = video.recorded_at;
         let when = utils.twTimeStrToReadable(date);
@@ -172,8 +172,30 @@ class Videos{
 
 
 class Streams{
-    constructor(params){
-        this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
+    constructor(params, nonlisted=false){
+        if(nonlisted){
+            this.nonlisted = true;
+            this.loadnonlisted();
+        }
+        else{
+            this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
+        }
+
+    }
+
+    loadnonlisted(){
+        this.getter = new LiveStreamsGetter(100, 1, "", "en");
+        let tryPages = 50;
+        let delay = 5000;
+        let fn = p=>{
+            if(p<=tryPages && !this.noresults){
+                this.load(p);
+                setTimeout(()=>{
+                    fn(p+1);
+                }, delay);
+            }
+        };
+        fn(1);
     }
 
     load(pageNr){
@@ -182,11 +204,26 @@ class Streams{
         }
         return this.getter.get().then(streams=>{
             if(streams && streams.length){
+                let s = [];
+                if(this.nonlisted){
+                    let i;
+                    for(i of streams){
+                        if(!i.game){
+                            s.push(i);
+                        }
+                    }
+                    streams = s;
+                    if(!streams.length){
+                        return false;
+                    }
+                }
+
                 this.currentStreamsData = streams;
                 this.processStreams(streams);
                 return true;
             }
             else{
+                this.noresults = true;
                 return false;
             }
         });
@@ -201,7 +238,7 @@ class Streams{
         let uptime = utils.twTimeStrToTimePassed(stream.created_at);
         let game = stream.game;
         let thumb = stream.preview["medium"];
-        let title = stream["channel"]["status"];
+        let title = utils.escape(stream["channel"]["status"]);
         let url = stream["channel"]["url"];
         let viewers = stream["viewers"].toString();
         if(viewers.length > 3){
@@ -210,11 +247,12 @@ class Streams{
         let channel = stream["channel"]["name"];
         let displayName = stream["channel"]["display_name"];
         let logoUrl = stream["channel"]["logo"];
+        logoUrl = logoUrl.replace("300x300", "50x50");
         let playerUrl = `player.html?channel=${channel}&channelID=${stream["channel"]["_id"]}`;
         let logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
         let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
         let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
-        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURI(game)}">${game}</a></div>`;
+        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}" /></div></div>${viewersElem}${lengthElem}</a>`;
         let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${displayName}</a></div>`;

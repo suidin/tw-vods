@@ -392,9 +392,9 @@ class Uitility{
 
     objToGetStr(obj){
         let arr = [];
-        let key, val;      
+        let key, val;
         for(key in obj){
-            val = obj[key];
+            val = encodeURIComponent(obj[key]);
             arr.push(`${key}=${val}`);
         }
         return "?" + arr.join("&");

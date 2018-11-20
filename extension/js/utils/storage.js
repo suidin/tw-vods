@@ -1,6 +1,6 @@
 class Storage{
     constructor(){
-        this.maxResumePositions = 300;
+        this.maxResumePositions = 900;
         this.defaultValues = {
             "resumePositions": {},
             "lastChatPos": {left:0,top:0},
@@ -8,7 +8,7 @@ class Storage{
             "lastSetQuality": "chunked",
             "watchlater": []
         }
-        
+
         this.cleanResumePositions();
     }
 
@@ -86,7 +86,7 @@ class Storage{
     getResumePoint(vid){
         let resumePositions = this.getItem("resumePositions");
         return resumePositions && resumePositions[vid];
-    }   
+    }
 
     setResumePoint(vid, secs){
         let resumePositions = this.getItem("resumePositions");

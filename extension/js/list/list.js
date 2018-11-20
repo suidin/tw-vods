@@ -111,6 +111,10 @@ class Ui{
             this.loadWatchLater();
         });
 
+        elements.nlButton.addEventListener("click", e=>{
+            e.preventDefault();
+            this.loadNonlisted();
+        });
 
         elements.exportButton.addEventListener("click", e=>{
             e.preventDefault();
@@ -199,6 +203,15 @@ class Ui{
         document.title = "Watch Later";
     }
 
+    loadNonlisted(){
+        this.clean();
+        this.media = new Streams(null, true);
+        elements.channelTitleChannel.textContent = "Fetching nonlisted Streams";
+        elements.channelTitleInfo.textContent = "this can take some time...";
+        history.replaceState("nonlisted", "twitch-list | Nonlisted Streams", "?type=nonlisted");
+        document.title = "Nonlisted Streams";
+    }
+
     updateFormElements(){
         let type = elements.optionsType.options[elements.optionsType.selectedIndex].value;
         let hideElems, showElems;
@@ -229,7 +242,7 @@ class Ui{
             "page": page
         };
         if(this.media.getter.type === "live"){
-            params["game"] = this.media.getter.game;
+            params["game"] = decodeURIComponent(this.media.getter.game);
         }
         else{
             params["channel"] = this.media.getter.channel;
@@ -301,13 +314,17 @@ class Ui{
             this.loadWatchLater();
             return true;
         }
+        if(type === "nonlisted"){
+        	this.loadNonlisted();
+        	return true;
+        }
         if(params){
             params["perPage"] = parseInt(params["perPage"]) || defaultParams["perPage"];
             params["page"] = parseInt(params["page"]) || defaultParams["page"];
             if(type === "live"){
                 params["game"] = params["game"] || defaultParams["game"];
             }
-            else{                
+            else{
                 params["type"] = type;
             }
             this.updateOptionsElem(params);
@@ -352,7 +369,7 @@ class Ui{
                 elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
             }
             else{
-                let game = this.media.getter.game;
+                let game = decodeURIComponent(this.media.getter.game);
                 let text = "Live Channels";
                 document.title = "Live Channels";
                 elements.channelTitleChannel.textContent = text;

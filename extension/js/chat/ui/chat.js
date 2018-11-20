@@ -119,7 +119,7 @@ class ChatInterface{
         let text = this.emotes.replaceWithEmotes(msg.fragments);
         let badges = "";
         if(msg.badges){
-            badges = this.getBadgeElems(msg.badges); 
+            badges = this.getBadgeElems(msg.badges);
         }
         elem.innerHTML = `${badges}<span style="color:${color};" class="from">${msg.from}: </span><span class="text">${text}</span>`;
         return elem;
