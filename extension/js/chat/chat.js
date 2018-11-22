@@ -263,8 +263,13 @@ class LiveChat{
         const wsAddress = "wss://irc-ws.chat.twitch.tv/";
         let c = new WebSocket(wsAddress);
         c.onmessage = e=>{
-            // console.log(e);
-            this.process(e.data);
+            // console.log(e.data);
+            if(e.data.startsWith("PING :tmi.twitch.tv")){
+                c.send("PONG");
+            }
+            else{
+                this.process(e.data);
+            }
         }
         setTimeout(()=>{
             // anon credens:

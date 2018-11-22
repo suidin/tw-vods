@@ -430,6 +430,11 @@ body{
 }
 .hover-preview-img{
 }
+.player-hover-arrow{
+    position: absolute;
+    left: 102px;
+    bottom: -15px;
+}
 .player-hover-time{
     padding-top: .2em;
     line-height: 1em;

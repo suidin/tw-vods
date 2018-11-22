@@ -60,8 +60,18 @@ class Slider extends Component{
 
         let left = sliderWidth - previewWidth/2;
         let barWidth = elements.slider.clientWidth;
-        if(left<0){left = 0;}
-        else if (left + previewWidth > barWidth){left = barWidth - previewWidth;}
+        if(left<0){
+            left = -9.5;
+            elements.timeHoverArrow.style.left = sliderWidth + "px";
+        }
+        else if (left + previewWidth > barWidth){
+            left = barWidth - previewWidth;
+            elements.timeHoverArrow.style.left = (sliderWidth - left - 15) + "px";
+            left = left + 4;
+        }
+        else{
+            elements.timeHoverArrow.style.left = previewWidth/2 - 10 + "px";
+        }
         elements.previewAndTime.style.left = left + "px";
     }
 

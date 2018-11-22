@@ -26,6 +26,7 @@ class Elements{
         this.previewAndTime = document.querySelector(".preview-and-time");
         this.hoverPreviewContainer = this.previewAndTime.querySelector(".hover-preview-container");
         this.hoverPreviewImg = this.hoverPreviewContainer.querySelector(".hover-preview-img");
+        this.timeHoverArrow = this.previewAndTime.querySelector(".player-hover-arrow");
     }
 }
 
