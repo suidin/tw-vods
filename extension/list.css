@@ -177,6 +177,12 @@ input{
     font-size: 20px;
     color:  #eaeaea;
 }
+.channel-currently-live-link{
+    color: #4abc4a;
+}
+.channel-currently-live-link:visited{
+    color: #4abc4a;
+}
 .video-card .thumb-container{
     position: relative;
     overflow: hidden;

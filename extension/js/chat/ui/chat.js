@@ -257,6 +257,7 @@ class ReChatInterface extends ChatInterface{
     }
 
     seek(secs, before){
+        if(this.addingMsgs || this.seeking)return;
         this.seeking = true;
         let syncTime = this.getSyncTime();
         let diff = secs - before;

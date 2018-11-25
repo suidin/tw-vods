@@ -15,6 +15,7 @@ class Ui{
         let channelID = utils.findGetParameter("channelID");
         if(vid){
             settings.mode = "video";
+            this.lastResumePoint = 0;
         }
         else if(channel){
             settings.mode = "live";
@@ -131,6 +132,7 @@ class Ui{
         this.components.slider.updateFromSecs(secs);
         this.chatInterface.seek(secs, this.player.timeBeforeSeek);
         this.updateResumePoint(secs);
+
     }
 
     setTotalTime(){
@@ -139,14 +141,17 @@ class Ui{
 
     updateCurrentTime(secs){
         elements.currentTime.textContent = utils.secsToHMS(secs);
-        if(!(Math.floor(secs) % 7)){
+        this.updateResumePoint(secs);
+        if(!(Math.floor(secs) & 15)){
             this.components.slider.updateFromSecs(secs);
-            this.updateResumePoint(secs);
         }
     }
 
     updateResumePoint(secs){
-        utils.storage.setResumePoint(this.player.video.vid, secs);
+        if(Math.abs(secs - this.lastResumePoint) > 7){
+            this.lastResumePoint = secs;
+            utils.storage.setResumePoint(this.player.video.vid, secs);
+        }
     }
 
     updateAll(){
