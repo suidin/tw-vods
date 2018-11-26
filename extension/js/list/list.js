@@ -366,13 +366,11 @@ class Ui{
                 let typeName = typeNames[this.media.getter.type];
                 document.title = channel + " " + typeName;
                 elements.channelTitleChannel.textContent = `${channel}`;
-                utils.userIdFromUsername(channel).then(id=>{
-                    let currentlyLive = "";
-                    if(this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
-                        currentlyLive = "channel-currently-live-link";
-                    }
-                    elements.channelTitleChannel.innerHTML = `<a class="${currentlyLive}" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
-                });
+                if(this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
+                    utils.userIdFromUsername(channel).then(id=>{
+                        elements.channelTitleChannel.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
+                    });
+                }
                 elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
             }
             else{
