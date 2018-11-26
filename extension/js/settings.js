@@ -5,6 +5,5 @@ export const settings = {
     hlsConfig: {
         "maxMaxBufferLength": 180,
         "liveSyncDurationCount": 2,
-        "liveMaxLatencyDurationCount": 3
     }
 };

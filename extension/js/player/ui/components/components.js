@@ -1,5 +1,6 @@
 import { elements } from '../elements.js';
 import { utils } from '../../../utils/utils.js';
+import { settings } from '../../../settings.js';
 
 
 
@@ -47,7 +48,13 @@ class Slider extends Component{
             percentage = this.percentageFromXpos(xPos);
             secs = this.secsFromPercentage(percentage);
         }
-        let hms = utils.secsToHMS(secs);
+        let hms;
+        if(settings.mode === "video"){
+            hms = utils.secsToHMS(secs);
+        }
+        else{
+            hms = "-" + utils.secsToHMS(this.player.getDuration() - secs);
+        }
 
         if(this.info){
             this.createPreviewImg(percentage);
@@ -134,7 +141,7 @@ class Slider extends Component{
 
     // tools:
     secsFromPercentage(percentage){
-        return Math.floor(this.player.duration * percentage);
+        return Math.floor(this.player.getDuration() * percentage);
     }
 
     widthFromPercentage(percentage){
@@ -149,7 +156,7 @@ class Slider extends Component{
         return xPos/width;
     }
     percentageFromSecs(secs){
-        return secs / this.player.duration;
+        return secs / this.player.getDuration();
     }
 
 

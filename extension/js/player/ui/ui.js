@@ -64,7 +64,7 @@ class Ui{
 
     handlers(){
         this.player.onseeking = (e)=>{
-            let secs = this.player.currentTime;
+            let secs = this.player.getCurrentTime();
             this.seek(secs);
         }
         let component;
@@ -92,7 +92,6 @@ class Ui{
                 this.uiInitialized = true;
             }
             this.components.qualityOptions.initOnLevelChange();
-            this.components.slider.initOnBufferAppended();
         });
         this.chatInterface.queueStart(channel.toLowerCase(), channelID);
 
@@ -140,8 +139,10 @@ class Ui{
     }
 
     updateCurrentTime(secs){
-        elements.currentTime.textContent = utils.secsToHMS(secs);
-        this.updateResumePoint(secs);
+        if(settings.mode === "video"){
+            elements.currentTime.textContent = utils.secsToHMS(secs);
+            this.updateResumePoint(secs);
+        }
         if(!(Math.floor(secs) & 7)){
             this.components.slider.updateFromSecs(secs);
         }
@@ -156,12 +157,11 @@ class Ui{
     }
 
     updateAll(){
-        let secs = this.player.currentTime;
-        this.updateCurrentTime(secs);
-        this.chatInterface.iterate(secs);
-        if(settings.mode === "live"){
-            this.setTotalTime(utils.secsToHMS(this.player.duration));
+        let secs = this.player.getCurrentTime();
+        if(settings.mode === "video"){        
+            this.chatInterface.iterate(secs);
         }
+        this.updateCurrentTime(secs);
     }
 }
 

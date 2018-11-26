@@ -13,9 +13,9 @@ class KeyBindings{
     }
 
     seekVideo(seconds){
-        let newTime = this.player.currentTime + seconds;
+        let newTime = this.player.getCurrentTime() + seconds;
         if(newTime<0){newTime=0;}
-        if(newTime>=this.player.duration){newTime=this.player.duration-1;}
+        if(newTime>=this.player.getDuration()){newTime=this.player.getDuration()-1;}
         this.player.seek(newTime);
     }
 

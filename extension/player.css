@@ -83,8 +83,14 @@ body{
 .player-time-display .player-current-time{
     float: left;
 }
+.app.live .player-time-display .player-current-time{
+    display: none;
+}
 .player-time-display .player-total-time{
     float: right;
+}
+.app.live .player-time-display .player-total-time{
+    display: none;
 }
 
 .player-interface .player-time-slider{
