@@ -1,4 +1,5 @@
 import {utils} from '../../utils/utils.js';
+import {settings} from '../../settings.js';
 
 
 const options = [
@@ -52,6 +53,7 @@ const options = [
         "label": "Sync Time",
         "type": "number",
         "dontStore": true,
+        "mode": "video",
         "min": -99,
         "max": 999,
         "default": 0,
@@ -156,6 +158,7 @@ class ChatOptions{
     makeOptions(){
         let thisoptions = {}, optionDef, option;
         for(optionDef of options){
+            if(optionDef.mode && optionDef.mode !== settings.mode)continue;
             option = new ChatOption(optionDef);
             thisoptions[option.name] = option;
         }

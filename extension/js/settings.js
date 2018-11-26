@@ -4,7 +4,7 @@ export const settings = {
     mode: "video",
     hlsConfig: {
         "maxMaxBufferLength": 180,
-        "liveSyncDurationCount": 3,
-        "liveMaxLatencyDurationCount": 4
+        "liveSyncDurationCount": 2,
+        "liveMaxLatencyDurationCount": 3
     }
 };

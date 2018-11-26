@@ -19,7 +19,7 @@ class Ui{
         }
         else if(channel){
             settings.mode = "live";
-            // elements.app.classList.add("live");
+            elements.app.classList.add("live");
         }
         this.player = getPlayer(elements.video);
         // components
