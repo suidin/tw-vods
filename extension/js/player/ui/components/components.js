@@ -134,7 +134,7 @@ class Slider extends Component{
 
     // tools:
     secsFromPercentage(percentage){
-        return Math.floor(this.player.video.lengthInSecs * percentage);
+        return Math.floor(this.player.duration * percentage);
     }
 
     widthFromPercentage(percentage){
@@ -149,7 +149,7 @@ class Slider extends Component{
         return xPos/width;
     }
     percentageFromSecs(secs){
-        return secs / this.player.video.lengthInSecs;
+        return secs / this.player.duration;
     }
 
 

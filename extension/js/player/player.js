@@ -13,10 +13,6 @@ function getPlayer(vElem){
                 vElem.volume = vElem.video.config.volume;
             });
         }
-        vElem.seek = (secs)=>{
-            vElem.timeBeforeSeek = vElem.currentTime;
-            vElem.currentTime = secs;
-        }
     }
     else if(settings.mode === "live"){
         vElem.start = (channel)=>{
@@ -25,6 +21,10 @@ function getPlayer(vElem){
                 vElem.volume = vElem.video.config.volume;
             });
         }
+    }
+    vElem.seek = (secs)=>{
+        vElem.timeBeforeSeek = vElem.currentTime;
+        vElem.currentTime = secs;
     }
     return vElem;
 }

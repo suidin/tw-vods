@@ -366,7 +366,7 @@ class Ui{
                 let typeName = typeNames[this.media.getter.type];
                 document.title = channel + " " + typeName;
                 elements.channelTitleChannel.textContent = `${channel}`;
-                if(this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
+                if(this.media.currentVideoData && this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
                     utils.userIdFromUsername(channel).then(id=>{
                         elements.channelTitleChannel.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
                     });

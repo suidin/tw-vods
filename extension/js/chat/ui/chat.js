@@ -342,6 +342,10 @@ class LiveChatInterface extends ChatInterface{
         }
         return "";
     }
+
+    iterate(){
+        // this is just a placeholder until chat rewind in live broadcast is implemented
+    }
 }
 
 
