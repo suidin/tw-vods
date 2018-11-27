@@ -153,7 +153,6 @@ class Video{
             let urlTemplate = infoUrl.split("/");
             urlTemplate.pop();
             q.urlTemplate = urlTemplate.join("/") + "/";
-            utils.log(q);
             return q;
         });
         this.hoverThumbsInfoLoaded = promise;

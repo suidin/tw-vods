@@ -67,6 +67,16 @@ class Ui{
             let secs = this.player.getCurrentTime();
             this.seek(secs);
         }
+        if(settings.mode === "video"){
+            this.player.ondurationchange = (e)=>{
+                this.setCurrentTotalTime();
+            };
+        }
+        let onplayermetaloaded = ()=>{
+            this.components.slider.drawMutedSegments();
+            this.player.removeEventListener("loadedmetadata", onplayermetaloaded);
+        }
+        this.player.addEventListener("loadedmetadata", onplayermetaloaded);
         let component;
         for(component in this.components){
             if(!this.components[component]){continue;}
@@ -82,16 +92,18 @@ class Ui{
             this.videoRecordingAppendInterval = setInterval(()=>{
                 this.player.video.stream.hls.levelController.loadLevel();
             }, 5*60*1000);
-
+            let stillRecordingCount = 3;
             let durationThen = this.player.getDuration();
             let onLL = (e, data)=>{
                 let durationNow = this.player.getDuration();
                 if(durationThen === durationNow){
-                    this.player.video.stream.hls.off(Hls.Events.LEVEL_LOADED, onLL);
-                    clearInterval(this.videoRecordingAppendInterval);
+                    if(!(--stillRecordingCount)){
+                        this.player.video.stream.hls.off(Hls.Events.LEVEL_LOADED, onLL);
+                        clearInterval(this.videoRecordingAppendInterval);
+                    }
                 }
                 else if (durationNow){
-                    this.setTotalTime(utils.secsToHMS(durationNow));
+                    stillRecordingCount = 3;
                     durationThen = durationNow;
                 }
             };
@@ -117,12 +129,6 @@ class Ui{
 
     loadVideo(vid){
         this.chatInterface = new ReChatInterface(elements.chat);
-        let onplayermetaloaded = ()=>{
-            this.setTotalTime(utils.secsToHMS(this.player.getDuration()));
-            this.components.slider.drawMutedSegments();
-            this.player.removeEventListener("loadedmetadata", onplayermetaloaded);
-        }
-        this.player.addEventListener("loadedmetadata", onplayermetaloaded);
         this.player.start(vid).then(()=>{
             this.components.qualityOptions.loadQualityOptions();
             this.player.play();
@@ -158,6 +164,10 @@ class Ui{
 
     setTotalTime(timeStr){
         elements.totalTime.textContent = timeStr;
+    }
+
+    setCurrentTotalTime(){
+        this.setTotalTime(utils.secsToHMS(this.player.getDuration()));
     }
 
     updateCurrentTime(secs){

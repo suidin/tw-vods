@@ -59,7 +59,6 @@ class ReChat{
         this.chunkBuffer.set(ident, {"messages": comments, "next": chunk._next});
         let timeRange = [comments[0].time, comments[comments.length-1].time];
         this.chunkTimes.set(timeRange, ident);
-        utils.log("chunkbuffersize: ", this.chunkBuffer.size);
         if(this.chunkBuffer.size>this.maxChunkBuffer){
             utils.log("clearing half of buffer...");
             this.halfChunkBuffer();
