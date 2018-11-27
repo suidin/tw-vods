@@ -78,8 +78,26 @@ class Ui{
 
     init(){
         this.handlers();
+        if(this.player.video.videoStatus && this.player.video.videoStatus === "recording"){
+            this.videoRecordingAppendInterval = setInterval(()=>{
+                this.player.video.stream.hls.levelController.loadLevel();
+            }, 5*60*1000);
 
-        this.currentTimeInterval = setInterval(this.updateAll.bind(this), 500);
+            let durationThen = this.player.getDuration();
+            let onLL = (e, data)=>{
+                let durationNow = this.player.getDuration();
+                if(durationThen === durationNow){
+                    this.player.video.stream.hls.off(Hls.Events.LEVEL_LOADED, onLL);
+                    clearInterval(this.videoRecordingAppendInterval);
+                }
+                else if (durationNow){
+                    this.setTotalTime(utils.secsToHMS(durationNow));
+                    durationThen = durationNow;
+                }
+            };
+            this.player.video.stream.hls.on(Hls.Events.LEVEL_LOADED, onLL);
+        }
+        this.updateAllInterval = setInterval(this.updateAll.bind(this), 500);
     }
 
     loadChannel(channel, channelID){
@@ -99,6 +117,12 @@ class Ui{
 
     loadVideo(vid){
         this.chatInterface = new ReChatInterface(elements.chat);
+        let onplayermetaloaded = ()=>{
+            this.setTotalTime(utils.secsToHMS(this.player.getDuration()));
+            this.components.slider.drawMutedSegments();
+            this.player.removeEventListener("loadedmetadata", onplayermetaloaded);
+        }
+        this.player.addEventListener("loadedmetadata", onplayermetaloaded);
         this.player.start(vid).then(()=>{
             this.components.qualityOptions.loadQualityOptions();
             this.player.play();
@@ -117,8 +141,6 @@ class Ui{
                     }
                 });
             }
-            this.setTotalTime(this.player.video.lengthInHMS);
-            this.components.slider.drawMutedSegments();
             this.chatInterface.queueStart(vid, this.player.video.channel, this.player.video.channelId, this.player.video.startPosition);
 
             document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
@@ -143,7 +165,7 @@ class Ui{
             elements.currentTime.textContent = utils.secsToHMS(secs);
             this.updateResumePoint(secs);
         }
-        if(!(Math.floor(secs) & 7)){
+        if(secs && !(Math.floor(secs) & 7)){
             this.components.slider.updateFromSecs(secs);
         }
     }

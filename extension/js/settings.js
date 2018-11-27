@@ -1,6 +1,6 @@
 export const settings = {
     DEBUG: true,
-    clientId: "q6batx0epp608isickayubi39itsckt",
+    clientId: "",
     mode: "video",
     hlsConfig: {
         "maxMaxBufferLength": 180,
