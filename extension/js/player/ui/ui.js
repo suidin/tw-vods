@@ -109,7 +109,11 @@ class Ui{
             };
             this.player.video.stream.hls.on(Hls.Events.LEVEL_LOADED, onLL);
         }
-        this.updateAllInterval = setInterval(this.updateAll.bind(this), 500);
+        let canPlayHandler = ()=>{
+            this.player.removeEventListener("canplay", canPlayHandler);
+            this.updateAllInterval = setInterval(this.updateAll.bind(this), 500);
+        };
+        this.player.addEventListener("canplay", canPlayHandler);
     }
 
     loadChannel(channel, channelID){

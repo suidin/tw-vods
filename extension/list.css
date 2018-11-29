@@ -251,7 +251,10 @@ dialog input{
 #alert .dialog-cancel{
     display:none;
 }
-
+#alert .dialog-text{
+    max-height: 50vh;
+    overflow-y: scroll;
+}
 
 .search-option{
     display: inline-block;
