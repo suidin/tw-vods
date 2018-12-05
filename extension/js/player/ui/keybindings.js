@@ -60,7 +60,7 @@ class KeyBindings{
                         return;
                 }
             }
-            else{  
+            else{
                 switch(e.keyCode){
                     case 39:
                         this.seekVideo(5);
@@ -102,7 +102,7 @@ class KeyBindings{
                         return;
                 }
             }
-            this.components.playerControls.showFn();
+            this.components.playerControls.initiateShow();
         });
     }
 
