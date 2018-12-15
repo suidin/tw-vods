@@ -270,7 +270,7 @@ class LiveChat{
                 this.process(e.data);
             }
         }
-        setTimeout(()=>{
+        c.onopen = ()=>{
             // anon credens:
             let nick = "justinfan" + Math.floor(8e4*Math.random()+1e3);
             c.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
@@ -279,7 +279,7 @@ class LiveChat{
             c.send(`USER ${nick} 8 * :${nick}`);
 
             c.send("JOIN #"+this.channel);
-        }, 1500);
+        };
     }
 
     process(msg){
