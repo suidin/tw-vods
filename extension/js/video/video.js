@@ -40,7 +40,7 @@ class VideoConnector{
     }
 
     getVideoData(){
-        let url = `https://api.twitch.tv/kraken/videos/${this.vid}.json`;
+        let url = `https://api.twitch.tv/kraken/videos/${this.vid}`;
         return utils.getRequestPromise(url);
     }
 
