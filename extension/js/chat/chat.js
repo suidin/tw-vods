@@ -1,5 +1,6 @@
 import {settings} from '../settings.js';
 import {utils, FixedSizeArray} from '../utils/utils.js';
+import {v5Api} from '../api/v5.js';
 
 
 class ReChat{
@@ -86,7 +87,6 @@ class ReChat{
         }
         let offset = this.identIsOffset(ident);
         if (offset && offset < 0) return;
-        let url = this.getUrl(ident, offset);
         this.gettingident = ident;
 
         let chunk = this.chunkFromBuffer(ident, offset);
@@ -97,7 +97,7 @@ class ReChat{
             this.gettingident = undefined;
         }
         else{
-            return utils.getRequestPromise(url, {then:"json"}).then((json) =>{
+            return v5Api.comments(this.vid, ident).then((json) =>{
                 if(json && json.comments && json.comments[0]){
                     this.processChunk(json, ident);
                     if(json._next !== ident){
@@ -133,26 +133,9 @@ class ReChat{
         return !this.identIsOffset(ident);
     }
 
-    getUrl(ident, offset=false){
-        let url;
-        if (offset){
-            url = this.getRechatOffsetUrl(ident);
-        }
-        else{
-            url = this.getRechatCursorUrl(ident);
-        }
-        return url;
-    }
     seek(secs){
         this.clear = true;
         this.seekTime = Math.floor(secs);
-    }
-
-    getRechatOffsetUrl(offset){
-        return `https://api.twitch.tv/v5/videos/${this.vid}/comments?content_offset_seconds=${offset}`;
-    }
-    getRechatCursorUrl(cursor){
-        return `https://api.twitch.tv/v5/videos/${this.vid}/comments?cursor=${cursor}`;
     }
 
     start(offset=0){

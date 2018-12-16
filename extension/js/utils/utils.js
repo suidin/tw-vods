@@ -2,6 +2,7 @@ import {settings} from '../settings.js';
 import {storage} from './storage.js';
 import {Dialog} from './dialog.js';
 import {colors} from './colors.js';
+import {v5Api} from '../api/v5.js';
 
 
 const htmlEntities = {
@@ -160,7 +161,7 @@ class Uitility{
     }
 
     getUserFollows(username, limit=25){
-        return this.getRequestPromise(`https://api.twitch.tv/kraken/users/${username}/follows/channels?limit=${limit}`, {then: "json", headers:{}}).then(json=>{
+        return v5Api.follows(username, limit).then(json=>{
             if(json && json.follows && json.follows.length){
                 return json.follows.map(i=>i.channel.display_name);
             }
@@ -171,7 +172,7 @@ class Uitility{
     }
 
     userIdFromUsername(name){
-        return this.getRequestPromise("https://api.twitch.tv/kraken/users?login="+name, {then: "json"}).then(json=>{
+        return v5Api.userID(name).then(json=>{
             if(json && json.users && json.users.length){
                 return json.users[0]["_id"];
             }
@@ -202,7 +203,7 @@ class Uitility{
         const params = {
             headers: {"Authorization": `OAuth ${token}`},
         }
-        this.fetch(url, params, "json").then(json=>{
+        this.fetch(url, "json", params).then(json=>{
             if(json && json.client_id){
                 this.setClientId(json.client_id);
             }
@@ -225,46 +226,32 @@ class Uitility{
         }
     }
 
-    getRequestPromise(url, {then="jsonMap", method="GET", body="", mode="cors", includeClientId=true, headers={'Accept': 'application/vnd.twitchtv.v5+json'}} = {}){
-        if(!then.startsWith("json")){
-            headers["Accept"] = '*/*';
-        }
-        let params = {
-            "method": method,
-            "mode": mode,
-            "headers": headers
-        }
-        if(method === "POST" && body.length){
-            params["body"] = body;
-        }
-        if(includeClientId){
-            if(settings.clientId.length){
-                params["headers"]['Client-ID'] = settings.clientId;
-            }
-
-            else{
-                alert("No client key set");
-                return;
-            }
-        }
-
-        return this.fetch(url, params, then);
-    }
-
-    fetch(url, params, then){
+    fetch(url, format="json", params){
+        if(params === undefined){params = {};}
         let promise = fetch(url, params);
-        if(then.startsWith("json")){
-            promise = promise.then(response => {
-                if(response.ok){
-                    return response.json()
+        if(format === "json"){
+            promise = promise.then(r=>{
+                if(r.ok){
+                    return r.json();
+                }
+                else{
+                    return null;
                 }
             });
-            if(then === "jsonMap"){
-                utils.log("creating jsonmap...");
-                promise = promise.then(json => this.objToMap(json));
-            }
         }
-        promise = promise.catch(error => console.error(`Fetch Error =\n`, error));
+        else{
+            promise = promise.then(r=>{
+                if(r.ok){
+                    return r.text();
+                }
+                else{
+                    return null;
+                }
+            }); 
+        }
+        promise = promise.catch(error => {
+            console.error(`Fetch Error on url: ${url}\n ${error}`);
+        });
         return promise;
     }
 

@@ -1,71 +1,30 @@
 import {settings} from '../settings.js';
+import {utils} from '../utils/utils.js';
 
 
 class AbstractApi{
-    constructor(key, version){
-        this.key = key;
-        this.version = version;
-        this.callParams = new Map(Object.entries({
-            "json": true,
-            "method": "GET",
-            "body": "",
-            "mode": "cors",
-        }));
+    constructor(){
+        this.format = "json";
+        this.includeApiHeader = true;
+        this.includeClientID = true;
     }
 
-    getParams(_params=new Map()){
-        let params = new Map();
-        let key, val;
-        for([key, val] of this.callParams){
-            if(_params.hasOwnProperty(key)){
-                params[key] = _params[key];
-            }
-            else{
-                params[key] = val;
-            }
-        }   
-    }
-
-    call(url, params){
-
-    }
-
-    getHeaders(){
-        return {
-            "Client-ID": this.key,
-        };
-    }
-
-    fetch(url, params){
-        headers = this.getHeaders();
-
+    call(url, includeClientID=true, includeApiHeader=this.includeApiHeader, format=this.format){
+        let headers = {};
+        if(includeClientID){
+            headers["Client-ID"] = settings.clientId;
+        }
+        if(includeApiHeader){
+            headers["Accept"] = this.params["accept"];
+        }
         let params = {
-            "method": method,
-            "mode": mode,
-            "headers": headers
+            "headers": headers,
+            "mode": this.params.mode,
+            "method": this.params["method"],
         }
-        if(method === "POST" && body.length){
-            params["body"] = body;
-        }
-        if(includeClientId){
-            if(settings.clientId.length){
-                params["headers"]['Client-ID'] = settings.clientId;
-            }
-
-            else{
-                alert("No client key set");
-                return;
-            }
-        }
-
-        return this.fetch(url, params, then);
+        let p = utils.fetch(url, this.format, params);
+        return p;
     }
-
-
-}
-
-class NonApi{
-
 }
 
 
