@@ -5,6 +5,7 @@ import {settings} from '../../settings.js';
 import {utils} from '../../utils/utils.js';
 import {Emotes} from './emotes.js';
 import {Draggable, Resizable} from '../../utils/moveresize.js';
+import {v5Api} from '../../api/v5.js';
 
 
 
@@ -92,8 +93,7 @@ class ChatInterface{
 
     getSubBadge(id){
         if(!id){return;}
-        let url = `https://api.twitch.tv/kraken/chat/${id}/badges`;
-        utils.getRequestPromise(url, {then:"json"}).then(json=>{
+        v5Api.badges(id).then(json=>{
             if(json && json["subscriber"]){
                 this.badges["subscriber"] = json["subscriber"]["image"];
             }

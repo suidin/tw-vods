@@ -1,62 +1,8 @@
 import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
+import {v5Api} from '../api/v5.js';
+import {undocApi} from '../api/undoc.js';
 
-
-class VideoConnector{
-    constructor(vid){
-        this.vid = vid;
-    }
-
-    getAuth(mode){
-        let url = `https://api.twitch.tv/api/${mode}/${this.vid}/access_token.json?as3=t&adblock=false&need_https=true&platform=web&player_type=site`;
-        return utils.getRequestPromise(url);
-    }
-
-    getManifestUrl(){
-        let mode;
-        if(settings.mode==="video"){
-            mode = "vod";
-        }
-        else{
-            mode = "channel";
-        }
-        return this.getAuth(mode+"s").then(map => {
-            let sig = map.get("sig");
-            let token = map.get("token");
-            let p = parseInt(Math.random() * 999999);
-            let url;
-            if(mode === "channel"){
-                url = `https://usher.ttvnw.net/api/${mode}/hls/${this.vid.toLowerCase()}.m3u8?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&nauthsig=${sig}&nauth=${token}`;
-            }
-            else{
-                url = `https://usher.ttvnw.net/${mode}/${this.vid}?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&nauthsig=${sig}&nauth=${token}`;
-            }
-            return url;
-        });
-    }
-
-    getVideoPlaylist(manifestUrl){
-        return utils.getRequestPromise(manifestUrl, "");
-    }
-
-    getVideoData(){
-        let url = `https://api.twitch.tv/kraken/videos/${this.vid}.json`;
-        return utils.getRequestPromise(url);
-    }
-
-    // getStreamData(){
-    //     let url = `https://api.twitch.tv/kraken/streams/${this.vid}`;
-    //     return 
-    // }
-
-    getStreamManifest(){
-        return getManifestUrl.then(url=>{
-            return this.getVideoPlaylist(url);
-        }).then(response =>{
-            return response.text();
-        });
-    }
-};
 
 class Stream{
     constructor(manifestUrl, config){
@@ -102,7 +48,6 @@ class Stream{
 class Video{
     constructor(vid){
         this.vid = vid;
-        this.connector = new VideoConnector(vid);
         this.loaded = this.loadData();
         this.loaded = this.loaded.then(()=>{
             this.makeConfig();
@@ -110,7 +55,7 @@ class Video{
     }
 
     startStream(){
-        return this.connector.getManifestUrl().then(url => {
+        return undocApi.getVideoManifestUrl(this.vid).then(url => {
             return this.loaded.then(()=>{
                 this.stream = new Stream(url, this.config);
                 return new Promise(resolve=>{
@@ -121,19 +66,19 @@ class Video{
     }
 
     loadData(){
-        return this.connector.getVideoData().then(data=>{
-            this.mutedSegments = data.get("muted_segments");
-            this.lengthInSecs = data.get("length");
+        return v5Api.video(this.vid).then(json=>{
+            this.mutedSegments = json["muted_segments"];
+            this.lengthInSecs = json["length"];
             this.lengthInHMS = utils.secsToHMS(this.lengthInSecs);
-            this.channel = data.get("channel").name;
-            this.channelDisplay = data.get("channel").display_name;
-            this.channelId = data.get("channel")._id;
-            this.videoStatus = data.get("status");
+            this.channel = json["channel"].name;
+            this.channelDisplay = json["channel"].display_name;
+            this.channelId = json["channel"]._id;
+            this.videoStatus = json["status"];
             if(this.videoStatus === "recorded"){
-                this.loadHoverThumbsInfo(data.get("seek_previews_url"));
+                this.loadHoverThumbsInfo(json["seek_previews_url"]);
             }
-            this.videoTitle = data.get("title");
-            this.resolutions = Object.keys(data.get("resolutions"));
+            this.videoTitle = json["title"];
+            this.resolutions = Object.keys(json["resolutions"]);
             utils.log("channel: ", this.channel);
         });
     }
@@ -142,7 +87,7 @@ class Video{
         if(!infoUrl){
             return
         }
-        let promise = utils.getRequestPromise(infoUrl, {then:"json", headers:{}}).then(json=>{
+        let promise = utils.fetch(infoUrl).then(json=>{
             if(!json){return false;}
             let q
             for(q of json){
@@ -205,12 +150,11 @@ class Video{
 class Live{
     constructor(vid){
         this.vid = vid;
-        this.connector = new VideoConnector(vid);
         this.makeConfig();
     }
 
     startStream(){
-        return this.connector.getManifestUrl().then(url => {
+        return undocApi.getStreamManifestUrl(this.vid).then(url => {
             this.stream = new Stream(url, this.config);
             return new Promise(resolve=>{
                 this.stream.loadHls(resolve, ()=>{
@@ -264,4 +208,4 @@ class Live{
     }
 }
 
-export {Video, Live, VideoConnector};
+export {Video, Live};
