@@ -66,7 +66,7 @@ class V5Api extends AbstractApi{
     }
 
     searchGames(query){
-        let url = `https://api.twitch.tv/kraken/search/games?query=${query}`;
+        let url = `https://api.twitch.tv/kraken/search/games?query=${query}&type=suggest`;
         return this.call(url);
     }
 }
