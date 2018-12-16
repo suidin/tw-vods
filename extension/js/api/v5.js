@@ -1,10 +1,6 @@
 import {AbstractApi} from './core.js';
 
 
-let UidCache = {
-
-};
-
 class V5Api extends AbstractApi{
     constructor(){
         super();
@@ -28,6 +24,8 @@ class V5Api extends AbstractApi{
 
     videos(channel, type="archive", limit=30, sort="time", offset=0){
         let url = `https://api.twitch.tv/kraken/channels/${channel}/videos?limit=${limit}&broadcast_type=${type}&offset=${offset}&sort=${sort}`
+        // for some reason this api call only works if you DONT include the accept header.
+        // otherwise the server expects a clientID and returns 500
         return this.call(url, true, false);
     }
 
