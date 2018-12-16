@@ -199,11 +199,16 @@ class Ui{
             let params = this.loadParams();
             this.load(params, true);
         });
-        elements.optionsType.addEventListener("input", e=>{
+        elements.optionsType.addEventListener("click", e=>{
+            if(e.target.classList.contains("search-type-button")){
+                let type = e.target.dataset.type;
+                elements.optionsType.querySelector(".active").classList.remove("active");
+                e.target.classList.add("active");
+            }
             elements.optionsPage.value = 1;
             this.updateFormElements();
         });
-        this.updateFormElements();
+        // this.updateFormElements();
         elements.linkList.addEventListener("click", (e)=>{
             e.preventDefault();
             if(e.target.className === "link-list__link"){
@@ -282,7 +287,7 @@ class Ui{
     }
 
     updateFormElements(){
-        let type = elements.optionsType.options[elements.optionsType.selectedIndex].value;
+        let type = elements.optionsType.querySelector(".active").dataset.type;
         let hideElems, showElems;
         if(type === "live"){
             elements.linkList.style.display = "none";
@@ -361,7 +366,7 @@ class Ui{
     }
 
     loadParams(){
-        let type = elements.optionsType.options[elements.optionsType.selectedIndex].value;
+        let type = elements.optionsType.querySelector(".active").dataset.type;
         let params = {
             perPage: parseInt(elements.optionsLimit.value),
             page: parseInt(elements.optionsPage.value),
@@ -407,7 +412,9 @@ class Ui{
     }
 
     updateOptionsElem(params){
-        elements.optionsType.value = params.type;
+        let active = elements.optionsType.querySelector(".active")
+        active && active.classList.remove(".active");
+        elements.optionsType.querySelector(`[data-type="${params.type}"]`).classList.add("active");
         elements.optionsLimit.value = params.perPage;
         elements.optionsPage.value = params.page;
         if(params.type === "live"){
@@ -495,6 +502,7 @@ class Ui{
             else{
                 this.updateResultsTitle(params.channel, false);
             }
+            console.log(params);
             this.replaceState(params);
             this.loading = false;
         });

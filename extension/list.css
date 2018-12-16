@@ -263,13 +263,20 @@ dialog input{
     display: block;
     margin: .3em 0;
 }
-.search-option select{
-    color: #e8e8e8;
-    font-size: 25px;
-    border-radius: 4px;
-    background: #383838;
-    border: none;
-    padding: .2em;
+.search-option__type{
+    display: flex;
+}
+.search-type-button{
+    background: #2b2b2b;
+    border: 1px solid #6f6f6f;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.search-type-button.active{
+    background: #405e86;
+    border-color: white;
 }
 .awesomplete > ul > li{
     color: black;
