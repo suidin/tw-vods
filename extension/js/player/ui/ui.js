@@ -129,6 +129,8 @@ class Ui{
         });
         this.chatInterface.queueStart(channel.toLowerCase(), channelID);
 
+        document.title = `${channel} | Live`;
+
     }
 
     loadVideo(vid){

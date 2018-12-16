@@ -61,7 +61,7 @@ class V5Api extends AbstractApi{
     }
 
     searchChannels(query, limit=25){
-        let url = `https://api.twitch.tv/kraken/search/channels?query=${query}&limit=${limit}`;
+        let url = `https://api.twitch.tv/kraken/search/channels?query=${query}&limit=${limit}&type=suggest`;
         return this.call(url);
     }
 
