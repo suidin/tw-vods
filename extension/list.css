@@ -187,6 +187,25 @@ input{
 .channel-currently-live-link:visited{
     color: #4abc4a;
 }
+.channel-title__channel{
+    display: flex;
+    justify-content: center;
+}
+.channel-title__channel-fav{
+    cursor: pointer;
+    margin-left: 10px;
+    display:none;
+}
+.channel-title__channel-fav svg{
+    fill: white;
+}
+.channel-title__channel-fav:hover svg{
+    fill: #af97bb;
+}
+.channel-title__channel-fav.faved svg{
+    fill: #af43ea;
+}
+
 .video-card .thumb-container{
     position: relative;
     overflow: hidden;
