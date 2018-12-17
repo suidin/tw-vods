@@ -342,7 +342,7 @@ class Ui{
                 document.title = channel + " " + typeName;
                 elements.channelTitleChannelName.textContent = `${channel}`;
                 console.log(elements.channelTitleChannelName);
-                if(utils.storage.faved(channel)){
+                if(this.favs.faved(channel)){
                     elements.channelTitleChannelFav.classList.add("faved");
                 }
                 elements.channelTitleChannelFav.style.display = "block";

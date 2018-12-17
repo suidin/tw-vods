@@ -1,6 +1,7 @@
 class Storage{
     constructor(){
         this.maxResumePositions = 900;
+        this.maxFavourites = 200;
         this.defaultValues = {
             "resumePositions": {},
             "lastChatPos": {left:0,top:0},
@@ -59,6 +60,9 @@ class Storage{
         let index = favs.indexOf(channel);
         if(index<0){
             favs.unshift(channel);
+            if(favs.length > this.maxFavourites){
+                favs.pop();
+            }
             this.setItem("favourites", favs);
         }
         else{
@@ -76,11 +80,6 @@ class Storage{
         else{
             console.error("tried to remove non existing favourite");
         }
-    }
-
-    faved(channel){
-        let favs = this.getItem("favourites");
-        return favs.indexOf(channel) >= 0;
     }
 
     setLastChatPos(left, top){
