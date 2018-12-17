@@ -155,6 +155,7 @@ class Ui{
         // this.gamesAwesomeplete = new Awesomplete(elements.optionsGame, {list: [], autoFirst: true, minChars: 1});
         this.handlers();
         if(!this.loadFromGET() && settings.clientId.length){
+            this.updateFormElements(defaultParams.type);
             this.load(defaultParams, true);
         }
     }
@@ -202,11 +203,9 @@ class Ui{
         elements.optionsType.addEventListener("click", e=>{
             if(e.target.classList.contains("search-type-button")){
                 let type = e.target.dataset.type;
-                elements.optionsType.querySelector(".active").classList.remove("active");
-                e.target.classList.add("active");
+                elements.optionsPage.value = 1;
+                this.updateFormElements(type);
             }
-            elements.optionsPage.value = 1;
-            this.updateFormElements();
         });
         // this.updateFormElements();
         elements.linkList.addEventListener("click", (e)=>{
@@ -286,8 +285,15 @@ class Ui{
         document.title = "Nonlisted Streams";
     }
 
-    updateFormElements(){
-        let type = elements.optionsType.querySelector(".active").dataset.type;
+    updateFormElements(type){
+        if(type){
+            let active = elements.optionsType.querySelector(".active");
+            active && active.classList.remove("active");
+            elements.optionsType.querySelector(`[data-type="${type}"]`).classList.add("active");
+        }
+        else{
+            type = elements.optionsType.querySelector(".active").dataset.type;
+        }
         let hideElems, showElems;
         if(type === "live"){
             elements.linkList.style.display = "none";

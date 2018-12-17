@@ -11,7 +11,13 @@ a{
 a:visited{
     color: inherit;
 }
-
+.interface{
+    width: 100%;
+    background: rgb(54, 48, 70);
+    border-bottom: 1px solid rgb(103, 103, 103);
+    margin: 5px;
+    padding: 0px 5px;
+}
 .top-links{
     width: 100%;
     display: flex;
