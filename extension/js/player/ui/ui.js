@@ -15,6 +15,7 @@ class Ui{
         let channelID = utils.findGetParameter("channelID");
         if(vid){
             settings.mode = "video";
+            this.lastResumePoint = 0;
         }
         else if(channel){
             settings.mode = "live";
@@ -23,7 +24,7 @@ class Ui{
         this.player = getPlayer(elements.video);
         // components
         this.components = {
-            "slider": settings.mode === "video" ? new components.Slider(this.player, elements.slider) : undefined,
+            "slider": new components.Slider(this.player, elements.slider),
             "qualityOptions": new components.QualityOptions(this.player, elements.qualitySelector),
             "playerButtons": new components.PlayerButtons(this.player),
             "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom)
@@ -62,12 +63,20 @@ class Ui{
     }
 
     handlers(){
-        if(settings.mode === "video"){
-            this.player.onseeking = (e)=>{
-                let secs = this.player.currentTime;
-                this.seek(secs);
-            }
+        this.player.onseeking = (e)=>{
+            let secs = this.player.getCurrentTime();
+            this.seek(secs);
         }
+        if(settings.mode === "video"){
+            this.player.ondurationchange = (e)=>{
+                this.setCurrentTotalTime();
+            };
+        }
+        let onplayermetaloaded = ()=>{
+            this.components.slider.drawMutedSegments();
+            this.player.removeEventListener("loadedmetadata", onplayermetaloaded);
+        }
+        this.player.addEventListener("loadedmetadata", onplayermetaloaded);
         let component;
         for(component in this.components){
             if(!this.components[component]){continue;}
@@ -79,8 +88,32 @@ class Ui{
 
     init(){
         this.handlers();
-
-        this.currentTimeInterval = setInterval(this.updateAll.bind(this), 500);
+        if(this.player.video.videoStatus && this.player.video.videoStatus === "recording"){
+            this.videoRecordingAppendInterval = setInterval(()=>{
+                this.player.video.stream.hls.levelController.loadLevel();
+            }, 5*60*1000);
+            let stillRecordingCount = 3;
+            let durationThen = this.player.getDuration();
+            let onLL = (e, data)=>{
+                let durationNow = this.player.getDuration();
+                if(durationThen === durationNow){
+                    if(!(--stillRecordingCount)){
+                        this.player.video.stream.hls.off(Hls.Events.LEVEL_LOADED, onLL);
+                        clearInterval(this.videoRecordingAppendInterval);
+                    }
+                }
+                else if (durationNow){
+                    stillRecordingCount = 3;
+                    durationThen = durationNow;
+                }
+            };
+            this.player.video.stream.hls.on(Hls.Events.LEVEL_LOADED, onLL);
+        }
+        let canPlayHandler = ()=>{
+            this.player.removeEventListener("canplay", canPlayHandler);
+            this.updateAllInterval = setInterval(this.updateAll.bind(this), 500);
+        };
+        this.player.addEventListener("canplay", canPlayHandler);
     }
 
     loadChannel(channel, channelID){
@@ -95,6 +128,8 @@ class Ui{
             this.components.qualityOptions.initOnLevelChange();
         });
         this.chatInterface.queueStart(channel.toLowerCase(), channelID);
+
+        document.title = `${channel} | Live`;
 
     }
 
@@ -118,8 +153,6 @@ class Ui{
                     }
                 });
             }
-            this.setTotalTime();
-            this.components.slider.drawMutedSegments();
             this.chatInterface.queueStart(vid, this.player.video.channel, this.player.video.channelId, this.player.video.startPosition);
 
             document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
@@ -129,33 +162,44 @@ class Ui{
 
     seek(secs){
         this.components.slider.updateFromSecs(secs);
-        this.chatInterface.seek(secs, this.player.timeBeforeSeek);
+        if(settings.mode === "video"){  // TODO: actually seek chat in live too
+            this.chatInterface.seek(secs, this.player.timeBeforeSeek);
+        }
         this.updateResumePoint(secs);
     }
 
-    setTotalTime(){
-        elements.totalTime.textContent = this.player.video.lengthInHMS;
+    setTotalTime(timeStr){
+        elements.totalTime.textContent = timeStr;
+    }
+
+    setCurrentTotalTime(){
+        this.setTotalTime(utils.secsToHMS(this.player.getDuration()));
     }
 
     updateCurrentTime(secs){
-        elements.currentTime.textContent = utils.secsToHMS(secs);
-        if(!(Math.floor(secs) % 7)){
-            this.components.slider.updateFromSecs(secs);
+        if(settings.mode === "video"){
+            elements.currentTime.textContent = utils.secsToHMS(secs);
             this.updateResumePoint(secs);
+        }
+        if(secs && !(Math.floor(secs) & 7)){
+            this.components.slider.updateFromSecs(secs);
         }
     }
 
     updateResumePoint(secs){
-        utils.storage.setResumePoint(this.player.video.vid, secs);
+        if(settings.mode === "live")return;
+        if(Math.abs(secs - this.lastResumePoint) > 7){
+            this.lastResumePoint = secs;
+            utils.storage.setResumePoint(this.player.video.vid, secs);
+        }
     }
 
     updateAll(){
-        if(settings.mode === "video"){
-            let secs = this.player.currentTime;
-            this.updateCurrentTime(secs);
+        let secs = this.player.getCurrentTime();
+        if(settings.mode === "video"){        
             this.chatInterface.iterate(secs);
-
         }
+        this.updateCurrentTime(secs);
     }
 }
 

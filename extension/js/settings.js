@@ -3,6 +3,7 @@ export const settings = {
     clientId: "",
     mode: "video",
     hlsConfig: {
-        "maxMaxBufferLength": 180
+        "maxMaxBufferLength": 180,
+        "liveSyncDurationCount": 2,
     }
 };

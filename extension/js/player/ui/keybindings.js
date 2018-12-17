@@ -13,10 +13,9 @@ class KeyBindings{
     }
 
     seekVideo(seconds){
-        if(this.mode!=="video"){return;}
-        let newTime = this.player.currentTime + seconds;
+        let newTime = this.player.getCurrentTime() + seconds;
         if(newTime<0){newTime=0;}
-        if(newTime>=this.player.duration){newTime=this.player.duration-1;}
+        if(newTime>=this.player.getDuration()){newTime=this.player.getDuration()-1;}
         this.player.seek(newTime);
     }
 
@@ -32,19 +31,17 @@ class KeyBindings{
     }
 
     handlers(){
-        if(this.mode==="video"){
-            document.addEventListener("keyup", (e) => {
-                if (e.keyCode == 18){
-                    elements.seekingOverlay.style.display = "none";
-                    elements.previewAndTime.style.display = "none";
-                    if (this.seekingMultiplier !== 0){
-                        this.seekVideo(this.VIDEO_SEEK_AMOUNT * this.seekingMultiplier);
-                        this.seekingMultiplier = 0;
-                    }
-                    this.components.playerControls.showFn();
+        document.addEventListener("keyup", (e) => {
+            if (e.keyCode == 18){
+                elements.seekingOverlay.style.display = "none";
+                elements.previewAndTime.style.display = "none";
+                if (this.seekingMultiplier !== 0){
+                    this.seekVideo(this.VIDEO_SEEK_AMOUNT * this.seekingMultiplier);
+                    this.seekingMultiplier = 0;
                 }
-            });
-        }
+                this.components.playerControls.showFn();
+            }
+        });
 
         document.addEventListener("keydown", (e) => {
             let volume;
@@ -52,20 +49,18 @@ class KeyBindings{
                 return;
             }
             else if(e.altKey){
-                if(this.mode==="video"){
-                    switch(e.keyCode){
-                        case 187:
-                            this.updateSeekingOverlay(1);
-                            break;
-                        case 189:
-                            this.updateSeekingOverlay(-1);
-                            break;
-                        default:
-                            return;
-                    }
+                switch(e.keyCode){
+                    case 187:
+                        this.updateSeekingOverlay(1);
+                        break;
+                    case 189:
+                        this.updateSeekingOverlay(-1);
+                        break;
+                    default:
+                        return;
                 }
             }
-            else{  
+            else{
                 switch(e.keyCode){
                     case 39:
                         this.seekVideo(5);
@@ -107,7 +102,7 @@ class KeyBindings{
                         return;
                 }
             }
-            this.components.playerControls.showFn();
+            this.components.playerControls.initiateShow();
         });
     }
 

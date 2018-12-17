@@ -11,7 +11,13 @@ a{
 a:visited{
     color: inherit;
 }
-
+.interface{
+    width: 100%;
+    background: rgb(54, 48, 70);
+    border-bottom: 1px solid rgb(103, 103, 103);
+    margin: 5px;
+    padding: 0px 5px;
+}
 .top-links{
     width: 100%;
     display: flex;
@@ -177,6 +183,12 @@ input{
     font-size: 20px;
     color:  #eaeaea;
 }
+.channel-currently-live-link{
+    color: #4abc4a;
+}
+.channel-currently-live-link:visited{
+    color: #4abc4a;
+}
 .video-card .thumb-container{
     position: relative;
     overflow: hidden;
@@ -245,7 +257,10 @@ dialog input{
 #alert .dialog-cancel{
     display:none;
 }
-
+#alert .dialog-text{
+    max-height: 50vh;
+    overflow-y: scroll;
+}
 
 .search-option{
     display: inline-block;
@@ -254,13 +269,20 @@ dialog input{
     display: block;
     margin: .3em 0;
 }
-.search-option select{
-    color: #e8e8e8;
-    font-size: 25px;
-    border-radius: 4px;
-    background: #383838;
-    border: none;
-    padding: .2em;
+.search-option__type{
+    display: flex;
+}
+.search-type-button{
+    background: #2b2b2b;
+    border: 1px solid #6f6f6f;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.search-type-button.active{
+    background: #405e86;
+    border-color: white;
 }
 .awesomplete > ul > li{
     color: black;

@@ -1,5 +1,6 @@
 import {settings} from '../settings.js';
 import {utils, FixedSizeArray} from '../utils/utils.js';
+import {v5Api} from '../api/v5.js';
 
 
 class ReChat{
@@ -59,7 +60,6 @@ class ReChat{
         this.chunkBuffer.set(ident, {"messages": comments, "next": chunk._next});
         let timeRange = [comments[0].time, comments[comments.length-1].time];
         this.chunkTimes.set(timeRange, ident);
-        utils.log("chunkbuffersize: ", this.chunkBuffer.size);
         if(this.chunkBuffer.size>this.maxChunkBuffer){
             utils.log("clearing half of buffer...");
             this.halfChunkBuffer();
@@ -87,7 +87,6 @@ class ReChat{
         }
         let offset = this.identIsOffset(ident);
         if (offset && offset < 0) return;
-        let url = this.getUrl(ident, offset);
         this.gettingident = ident;
 
         let chunk = this.chunkFromBuffer(ident, offset);
@@ -98,7 +97,7 @@ class ReChat{
             this.gettingident = undefined;
         }
         else{
-            return utils.getRequestPromise(url, {then:"json"}).then((json) =>{
+            return v5Api.comments(this.vid, ident).then((json) =>{
                 if(json && json.comments && json.comments[0]){
                     this.processChunk(json, ident);
                     if(json._next !== ident){
@@ -134,26 +133,9 @@ class ReChat{
         return !this.identIsOffset(ident);
     }
 
-    getUrl(ident, offset=false){
-        let url;
-        if (offset){
-            url = this.getRechatOffsetUrl(ident);
-        }
-        else{
-            url = this.getRechatCursorUrl(ident);
-        }
-        return url;
-    }
     seek(secs){
         this.clear = true;
         this.seekTime = Math.floor(secs);
-    }
-
-    getRechatOffsetUrl(offset){
-        return `https://api.twitch.tv/v5/videos/${this.vid}/comments?content_offset_seconds=${offset}`;
-    }
-    getRechatCursorUrl(cursor){
-        return `https://api.twitch.tv/v5/videos/${this.vid}/comments?cursor=${cursor}`;
     }
 
     start(offset=0){
@@ -263,10 +245,15 @@ class LiveChat{
         const wsAddress = "wss://irc-ws.chat.twitch.tv/";
         let c = new WebSocket(wsAddress);
         c.onmessage = e=>{
-            // console.log(e);
-            this.process(e.data);
+            // console.log(e.data);
+            if(e.data.startsWith("PING :tmi.twitch.tv")){
+                c.send("PONG");
+            }
+            else{
+                this.process(e.data);
+            }
         }
-        setTimeout(()=>{
+        c.onopen = ()=>{
             // anon credens:
             let nick = "justinfan" + Math.floor(8e4*Math.random()+1e3);
             c.send("CAP REQ :twitch.tv/tags twitch.tv/commands");
@@ -275,7 +262,7 @@ class LiveChat{
             c.send(`USER ${nick} 8 * :${nick}`);
 
             c.send("JOIN #"+this.channel);
-        }, 1500);
+        };
     }
 
     process(msg){

@@ -70,9 +70,6 @@ body{
     flex: 0 1 auto;
     max-width: 100%;
 }
-.app.live .player-interface .player-time{
-    display:none;
-}
 .player-interface .player-time-display{
     line-height: 1.4em;
     margin: 0 .5em;
@@ -86,8 +83,14 @@ body{
 .player-time-display .player-current-time{
     float: left;
 }
+.app.live .player-time-display .player-current-time{
+    display: none;
+}
 .player-time-display .player-total-time{
     float: right;
+}
+.app.live .player-time-display .player-total-time{
+    display: none;
 }
 
 .player-interface .player-time-slider{
@@ -429,6 +432,11 @@ body{
     overflow:hidden;
 }
 .hover-preview-img{
+}
+.player-hover-arrow{
+    position: absolute;
+    left: 102px;
+    bottom: -15px;
 }
 .player-hover-time{
     padding-top: .2em;

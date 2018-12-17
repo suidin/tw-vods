@@ -114,7 +114,7 @@ class Emotes{
     loadEmoteData(channel){
         let loaded = 0;
         return new Promise(resolve=>{
-            utils.getRequestPromise(this.urls.ffz + channel, {then:"json", headers:{}}).then(json=>{
+            utils.fetch(this.urls.ffz + channel).then(json=>{
                 if(!json){return;}
                 let sets = json.sets;
                 let set, emotes, emote;
@@ -127,11 +127,11 @@ class Emotes{
                 loaded++;
             });
  
-            utils.getRequestPromise(bttvGlobalJson, {then:"json", headers:{}}).then(json=>{
+            utils.fetch(bttvGlobalJson).then(json=>{
                 this.convertBttvEmotes(json);
                 loaded++;
             });
-            utils.getRequestPromise(bttvChannelJson + channel, {then:"json", headers:{}}).then(json=>{
+            utils.fetch(bttvChannelJson + channel).then(json=>{
                 this.convertBttvEmotes(json);
                 loaded++;
             });

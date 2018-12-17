@@ -12,11 +12,17 @@ function getPlayer(vElem){
             return vElem.video.startStream().then(() => {
                 vElem.volume = vElem.video.config.volume;
             });
-        }
+        };
         vElem.seek = (secs)=>{
             vElem.timeBeforeSeek = vElem.currentTime;
             vElem.currentTime = secs;
-        }
+        };
+        vElem.getDuration = ()=>{
+            return vElem.duration;
+        };
+        vElem.getCurrentTime = ()=>{
+            return vElem.currentTime;
+        };
     }
     else if(settings.mode === "live"){
         vElem.start = (channel)=>{
@@ -24,7 +30,17 @@ function getPlayer(vElem){
             return vElem.video.startStream().then(() => {
                 vElem.volume = vElem.video.config.volume;
             });
-        }
+        };
+        vElem.seek = (secs)=>{
+            // vElem.timeBeforeSeek = vElem.currentTime;
+            vElem.currentTime = secs + vElem.video.stream.hls.streamController.mediaBuffer.buffered.start(0);
+        };
+        vElem.getDuration = ()=>{
+            return vElem.duration - vElem.video.stream.hls.streamController.mediaBuffer.buffered.start(0);
+        };
+        vElem.getCurrentTime = ()=>{
+            return vElem.currentTime - vElem.video.stream.hls.streamController.mediaBuffer.buffered.start(0);
+        };
     }
     return vElem;
 }

@@ -1,26 +1,11 @@
 import {utils} from '../utils/utils.js';
+import {v5Api} from '../api/v5.js';
 
-class Api{
-    constructor(){
-    }
 
-    fetchVideos(channel, type="archive", limit=30, sort="time", offset=0){
 
-        let url = `https://api.twitch.tv/kraken/channels/${channel}/videos?limit=${limit}&broadcast_type=${type}&offset=${offset}&sort=${sort}`
-
-        return utils.getRequestPromise(url, {then:"json", headers:{}});
-    }
-
-    fetchLiveChannels(limit=25, offset=0, language="en", game=""){
-        let url = `https://api.twitch.tv/kraken/streams/?limit=${limit}&offset=${offset}&language=${language}&game=${game}`;
-        // let url = `https://api.twitch.tv/kraken/streams/?limit=${limit}&offset=${offset}&game=${game}`;
-        return utils.getRequestPromise(url, {then:"json", headers:{}});
-    }
-}
 
 class VideosGetter{
     constructor(channel, perPage=10, page=1, type="archive", sort="time"){
-        this.api = new Api();
         this.channel = channel;
         this.type = type;
         this.sort = sort;
@@ -35,7 +20,7 @@ class VideosGetter{
         if (this.page > this.lastPage){
             this.page = this.lastPage;
         }
-        let promise = this.api.fetchVideos(this.channel, this.type, this.perPage, this.sort, this.currentOffset());
+        let promise = v5Api.videos(this.channel, this.type, this.perPage, this.sort, this.currentOffset());
         return promise.then(json=>{
             if(!json){return;}
             this.total = json["_total"];
@@ -58,7 +43,6 @@ class VideosGetter{
 class LiveStreamsGetter{
     constructor(perPage=25, page=1, game="", language="en"){
         this.type = "live";
-        this.api = new Api();
         this.perPage = perPage;
         this.page = page;
         this.game = encodeURIComponent(game);
@@ -71,7 +55,7 @@ class LiveStreamsGetter{
         if (this.page > this.lastPage){
             this.page = this.lastPage;
         }
-        let promise = this.api.fetchLiveChannels(this.perPage, this.currentOffset(), this.language, this.game);
+        let promise = v5Api.streams(this.perPage, this.currentOffset(), this.language, this.game);
         return promise.then(json=>{
             if(!json){return;}
             this.total = json["_total"];

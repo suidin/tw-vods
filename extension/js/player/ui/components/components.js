@@ -1,5 +1,6 @@
 import { elements } from '../elements.js';
 import { utils } from '../../../utils/utils.js';
+import { settings } from '../../../settings.js';
 
 
 
@@ -47,7 +48,13 @@ class Slider extends Component{
             percentage = this.percentageFromXpos(xPos);
             secs = this.secsFromPercentage(percentage);
         }
-        let hms = utils.secsToHMS(secs);
+        let hms;
+        if(settings.mode === "video"){
+            hms = utils.secsToHMS(secs);
+        }
+        else{
+            hms = "-" + utils.secsToHMS(this.player.getDuration() - secs);
+        }
 
         if(this.info){
             this.createPreviewImg(percentage);
@@ -60,8 +67,18 @@ class Slider extends Component{
 
         let left = sliderWidth - previewWidth/2;
         let barWidth = elements.slider.clientWidth;
-        if(left<0){left = 0;}
-        else if (left + previewWidth > barWidth){left = barWidth - previewWidth;}
+        if(left<0){
+            left = -9.5;
+            elements.timeHoverArrow.style.left = sliderWidth + "px";
+        }
+        else if (left + previewWidth > barWidth){
+            left = barWidth - previewWidth;
+            elements.timeHoverArrow.style.left = (sliderWidth - left - 15) + "px";
+            left = left + 4;
+        }
+        else{
+            elements.timeHoverArrow.style.left = previewWidth/2 - 10 + "px";
+        }
         elements.previewAndTime.style.left = left + "px";
     }
 
@@ -124,7 +141,7 @@ class Slider extends Component{
 
     // tools:
     secsFromPercentage(percentage){
-        return Math.floor(this.player.video.lengthInSecs * percentage);
+        return Math.floor(this.player.getDuration() * percentage);
     }
 
     widthFromPercentage(percentage){
@@ -139,7 +156,7 @@ class Slider extends Component{
         return xPos/width;
     }
     percentageFromSecs(secs){
-        return secs / this.player.video.lengthInSecs;
+        return secs / this.player.getDuration();
     }
 
 
@@ -188,11 +205,18 @@ class QualityOptions extends Component{
 
     loadQualityOptions(){
         this.qualityOptions = this.player.video.stream.hls.levels;
+        let chunkedElem;
         this.qualityOptions.forEach(q=>{
             let name = q.attrs.VIDEO;
             let elem = this.makeOptionElem(name);
-            this.elem.insertBefore(elem, this.elem.firstChild);
+            if(name === "chunked"){
+                chunkedElem = elem;
+            }
+            else{
+                this.elem.insertBefore(elem, this.elem.firstChild);
+            }
         });
+        this.elem.insertBefore(chunkedElem, this.elem.firstChild);
         let autoOptionElem = this.makeOptionElem("Auto");
         this.elem.appendChild(autoOptionElem);
         this.elem.firstChild.selected = true;
@@ -277,28 +301,30 @@ class PlayerControls extends Component{
 
     handlers(){
         this.hideTimeOut = 0;
-        this.showFn = e=>{
-            clearTimeout(this.hideTimeOut);
+        this.showFn = ()=>{
             this.elem.style.opacity = "1";
             elements.app.style.cursor = "initial";
-            this.hideTimeOut = setTimeout(()=>{
-                this.elem.style.opacity = "0";
-                elements.app.style.cursor = "none";
-            }, 3000);
+        }
+        this.hideFn = ()=>{
+            this.elem.style.opacity = "0";
+            elements.app.style.cursor = "none";
+        }
+        this.initiateShow = e=>{
+            if(this.mouseInUi){return;}
+            clearTimeout(this.hideTimeOut);
+            this.showFn();
+            this.hideTimeOut = setTimeout(this.hideFn, 3000);
         };
-        elements.app.addEventListener("mousemove", this.showFn);
+
+        elements.app.addEventListener("mousemove", this.initiateShow);
         this.elem.addEventListener("mouseenter", e=>{
-            elements.app.removeEventListener("mousemove", this.showFn);
+            this.mouseInUi = true;
             clearTimeout(this.hideTimeOut);
-            this.elem.style.opacity = "1";
-            elements.app.style.cursor = "initial";
+            this.showFn();
         });
         this.elem.addEventListener("mouseleave", e=>{
-            elements.app.addEventListener("mousemove", this.showFn);
-            this.hideTimeOut = setTimeout(()=>{
-                this.elem.style.opacity = "0";
-                elements.app.style.cursor = "none";
-            }, 3000);
+            this.mouseInUi = false;
+            this.hideTimeOut = setTimeout(this.hideFn, 3000);
         })
 
         elements.playerOverlay.addEventListener("dblclick", this.toggleFullscreen);

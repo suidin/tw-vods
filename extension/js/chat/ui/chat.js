@@ -5,6 +5,7 @@ import {settings} from '../../settings.js';
 import {utils} from '../../utils/utils.js';
 import {Emotes} from './emotes.js';
 import {Draggable, Resizable} from '../../utils/moveresize.js';
+import {v5Api} from '../../api/v5.js';
 
 
 
@@ -92,8 +93,7 @@ class ChatInterface{
 
     getSubBadge(id){
         if(!id){return;}
-        let url = `https://api.twitch.tv/kraken/chat/${id}/badges`;
-        utils.getRequestPromise(url, {then:"json"}).then(json=>{
+        v5Api.badges(id).then(json=>{
             if(json && json["subscriber"]){
                 this.badges["subscriber"] = json["subscriber"]["image"];
             }
@@ -257,6 +257,7 @@ class ReChatInterface extends ChatInterface{
     }
 
     seek(secs, before){
+        if(this.addingMsgs || this.seeking)return;
         this.seeking = true;
         let syncTime = this.getSyncTime();
         let diff = secs - before;
@@ -340,6 +341,10 @@ class LiveChatInterface extends ChatInterface{
             return `<span class="user-badges">${elems.join("")}</span>`;
         }
         return "";
+    }
+
+    iterate(){
+        // this is just a placeholder until chat rewind in live broadcast is implemented
     }
 }
 
