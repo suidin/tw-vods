@@ -49,6 +49,12 @@ class AweSearcher{
     }
 
     init(){
+        let justSelected = false;
+        this.elem.addEventListener("awesomplete-select", e=>{
+            justSelected = true;
+        });
+
+
         let timeout;
         let now;
         let lastRequest = 0;
@@ -64,6 +70,10 @@ class AweSearcher{
         const minChars = this.params.minChars;
 
         this.elem.addEventListener("input", e=>{
+            if(justSelected){
+                justSelected = false;
+                return;
+            }
             currentVal = this.elem.value;
             cachedList = this.getCache(currentVal);
             if(cachedList){
