@@ -1,4 +1,6 @@
 import {Videos, Streams} from './mediatypes.js';
+import {AweSearcher} from './searcher.js';
+
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
 import {Pagination} from '../utils/pagination.js';
@@ -74,84 +76,13 @@ const defaultParams = {
     game: ""
 };
 
-
-let searcherCache = {
-    "games":  {},
-    "channels": {},
-};
-
-class Searcher{
-    constructor(elem, type, params){
-        if(!params){
-            params = {
-                "minChars": 4,
-                "cooldown": 2000,
-            }
-        }
-        this.awe = new Awesomplete(elem, {list: [], autoFirst: true, minChars: 1});
-        this.params = params;
-        this.type = type;
-        this.elem = elem;
-
-        this.init();
-    }
-    init(){
-        let now;
-        let lastSearch = performance.now();
-        let currentVal = "";
-        let cache;
-        let tDiff;
-        const cd = this.params.cooldown;
-        const minChars = this.params.minChars;
-
-        this.elem.addEventListener("input", e=>{
-            currentVal = this.elem.value;
-            cache = searcherCache[this.type][currentVal];
-            if(cache){
-                this.awe.list = cache;
-                this.awe.evaluate();
-                return;
-            }
-            now = performance.now();
-            tDiff = now - lastSearch;
-            if(currentVal.length < minChars || tDiff < cd) return;
-            lastSearch = now;
-            if(this.type === "games"){
-                v5Api.searchGames(encodeURIComponent(currentVal)).then(json=>{
-                    if(!json || !json.games || !json.games.length) return;
-                    let arr = json.games.map(g=>{
-                        return g.name;
-                    });
-                    searcherCache[this.type][currentVal] = arr;
-                    this.awe.list = arr;
-                    this.awe.evaluate();
-                });
-            }
-            else if (this.type === "channels"){
-                v5Api.searchChannels(encodeURIComponent(currentVal)).then(json=>{
-                    if(!json || !json.channels || !json.channels.length) return;
-                    let arr = json.channels.map(c=>{
-                        return c.display_name;
-                    });
-                    searcherCache[this.type][currentVal] = arr;
-                    this.awe.list = arr;
-                    this.awe.evaluate();
-                });
-            }
-            else{
-                console.error(`search Api for type: ${this.type} not implemented`);
-            }
-        });
-    }
-}
-
 class Ui{
     constructor(){
         this.channels = new Channels();
         this.pagination = new Pagination(elements.paginationPages);
         // this.channelAwesomeplete = new Awesomplete(elements.optionsChannel, {list: this.channels.channels, autoFirst: true, minChars: 1});
-        new Searcher(elements.optionsGame, "games");
-        new Searcher(elements.optionsChannel, "channels");
+        new AweSearcher(elements.optionsGame, "games");
+        new AweSearcher(elements.optionsChannel, "channels");
         // this.gamesAwesomeplete = new Awesomplete(elements.optionsGame, {list: [], autoFirst: true, minChars: 1});
         this.handlers();
         if(!this.loadFromGET() && settings.clientId.length){

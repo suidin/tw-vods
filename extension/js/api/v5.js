@@ -60,6 +60,18 @@ class V5Api extends AbstractApi{
         return this.call(url);
     }
 
+    search(entity, ...args){
+        if(entity === "channels"){
+            return this.searchChannels(...args);
+        }
+        else if(entity === "games"){
+            return this.searchGames(...args);
+        }
+        else{
+            console.error(`search for: "${entity}" is not implemented`);
+        }
+    }
+
     searchChannels(query, limit=25){
         let url = `https://api.twitch.tv/kraken/search/channels?query=${query}&limit=${limit}&type=suggest`;
         return this.call(url);
