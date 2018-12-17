@@ -18,6 +18,8 @@ class Elements{
         this.importFollowsButton = document.querySelector(".import-follows-button");
         this.resultList = document.querySelector(".results .list");
         this.channelTitleChannel = document.querySelector(".results .channel-title__channel");
+        this.channelTitleChannelName = this.channelTitleChannel.querySelector(".channel-title__channel-name");
+        this.channelTitleChannelFav = this.channelTitleChannel.querySelector(".channel-title__channel-fav");
         this.channelTitleInfo = document.querySelector(".results .channel-title__info");
         this.linkList = document.querySelector(".pre-results .link-list");
         this.paginationPages = document.querySelector(".pagination-pages");

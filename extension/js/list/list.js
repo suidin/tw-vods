@@ -1,66 +1,12 @@
 import {Videos, Streams} from './mediatypes.js';
 import {AweSearcher} from './searcher.js';
+import {Favourites} from './favs.js';
 
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
 import {Pagination} from '../utils/pagination.js';
 import {utils} from '../utils/utils.js';
 import {v5Api} from '../api/v5.js';
-
-class Channels{
-    constructor(){
-        this.initChannels();
-        this.channelsMaxSize = 200;
-    }
-    initChannels(){
-        let storageChannels = utils.storage.getItem("channels") || [];
-        this.channels = storageChannels;
-        let channel, elem;
-        for(channel of this.channels){
-            elem = this.makeChannelLink(channel);
-            elements.linkList.appendChild(elem);
-        }
-    }
-
-    makeChannelLink(channel){
-        let channelElem = document.createElement("div");
-        channelElem.className = "link-list__item " + channel;
-        channelElem.innerHTML = `<a href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}" class="link-list__link">${channel}</a><span class="link-list__remove"> X</span>`;
-        return channelElem;
-    }
-
-    updateChannels(channel){
-        this.removeChannel(channel);
-        this.channels.unshift(channel);
-        if(this.channels.length >= this.channelsMaxSize){
-            this.channels.pop();
-        }
-        utils.storage.setItem("channels", this.channels);
-        this.updateChannelsElem(channel);
-    }
-
-    updateChannelsElem(channel){
-        let channelElem = elements.linkList.querySelector(".link-list__item."+channel);
-        if(!channelElem){
-            channelElem = this.makeChannelLink(channel);
-        }
-        elements.linkList.insertBefore(channelElem, elements.linkList.firstChild);
-    }
-
-    removeChannel(channel){
-        let index = this.channels.indexOf(channel);
-        if(index>=0){
-            this.channels.splice(index, 1);
-            utils.storage.setItem("channels", this.channels);
-            this.removeChannelElem(channel);
-        }
-    }
-
-    removeChannelElem(channel){
-        let item = document.querySelector(".link-list__item." + channel);
-        item.remove();
-    }
-}
 
 
 const typeNames = {
@@ -78,9 +24,9 @@ const defaultParams = {
 
 class Ui{
     constructor(){
-        this.channels = new Channels();
+        this.favs = new Favourites();
         this.pagination = new Pagination(elements.paginationPages);
-        // this.channelAwesomeplete = new Awesomplete(elements.optionsChannel, {list: this.channels.channels, autoFirst: true, minChars: 1});
+        // this.channelAwesomeplete = new Awesomplete(elements.optionsChannel, {list: this.favs.channels, autoFirst: true, minChars: 1});
         new AweSearcher(elements.optionsGame, "games");
         new AweSearcher(elements.optionsChannel, "channels");
         // this.gamesAwesomeplete = new Awesomplete(elements.optionsGame, {list: [], autoFirst: true, minChars: 1});
@@ -92,6 +38,17 @@ class Ui{
     }
 
     handlers(){
+        elements.channelTitleChannelFav.addEventListener("click",e=>{
+            let faved = elements.channelTitleChannelFav.classList.contains("faved");
+            if(faved){
+                this.favs.remove(this.media.getter.channel);
+                elements.channelTitleChannelFav.classList.remove("faved");
+            }
+            else{
+                this.favs.add(this.media.getter.channel);
+                elements.channelTitleChannelFav.classList.add("faved");
+            }
+        });
         elements.importButton.addEventListener("click", e=>{
             e.preventDefault();
             utils.import();
@@ -102,7 +59,7 @@ class Ui{
             let p = utils.importFollows();
             p.then(names=>{
                 if(names && names.length){
-                    names.map(name=>this.channels.updateChannels(name));
+                    names.map(name=>this.favs.add(name));
                 }
             });
         });
@@ -152,7 +109,10 @@ class Ui{
             e.preventDefault();
             if(e.target.className === "link-list__remove"){
                 let channel = e.target.previousElementSibling.textContent;
-                this.channels.removeChannel(channel);
+                this.favs.remove(channel);
+                if(this.media && this.media.getter && this.media.getter.channel && this.media.getter.channel === channel){
+                    elements.channelTitleChannelFav.classList.remove("faved");
+                }
             }
         });
         elements.paginationPages.addEventListener("click", (e)=>{
@@ -267,7 +227,9 @@ class Ui{
         elements.paginationPages.innerHTML = "";
         elements.resultList.innerHTML = "";
         elements.channelTitleInfo.textContent = "";
-        elements.channelTitleChannel.textContent = "";
+        elements.channelTitleChannelName.textContent = "";
+        elements.channelTitleChannelFav.style.display = "none";
+        elements.channelTitleChannelFav.classList.remove("faved");
     }
 
     changeSelectedCard(i){
@@ -378,10 +340,15 @@ class Ui{
                 currentTo = currentTo>total ? total : currentTo;
                 let typeName = typeNames[this.media.getter.type];
                 document.title = channel + " " + typeName;
-                elements.channelTitleChannel.textContent = `${channel}`;
+                elements.channelTitleChannelName.textContent = `${channel}`;
+                console.log(elements.channelTitleChannelName);
+                if(utils.storage.faved(channel)){
+                    elements.channelTitleChannelFav.classList.add("faved");
+                }
+                elements.channelTitleChannelFav.style.display = "block";
                 if(this.media.currentVideoData && this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
                     utils.userIdFromUsername(channel).then(id=>{
-                        elements.channelTitleChannel.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
+                        elements.channelTitleChannelName.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
                     });
                 }
                 elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
@@ -398,11 +365,11 @@ class Ui{
         }
         else{
             if(channel){
-                elements.channelTitleChannel.textContent = `<${channel}>`;
+                elements.channelTitleChannelName.textContent = `<${channel}>`;
                 elements.channelTitleInfo.textContent = `No videos found`;
             }
             else{
-                elements.channelTitleChannel.textContent = `<No Live Channels could be found>`;
+                elements.channelTitleChannelName.textContent = `<No Live Channels could be found>`;
                 elements.channelTitleInfo.textContent = "page number probably too high";
             }
         }
@@ -431,9 +398,6 @@ class Ui{
         loaded.then(success => {
             if(success){
                 this.updatePagination();
-                if(first && params.channel){
-                    this.channels.updateChannels(success);
-                }
                 this.updateResultsTitle(success, true);
             }
             else{

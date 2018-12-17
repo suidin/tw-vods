@@ -6,7 +6,8 @@ class Storage{
             "lastChatPos": {left:0,top:0},
             "lastChatDim": {width: "300px", height: "500px"},
             "lastSetQuality": "chunked",
-            "watchlater": []
+            "watchlater": [],
+            "favourites": [],
         }
 
         this.cleanResumePositions();
@@ -51,6 +52,35 @@ class Storage{
 
     getItem(key){
         return JSON.parse(localStorage.getItem(key)) || this.defaultValues[key];
+    }
+
+    setFav(channel){
+        let favs = this.getItem("favourites");
+        let index = favs.indexOf(channel);
+        if(index<0){
+            favs.unshift(channel);
+            this.setItem("favourites", favs);
+        }
+        else{
+            console.error("tried to set already existing favourite");
+        }
+    }
+
+    unsetFav(channel){
+        let favs = this.getItem("favourites");
+        let index = favs.indexOf(channel);
+        if(index>=0){
+            favs.splice(index, 1);
+            this.setItem("favourites", favs);
+        }
+        else{
+            console.error("tried to remove non existing favourite");
+        }
+    }
+
+    faved(channel){
+        let favs = this.getItem("favourites");
+        return favs.indexOf(channel) >= 0;
     }
 
     setLastChatPos(left, top){

@@ -47,7 +47,7 @@ class V5Api extends AbstractApi{
 
     follows(username, limit=25){
         let url = `https://api.twitch.tv/kraken/users/${username}/follows/channels?limit=${limit}`;
-        return this.call(url);
+        return this.call(url, true, false);
     }
 
     badges(id){
