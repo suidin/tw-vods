@@ -16,10 +16,14 @@ const typeDefs = {
     "games": {
         "listAttr": "games",
         "itemAttr": "name",
+        "sort": false,
     },
     "channels": {
         "listAttr": "channels",
         "itemAttr": "display_name",
+        "sort": (c1, c2)=>{
+            return c2.followers - c1.followers;
+        },
     },
 }
 
@@ -90,7 +94,9 @@ class AweSearcher{
                 lastRequest = performance.now();
                 v5Api.search(type, (encodeURIComponent(currentVal))).then(json=>{
                     if(!(json && json[typeDef.listAttr] && json[typeDef.listAttr].length)) return;
-                    arr = json[typeDef.listAttr].map(g=>{
+                    arr = json[typeDef.listAttr];
+                    typeDef.sort && arr.sort(typeDef.sort);
+                    arr = arr.map(g=>{
                         return g[typeDef.itemAttr];
                     });
                     this.setCache(currentVal, arr);

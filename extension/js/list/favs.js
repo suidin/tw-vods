@@ -5,12 +5,11 @@ class Favourites{
     constructor(){
         this.storageName = "favourites";
         this.init();
-        this.channelsMaxSize = 200;
     }
     init(){
-        this.channels = utils.storage.getItem(this.storageName);
+        let channels = utils.storage.getItem(this.storageName);
         let channel, elem;
-        for(channel of this.channels){
+        for(channel of channels){
             elem = this.makeChannelLink(channel);
             elements.linkList.appendChild(elem);
         }
@@ -23,13 +22,13 @@ class Favourites{
         return channelElem;
     }
 
+    faved(channel){
+        let favs = utils.storage.getItem("favourites");
+        return favs.indexOf(channel) >= 0;
+    }
+
     add(channel){
-        if(this.channels.indexOf(channel)>=0){return;}
-        this.channels.unshift(channel);
-        if(this.channels.length >= this.channelsMaxSize){
-            this.channels.pop();
-        }
-        utils.storage.setItem(this.storageName, this.channels);
+        utils.storage.setFav(channel);
         this.addElem(channel);
     }
 
@@ -39,17 +38,13 @@ class Favourites{
     }
 
     remove(channel){
-        let index = this.channels.indexOf(channel);
-        if(index>=0){
-            this.channels.splice(index, 1);
-            utils.storage.setItem(this.storageName, this.channels);
-            this.removeElem(channel);
-        }
+        utils.storage.unsetFav(channel);
+        this.removeElem(channel);
     }
 
     removeElem(channel){
         let item = document.querySelector(".link-list__item.c__" + channel);
-        item.remove();
+        item && item.remove();
     }
 }
 
