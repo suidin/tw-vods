@@ -95,7 +95,6 @@ class Ui{
                 this.updateFormElements(type);
             }
         });
-        // this.updateFormElements();
         elements.linkList.addEventListener("click", (e)=>{
             e.preventDefault();
             if(e.target.className === "link-list__link"){
@@ -161,7 +160,7 @@ class Ui{
     loadWatchLater(){
         this.clean();
         this.media = new Videos(null, true);
-        elements.channelTitleChannel.textContent = "Watch Later";
+        elements.channelTitleChannelName.textContent = "Watch Later";
         elements.channelTitleInfo.textContent = "";
         history.replaceState("watchlater", "twitch-list | Watch Later", "?type=watchlater");
         document.title = "Watch Later";
@@ -170,7 +169,7 @@ class Ui{
     loadNonlisted(){
         this.clean();
         this.media = new Streams(null, true);
-        elements.channelTitleChannel.textContent = "Fetching nonlisted Streams";
+        elements.channelTitleChannelName.textContent = "Fetching unlisted Streams";
         elements.channelTitleInfo.textContent = "this can take some time...";
         history.replaceState("nonlisted", "twitch-list | Nonlisted Streams", "?type=nonlisted");
         document.title = "Nonlisted Streams";
@@ -341,7 +340,6 @@ class Ui{
                 let typeName = typeNames[this.media.getter.type];
                 document.title = channel + " " + typeName;
                 elements.channelTitleChannelName.textContent = `${channel}`;
-                console.log(elements.channelTitleChannelName);
                 if(this.favs.faved(channel)){
                     elements.channelTitleChannelFav.classList.add("faved");
                 }
@@ -357,7 +355,7 @@ class Ui{
                 let game = decodeURIComponent(this.media.getter.game);
                 let text = "Live Channels";
                 document.title = (game && game + " | Live Channels") || "Live Channels";
-                elements.channelTitleChannel.textContent = text;
+                elements.channelTitleChannelName.textContent = text;
                 if(game.length){
                     elements.channelTitleInfo.textContent = game;
                 }
