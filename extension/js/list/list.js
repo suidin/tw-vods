@@ -41,11 +41,11 @@ class Ui{
         elements.channelTitleChannelFav.addEventListener("click",e=>{
             let faved = elements.channelTitleChannelFav.classList.contains("faved");
             if(faved){
-                this.favs.remove(this.media.getter.channel);
+                this.favs.remove(this.currentChannel);
                 elements.channelTitleChannelFav.classList.remove("faved");
             }
             else{
-                this.favs.add(this.media.getter.channel);
+                this.favs.add(this.currentChannel);
                 elements.channelTitleChannelFav.classList.add("faved");
             }
         });
@@ -330,6 +330,7 @@ class Ui{
 
     updateResultsTitle(channel, success){
         if(success){
+            this.currentChannel = channel;
             let total = this.media.getter.total;
             let page = this.media.getter.page;
             let perPage = this.media.getter.perPage;
