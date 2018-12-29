@@ -52,6 +52,7 @@ class ReChat{
             comments[index] = message;
             index++;
         }
+        if(!index) return;
         comments = comments.slice(0, index);
         this.messages.push(...comments);
 

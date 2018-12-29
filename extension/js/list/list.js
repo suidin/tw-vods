@@ -85,6 +85,8 @@ class Ui{
         });
         elements.form.addEventListener("submit", (e)=>{
             e.preventDefault();
+            let focused = elements.form.querySelector(":focus");
+            focused && focused.blur();
             let params = this.loadParams();
             this.load(params, true);
         });
