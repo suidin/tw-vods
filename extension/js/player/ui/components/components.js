@@ -182,6 +182,7 @@ class QualityOptions extends Component{
             else{
                 let index = this.getQualityIndex(val);
                 this.player.video.stream.hls.nextLevel = index;
+                val = this.qualityOptions[index].bitrate;
                 utils.storage.setLastSetQuality(val);
             }
         });

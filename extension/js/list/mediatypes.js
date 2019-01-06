@@ -234,6 +234,11 @@ class Streams{
         this.addStreams(streams);
     }
 
+    makeThumbTimeParam(){
+        let d = new Date();
+        this.thumbTimeParam = "" + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + (Math.floor(d.getMinutes() / 5));
+    }
+
     createStreamCard(stream){
         let uptime = utils.twTimeStrToTimePassed(stream.created_at);
         let game = stream.game;
@@ -254,7 +259,7 @@ class Streams{
         let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
         let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}" /></div></div>${viewersElem}${lengthElem}</a>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div>${viewersElem}${lengthElem}</a>`;
         let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${displayName}</a></div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";
@@ -269,6 +274,7 @@ class Streams{
     }
 
     addStreams(streams){
+        this.makeThumbTimeParam();
         let stream;
         for(stream of streams){
             this.addStream(stream);

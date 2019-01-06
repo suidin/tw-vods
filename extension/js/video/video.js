@@ -9,7 +9,6 @@ class Stream{
         this.config = config;
         this.manifestUrl = manifestUrl;
         let hlsConfig = settings.hlsConfig;
-        hlsConfig.startLevel = config.startLevel;
         if(settings.mode === "video"){
             hlsConfig.startPosition = config.startPosition;
         }
@@ -25,7 +24,7 @@ class Stream{
           hls.loadSource(this.manifestUrl);
           hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
             utils.log("manifest loaded, found " + data.levels.length + " quality level");
-            hls.nextLevel = this.config.startLevel;
+            hls.nextLevel = this.getClosestLevel(data.levels);
             cb && cb();
             resolver();
           });
@@ -42,6 +41,25 @@ class Stream{
         this.hls.on(Hls.Events.LEVEL_SWITCHED, (e, data)=>{
             fn(data.level);
         });
+    }
+
+    getClosestLevel(levels){
+        let last = utils.storage.getLastSetQuality();
+        if(last === "Auto"){
+            return -1;
+        }
+        let index = 0;
+        let level, bitrate;
+        for(level of levels){
+            bitrate = level.bitrate;
+            if(bitrate>last){
+                return index-1;
+            }
+            else{
+                index++;
+            }
+        }
+        return index-1;
     }
 }
 
@@ -105,8 +123,6 @@ class Video{
 
     makeConfig(){
         let config = {};
-        let lastSetQuality = utils.storage.getLastSetQuality();
-        config.startLevel = this.getClosestQuality(lastSetQuality);
         let GETTime = parseInt(utils.findGetParameter("time"));
         let startPosition = GETTime || utils.storage.getResumePoint(this.vid) || 0;
         config.startPosition = startPosition;
@@ -114,35 +130,6 @@ class Video{
         config.volume = volume;
 
         this.config = config;
-    }
-    
-    getClosestQuality(desired){
-        if(desired === "Auto"){
-            return -1;
-        }
-        let qualityToNumber = (str)=>{
-            if(str === "chunked"){return 10000;}
-            let [res, fps] = str.split("p");
-            return parseInt(res)*parseInt(fps)/30;
-        }
-        let q, i, n;
-        let dNum = qualityToNumber(desired);
-        let resos = this.resolutions;
-        let nums = resos.map(qualityToNumber);
-        for(i in resos){
-            q = resos[i];
-            n = nums[i];
-            if(q === desired){return i;}
-            if(n > dNum){
-                if(i===0){
-                    return 0;
-                }
-                else{
-                    return i-1;
-                }
-            }
-        }
-        return i;
     }
 }
 
@@ -157,11 +144,7 @@ class Live{
         return undocApi.getStreamManifestUrl(this.vid).then(url => {
             this.stream = new Stream(url, this.config);
             return new Promise(resolve=>{
-                this.stream.loadHls(resolve, ()=>{
-                    let lvl = this.getClosestQuality(utils.storage.getLastSetQuality());
-                    lvl = parseInt(lvl);
-                    this.stream.hls.nextLevel = lvl;
-                });
+                this.stream.loadHls(resolve);
             });
         });
     }
@@ -171,41 +154,12 @@ class Live{
 
     makeConfig(){
         let config = {};
-        config.startLevel = 0;
         let volume = utils.storage.getLastSetVolume() || 0.5;
         config.volume = volume;
 
         this.config = config;
     }
     
-    getClosestQuality(desired){
-        if(desired === "Auto"){
-            return -1;
-        }
-        let qualityToNumber = (str)=>{
-            if(str === "chunked"){return 10000;}
-            let [res, fps] = str.split("p");
-            return parseInt(res)*parseInt(fps)/30;
-        }
-        let q, i, n;
-        let dNum = qualityToNumber(desired);
-        let resos = this.stream.hls.levels.map(l=>l.attrs.VIDEO);
-        let nums = resos.map(qualityToNumber);
-        for(i in resos){
-            q = resos[i];
-            n = nums[i];
-            if(q === desired){return i;}
-            if(n > dNum){
-                if(i===0){
-                    return 0;
-                }
-                else{
-                    return i-1;
-                }
-            }
-        }
-        return i;
-    }
 }
 
 export {Video, Live};

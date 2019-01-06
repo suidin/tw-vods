@@ -6,7 +6,7 @@ class Storage{
             "resumePositions": {},
             "lastChatPos": {left:0,top:0},
             "lastChatDim": {width: "300px", height: "500px"},
-            "lastSetQuality": "chunked",
+            "lastSetQuality": "Auto",
             "watchlater": [],
             "favourites": [],
         }
