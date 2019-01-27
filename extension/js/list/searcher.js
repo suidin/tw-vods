@@ -75,6 +75,7 @@ class AweSearcher{
 
         this.elem.addEventListener("input", e=>{
             if(justSelected){
+                clearTimeout(timeout);
                 justSelected = false;
                 return;
             }
@@ -100,6 +101,9 @@ class AweSearcher{
                         return g[typeDef.itemAttr];
                     });
                     this.setCache(currentVal, arr);
+                    if(justSelected){
+                        return;
+                    }
                     this.awe.list = arr;
                     this.awe.evaluate();
                 });
