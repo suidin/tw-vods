@@ -252,9 +252,16 @@ class Streams{
         let channel = stream["channel"]["name"];
         let displayName = stream["channel"]["display_name"];
         let logoUrl = stream["channel"]["logo"];
-        logoUrl = logoUrl.replace("300x300", "50x50");
+        let logoElem;
+        if(logoUrl){
+            logoUrl = logoUrl.replace("300x300", "50x50");
+            logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
+        }
+        else{
+            // logoUrl = "https://static-cdn.jtvnw.net/user-default-pictures/0ecbb6c3-fecb-4016-8115-aa467b7c36ed-profile_image-50x50.jpg";
+            logoElem = "";
+        }
         let playerUrl = `player.html?channel=${channel}&channelID=${stream["channel"]["_id"]}`;
-        let logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
         let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
         let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
         let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;

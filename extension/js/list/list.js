@@ -404,7 +404,6 @@ class Ui{
             else{
                 this.updateResultsTitle(params.channel, false);
             }
-            console.log(params);
             this.replaceState(params);
             this.loading = false;
         });
