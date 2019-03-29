@@ -6,7 +6,10 @@ import {utils} from '../utils/utils.js';
 
 class WatchLater{
     constructor(){
-        this.videos = this.get();
+        this.ready = this.get().then(wl=>{
+            this.videos = wl;
+            return wl;
+        });
     }
 
     get(){
@@ -27,25 +30,29 @@ class WatchLater{
     }
 
     add(video){
-        this.videos = this.get();
-        if(this.contains(video)<0){
-            delete video._links;
-            delete video.fps;
-            delete video.resolutions;
-            delete video.preview;
-            video.thumbnails = [video.thumbnails[0]];
-            this.videos.unshift(video);
-            this.set();
-        }
+        this.get().then(wl=>{
+            this.videos = wl;
+            if(this.contains(video)<0){
+                delete video._links;
+                delete video.fps;
+                delete video.resolutions;
+                delete video.preview;
+                video.thumbnails = [video.thumbnails[0]];
+                this.videos.unshift(video);
+                this.set();
+            }
+        });
     }
 
     remove(video){
-        this.videos = this.get();
-        let index = this.contains(video);
-        if(index >= 0){
-            this.videos.splice(index, 1);
-            this.set();
-        }
+        this.get().then(wl=>{
+            this.videos = wl;
+            let index = this.contains(video);
+            if(index >= 0){
+                this.videos.splice(index, 1);
+                this.set();
+            }
+        });
     }
 }
 

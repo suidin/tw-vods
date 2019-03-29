@@ -9,34 +9,40 @@ const watchLater = new WatchLater();
 
 class Videos{
     constructor(params, wl=false){
-        this.resumePositions = utils.storage.getItem("resumePositions");
-        if(wl){
-            this.loadWatchLater();
-        }
-        else{
-            this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
-        }
+        this.ready = utils.storage.getItem("resumePositions").then(rp=>{
+            this.resumePositions = rp;
+            if(wl){
+                this.loadWatchLater();
+            }
+            else{
+                this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
+            }
+        });
     }
 
     loadWatchLater(){
         this.drawingWatchLaterList = true;
-        this.processVideos(watchLater.get());
-        this.drawingWatchLaterList = false;
+        watchLater.get().then(videos=>{
+            this.processVideos(videos);
+            this.drawingWatchLaterList = false;
+        });
     }
 
     load(pageNr){
-        if(pageNr){
-            this.getter.page = pageNr;
-        }
-        return this.getter.get().then(videos=>{
-            if(videos && videos.length){
-                this.currentVideoData = videos;
-                this.processVideos(videos);
-                return videos[0].channel.display_name;
+        return this.ready.then(()=>{
+            if(pageNr){
+                this.getter.page = pageNr;
             }
-            else{
-                return false;
-            }
+            return this.getter.get().then(videos=>{
+                if(videos && videos.length){
+                    this.currentVideoData = videos;
+                    this.processVideos(videos);
+                    return videos[0].channel.display_name;
+                }
+                else{
+                    return false;
+                }
+            });
         });
     }
 
@@ -65,6 +71,11 @@ class Videos{
         let resumeBarWidth = (resumePos / video.length) * 100;
         let playerUrl = "player.html";
         let displayName = video.channel.display_name;
+        let views = video["views"].toString();
+        if(views.length > 3){
+            views = views.substring(0, views.length-3) + "," + views.substring(views.length-3);
+        }
+        let viewersElem = `<div class="video-card__overlay video-viewers">${views} views</div>`;
         let nameElem = this.drawingWatchLaterList ? `<a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a>`: "";
         let lengthElem = `<div class="video-card__overlay video-length">${length}</div>`;
         let watchLaterIcon;
@@ -86,7 +97,7 @@ class Videos{
         let watchLaterOverlay = `<div class="video-card__overlay video-wl"><img title="${watchLaterTitle}" src="/resources/icons/${watchLaterIcon}"></div>`;
         let gameElem = this.makeInfoElem("Game", game);
         let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${lengthElem}</a>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${viewersElem}${lengthElem}</a>`;
         let timePassedElem = `<div class="video-card__date">${when} ${nameElem}</div>`;
         let elem = document.createElement("div");
         elem.className = "video-card";

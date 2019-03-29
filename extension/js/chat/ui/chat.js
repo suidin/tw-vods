@@ -11,6 +11,7 @@ import {v5Api} from '../../api/v5.js';
 
 class ChatInterface{
     constructor(elem){
+        this.chatonly = utils.findGetParameter("chatonly");
         this.elem = elem;
         this.chatCont = this.elem.querySelector(".chat-container");
         this.chatPausedIndicator = this.chatCont.querySelector(".chat-paused-indicator");
@@ -36,6 +37,14 @@ class ChatInterface{
     }
 
     handlers(){
+        window.onresize = (event) => {
+            this.scrollToBottom();
+        }
+
+        if(this.chatonly){
+            return;
+        }
+
         this.chatCont.addEventListener("mouseenter", (e) => {
             this.autoScroll = false;
             this.chatPausedIndicator.style.display = "block";
@@ -52,24 +61,34 @@ class ChatInterface{
             }
         });
 
-        window.onresize = (event) => {
-            this.scrollToBottom();
-        }
     }
 
     restoreChat(){
-        let pos = utils.storage.getLastChatPos();
-        let dim = utils.storage.getLastChatDim();
+        if(this.chatonly){
+            this.elem.style.width = "100%";
+            this.elem.style.height = "100%";
+            this.elem.style.left = "0";
+            this.elem.style.top = "0";
+            this.elem.style.display = "block";
+            this.elem.querySelector(".drag-handle").style.display = "none";
+            this.elem.querySelector(".resize-handle").style.display = "none";
+        }
+        else{
+            utils.storage.getLastChatPos().then(pos=>{
 
-        if(pos){
-            this.elem.style.left = pos.left;
-            this.elem.style.top = pos.top;
+                utils.storage.getLastChatDim().then(dim=>{
+                    if(dim){
+                        this.elem.style.width = dim.width;
+                        this.elem.style.height = dim.height;
+                    }
+                });
+                if(pos){
+                    this.elem.style.left = pos.left;
+                    this.elem.style.top = pos.top;
+                }
+                this.elem.style.display = "block";
+            });
         }
-        if(dim){
-            this.elem.style.width = dim.width;
-            this.elem.style.height = dim.height;
-        }
-        this.elem.style.display = "block";
     }
 
     queueStart(vid, channel, channelId){
@@ -216,7 +235,10 @@ class ChatInterface{
     }
     toggleChat(){
         let current = this.elem.style.display;
-        if(current === "none") this.elem.style.display = "block";
+        if(current === "none"){
+            this.elem.style.display = "block";
+            this.scrollToBottom();
+        }
         else this.elem.style.display = "none";
     }
 

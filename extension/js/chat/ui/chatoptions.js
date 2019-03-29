@@ -95,20 +95,26 @@ class ChatOption{
     }
 
     init(){
-        let val = this.getInitial();
-        val = this.clean(val);
-        this.changeFn(val);
-        this.val = val;
-        this.updateInput();
+        this.getInitial().then(val=>{
+            val = this.clean(val);
+            this.changeFn(val);
+            this.val = val;
+            this.updateInput();
+        });
     }
 
     getInitial(){
-        if(this.dontStore){return this.default;}
-        let val = utils.storage.getItem(this.storageName);
-        if (val === undefined || val === null){
-            val = this.default;
+        if(this.dontStore){
+            return new Promise(resolve=>{
+                resolve(this.default);
+            });
         }
-        return val;
+        return utils.storage.getItem(this.storageName).then(val=>{
+            if (val === undefined || val === null){
+                val = this.default;
+            }
+            return val;
+        });
     }
 
     updateVal(val){

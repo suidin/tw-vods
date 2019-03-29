@@ -147,8 +147,10 @@ class ReChat{
 
 class LiveParser{
     constructor(){
+        // @badge-info=;badges=premium/1;color=;display-name=dontneed0uts;emotes=;flags=;id=180f5d21-8b16-4638-8cee-2dfa1c43bec5;mod=0;room-id=267573232;subscriber=0;tmi-sent-ts=1553810117555;turbo=0;user-id=279036350;user-type= :dontneed0uts!dontneed0uts@dontneed0uts.tmi.twitch.tv PRIVMSG #ignite :REDHEADRAYE PLEASE DO THIS TO MY BUDDY I SENT IT TO YOUR DM !!!!! DO THE SAME CALL
+
         const msgFormat = "@badges=subscriber/0,premium/1;color=;display-name=mcnuta;emotes=;flags=;id=343ff700-03ae-4651-9b47-114a1403a333;mod=0;room-id=36769016;subscriber=1;tmi-sent-ts=1537499122964;turbo=0;user-id=258270338;user-type= :mcnuta!mcnuta@mcnuta.tmi.twitch.tv PRIVMSG #timthetatman :Pog";
-        this.order = ["badges", "color", "display-name", "emotes", "flags", "id", "mod", "room-id", "subscriber", "tmi-sent-ts", "turbo", "user-id", "user-type"];
+        this.order = ["badge-info", "badges", "color", "display-name", "emotes", "flags", "id", "mod", "room-id", "subscriber", "tmi-sent-ts", "turbo", "user-id", "user-type"];
         const sepStr = "=(.*?);.*?";
         this.regex = new RegExp("@" + this.order.join(sepStr) + "=(.*?) :.*?:(.*)");
     }

@@ -1,22 +1,15 @@
 class Storage{
     constructor(){
-        this.maxResumePositions = 900;
-        this.maxFavourites = 200;
-        this.defaultValues = {
-            "resumePositions": {},
-            "lastChatPos": {left:0,top:0},
-            "lastChatDim": {width: "300px", height: "500px"},
-            "lastSetQuality": "Auto",
-            "watchlater": [],
-            "favourites": [],
-        }
 
-        this.cleanResumePositions();
     }
 
     export(){
-        let s = JSON.stringify(localStorage);
-        return s;
+        let msg = {
+            "op": "getAllData",
+        }
+        return this.sendToBg(msg, true).then(storedData=>{
+            return JSON.stringify(storedData)
+        });
     }
 
     import(s){
@@ -27,60 +20,48 @@ class Storage{
         catch(e){
             return false;
         }
-        for(let key in locS){
-            localStorage.setItem(key, locS[key]);
+        let msg = {
+            "op": "setAllData",
+            "data": locS,
         }
+        this.sendToBg(msg, false);
         return true;
     }
 
-    cleanResumePositions(){
-        let positions = this.getItem("resumePositions");
-        let positionsArr = Object.keys(positions).sort((p1,p2)=>{
-            return parseInt(p1)-parseInt(p2);
-        });
-        if(positionsArr.length >= this.maxResumePositions){
-            let toDelete = positionsArr.slice(0, this.maxResumePositions);
-            for(let id of toDelete){
-                delete positions[id];
-            }
+    
+    sendToBg(msg, expectResponse=true){
+        msg.event = "storage";
+        if (expectResponse){
+            let p = new Promise(resolve=>{
+                chrome.runtime.sendMessage(msg, response => {
+                    resolve(response);
+                });
+            });
+            return p;
         }
-        this.setItem("resumePositions", positions);
+        else{
+            chrome.runtime.sendMessage(msg);
+        }
     }
 
     setItem(key, val){
-        localStorage.setItem(key, JSON.stringify(val));
+        let msg = {
+            "op": "set",
+            "key": key,
+            "val": val,
+        }
+        this.sendToBg(msg, false);
     }
 
     getItem(key){
-        return JSON.parse(localStorage.getItem(key)) || this.defaultValues[key];
+        let msg = {
+            "op": "get",
+            "key": key,
+        }
+        return this.sendToBg(msg, true);
     }
 
-    setFav(channel){
-        let favs = this.getItem("favourites");
-        let index = favs.indexOf(channel);
-        if(index<0){
-            favs.unshift(channel);
-            if(favs.length > this.maxFavourites){
-                favs.pop();
-            }
-            this.setItem("favourites", favs);
-        }
-        else{
-            console.error("tried to set already existing favourite");
-        }
-    }
-
-    unsetFav(channel){
-        let favs = this.getItem("favourites");
-        let index = favs.indexOf(channel);
-        if(index>=0){
-            favs.splice(index, 1);
-            this.setItem("favourites", favs);
-        }
-        else{
-            console.error("tried to remove non existing favourite");
-        }
-    }
+    
 
     setLastChatPos(left, top){
         this.setItem("lastChatPos", {"left": left, "top": top});
@@ -111,16 +92,38 @@ class Storage{
         return this.setItem("lastSetVolume", volume);
     }
 
+    setFav(channel){
+        let msg = {
+            "op": "setFav",
+            "channel": channel,
+        }
+        this.sendToBg(msg, false);
+    }
+
+    unsetFav(channel){
+        let msg = {
+            "op": "unsetFav",
+            "channel": channel,
+        }
+        this.sendToBg(msg, false);
+    }
+
 
     getResumePoint(vid){
-        let resumePositions = this.getItem("resumePositions");
-        return resumePositions && resumePositions[vid];
+        let msg = {
+            "op": "getResumePoint",
+            "vid": vid,
+        }
+        return this.sendToBg(msg, true);
     }
 
     setResumePoint(vid, secs){
-        let resumePositions = this.getItem("resumePositions");
-        resumePositions[vid] = secs;
-        this.setItem("resumePositions", resumePositions)
+        let msg = {
+            "op": "setResumePoint",
+            "vid": vid,
+            "secs": secs,
+        }
+        this.sendToBg(msg, false);
     }
 }
 

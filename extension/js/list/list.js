@@ -343,9 +343,11 @@ class Ui{
                 let typeName = typeNames[this.media.getter.type];
                 document.title = channel + " " + typeName;
                 elements.channelTitleChannelName.textContent = `${channel}`;
-                if(this.favs.faved(channel)){
-                    elements.channelTitleChannelFav.classList.add("faved");
-                }
+                this.favs.faved(channel).then(faved=>{
+                    if(faved){
+                        elements.channelTitleChannelFav.classList.add("faved");
+                    }
+                });
                 elements.channelTitleChannelFav.style.display = "block";
                 if(this.media.currentVideoData && this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
                     utils.userIdFromUsername(channel).then(id=>{

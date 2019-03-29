@@ -7,12 +7,13 @@ class Favourites{
         this.init();
     }
     init(){
-        let channels = utils.storage.getItem(this.storageName);
-        let channel, elem;
-        for(channel of channels){
-            elem = this.makeChannelLink(channel);
-            elements.linkList.appendChild(elem);
-        }
+        utils.storage.getItem(this.storageName).then(channels=>{
+            let channel, elem;
+            for(channel of channels){
+                elem = this.makeChannelLink(channel);
+                elements.linkList.appendChild(elem);
+            }
+        });
     }
 
     makeChannelLink(channel){
@@ -23,8 +24,9 @@ class Favourites{
     }
 
     faved(channel){
-        let favs = utils.storage.getItem("favourites");
-        return favs.indexOf(channel) >= 0;
+        return utils.storage.getItem(this.storageName).then(channels=>{
+            return channels.indexOf(channel) >= 0;
+        });
     }
 
     add(channel){

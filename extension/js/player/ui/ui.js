@@ -1,4 +1,4 @@
-import { getPlayer } from '../player.js';
+import { getPlayer, DummyPlayer } from '../player.js';
 import { ReChatInterface, LiveChatInterface } from '../../chat/ui/chat.js';
 import { elements } from './elements.js';
 import * as components from './components/components.js';
@@ -11,6 +11,7 @@ import { settings } from '../../settings.js';
 class Ui{
     constructor(){
         let vid = utils.findGetParameter("vid");
+        let chatonly = utils.findGetParameter("chatonly");
         let channel = utils.findGetParameter("channel");
         let channelID = utils.findGetParameter("channelID");
         if(vid){
@@ -21,19 +22,28 @@ class Ui{
             settings.mode = "live";
             elements.app.classList.add("live");
         }
-        this.player = getPlayer(elements.video);
-        // components
-        this.components = {
-            "slider": new components.Slider(this.player, elements.slider),
-            "qualityOptions": new components.QualityOptions(this.player, elements.qualitySelector),
-            "playerButtons": new components.PlayerButtons(this.player),
-            "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom)
+        if(chatonly){
+            this.player = new DummyPlayer();
+            this.components = {
+                "slider": new components.Slider(this.player, elements.slider),
+                "playerButtons": new components.PlayerButtons(this.player),
+                "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom)
+            }
+        }
+        else{
+            this.player = getPlayer(elements.video);
+            this.components = {
+                "slider": new components.Slider(this.player, elements.slider),
+                "qualityOptions": new components.QualityOptions(this.player, elements.qualitySelector),
+                "playerButtons": new components.PlayerButtons(this.player),
+                "playerControls": new components.PlayerControls(this.player, elements.interfaceBottom)
+            }
         }
 
         this.keyBindings = new KeyBindings(this.player, this.components);
 
         this.uiInitialized = false;
-
+        this.chatonly = chatonly;
         if(settings.mode === "video"){
             this.loadVideo(vid);
         }
@@ -72,11 +82,13 @@ class Ui{
                 this.setCurrentTotalTime();
             };
         }
-        let onplayermetaloaded = ()=>{
-            this.components.slider.drawMutedSegments();
-            this.player.removeEventListener("loadedmetadata", onplayermetaloaded);
+        if(!this.chatonly){
+            let onplayermetaloaded = ()=>{
+                this.components.slider.drawMutedSegments();
+                this.player.removeEventListener("loadedmetadata", onplayermetaloaded);
+            }
+            this.player.addEventListener("loadedmetadata", onplayermetaloaded);
         }
-        this.player.addEventListener("loadedmetadata", onplayermetaloaded);
         let component;
         for(component in this.components){
             if(!this.components[component]){continue;}
@@ -113,7 +125,12 @@ class Ui{
             this.player.removeEventListener("canplay", canPlayHandler);
             this.updateAllInterval = setInterval(this.updateAll.bind(this), 500);
         };
-        this.player.addEventListener("canplay", canPlayHandler);
+        if(this.chatonly){
+            this.updateAllInterval = setInterval(this.updateAll.bind(this), 500);
+        }
+        else{
+            this.player.addEventListener("canplay", canPlayHandler);
+        }
     }
 
     loadChannel(channel, channelID){
@@ -136,14 +153,16 @@ class Ui{
     loadVideo(vid){
         this.chatInterface = new ReChatInterface(elements.chat);
         this.player.start(vid).then(()=>{
-            this.components.qualityOptions.loadQualityOptions();
-            this.player.play();
             if(!this.uiInitialized){
                 this.init();
                 this.uiInitialized = true;
             }
-            this.components.qualityOptions.initOnLevelChange();
-            this.components.slider.initOnBufferAppended();
+            this.player.play();
+            if(!this.chatonly){
+                this.components.qualityOptions.loadQualityOptions();
+                this.components.qualityOptions.initOnLevelChange();
+                this.components.slider.initOnBufferAppended();
+            }
         });
         this.player.video.loaded.then(()=>{
             if(this.player.video.hoverThumbsInfoLoaded){
@@ -190,7 +209,7 @@ class Ui{
         if(settings.mode === "live")return;
         if(Math.abs(secs - this.lastResumePoint) > 7){
             this.lastResumePoint = secs;
-            utils.storage.setResumePoint(this.player.video.vid, secs);
+            utils.storage.setResumePoint(this.player.video.vid, parseInt(secs));
         }
     }
 

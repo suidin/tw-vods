@@ -96,12 +96,36 @@ class FixedSizeArray{
     }
 }
 
+
 class Uitility{
     constructor(){
         this.storage = storage;
         this.colors = colors;
         this.dialog = new Dialog();
-        this.getClientId();
+        this.ready = this.checkReady();
+    }
+
+
+
+    checkReady(){
+        let msg = {"event": "readyCheck"};
+        let p = new Promise(resolve=>{
+            let fn = ()=>{
+                chrome.runtime.sendMessage(msg, response => {
+                    if (response){
+                        resolve();
+                    }
+                    else{
+                        setTimeout(fn, 200);
+                    }
+                });
+            };
+            fn();
+
+        });
+        return p.then(()=>{
+            return this.getClientId();
+        });
     }
 
     import(){
@@ -149,8 +173,9 @@ class Uitility{
     }
 
     export(){
-        let s = this.storage.export();
-        this.dialog.alert(s);
+        this.storage.export().then(s=>{
+            this.dialog.alert(s);
+        });
     }
 
 
@@ -216,14 +241,15 @@ class Uitility{
     }
 
     getClientId(){
-        const storageClientId = this.storage.getItem("clientId");
-        const clientId = storageClientId || settings.clientId;
-        if(clientId && clientId.length){
-            settings.clientId = clientId;
-        }
-        else{
-            this.promptClientId();
-        }
+        return this.storage.getItem("clientId").then(storageClientId=>{
+            const clientId = storageClientId || settings.clientId;
+            if(clientId && clientId.length){
+                settings.clientId = clientId;
+            }
+            else{
+                this.promptClientId();
+            }
+        });
     }
 
     fetch(url, format="json", params){

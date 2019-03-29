@@ -24,9 +24,11 @@ class Stream{
           hls.loadSource(this.manifestUrl);
           hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
             utils.log("manifest loaded, found " + data.levels.length + " quality level");
-            hls.nextLevel = this.getClosestLevel(data.levels);
-            cb && cb();
-            resolver();
+            this.getClosestLevel(data.levels).then(nextLevel=>{
+                hls.nextLevel = nextLevel;
+                cb && cb();
+                resolver();
+            });
           });
         });
     }
@@ -44,22 +46,23 @@ class Stream{
     }
 
     getClosestLevel(levels){
-        let last = utils.storage.getLastSetQuality();
-        if(last === "Auto"){
-            return -1;
-        }
-        let index = 0;
-        let level, bitrate;
-        for(level of levels){
-            bitrate = level.bitrate;
-            if(bitrate>last){
-                return index-1;
+        return utils.storage.getLastSetQuality().then(last=>{
+            if(last === "Auto"){
+                return -1;
             }
-            else{
-                index++;
+            let index = 0;
+            let level, bitrate;
+            for(level of levels){
+                bitrate = level.bitrate;
+                if(bitrate>last){
+                    return index-1;
+                }
+                else{
+                    index++;
+                }
             }
-        }
-        return index-1;
+            return index-1;
+        });
     }
 }
 
@@ -68,7 +71,7 @@ class Video{
         this.vid = vid;
         this.loaded = this.loadData();
         this.loaded = this.loaded.then(()=>{
-            this.makeConfig();
+            return this.makeConfig();
         });
     }
 
@@ -122,14 +125,18 @@ class Video{
     }
 
     makeConfig(){
-        let config = {};
-        let GETTime = parseInt(utils.findGetParameter("time"));
-        let startPosition = GETTime || utils.storage.getResumePoint(this.vid) || 0;
-        config.startPosition = startPosition;
-        let volume = utils.storage.getLastSetVolume() || 0.5;
-        config.volume = volume;
+        return utils.storage.getResumePoint(this.vid).then(resumePoint=>{
+            return utils.storage.getLastSetVolume().then(volume=>{
+                let config = {};
+                let GETTime = parseInt(utils.findGetParameter("time"));
+                let startPosition = GETTime || resumePoint || 0;
+                config.startPosition = startPosition;
+                volume = volume || 0.5;
+                config.volume = volume;
 
-        this.config = config;
+                this.config = config;
+            });
+        });
     }
 }
 
@@ -153,11 +160,11 @@ class Live{
     }
 
     makeConfig(){
-        let config = {};
-        let volume = utils.storage.getLastSetVolume() || 0.5;
-        config.volume = volume;
-
-        this.config = config;
+        return utils.storage.getLastSetVolume().then(volume=>{
+            let config = {};
+            config.volume = volume || 0.5;
+            this.config = config;
+        });
     }
     
 }
