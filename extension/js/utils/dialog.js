@@ -4,8 +4,9 @@ class Dialog{
 
     do(type, text){
         if(!this.elems){
-            this.setup(type);
+            this.setup();
         }
+        this.type = type;
         this.elems.elem.id = type;
         this.elems.text.textContent = text;
         this.elems.input.value = "";
@@ -18,6 +19,9 @@ class Dialog{
     prompt(text){
         return this.do("prompt", text);
     }
+    promptFile(text){
+        return this.do("promptFile", text);
+    }
     alert(text){
         return this.do("alert", text);
     }
@@ -25,12 +29,13 @@ class Dialog{
         return this.do("dialog", text);
     }
 
-    setup(type){
+    setup(){
         let elem = document.createElement("dialog");
         elem.innerHTML = `<form method="dialog">
             <div>
                 <div class="dialog-text">:</div>
                 <input type="text">
+                <input type="file">
             </div>
             <menu>
                 <button class="dialog-cancel" type="reset">Cancel</button>
@@ -41,6 +46,7 @@ class Dialog{
         let elems = {"elem": elem};
         elems.text = elem.querySelector(".dialog-text");
         elems.input = elem.querySelector("input");
+        elems.inputFile = elem.querySelector("input[type=file]");
         elems.cancel = elem.querySelector(".dialog-cancel");
         elems.form = elem.querySelector("form");
         this.elems = elems;
@@ -55,8 +61,18 @@ class Dialog{
 
         let submit = e=>{
             this.elems.elem.close();
-            let val = this.elems.input.value;
-            if(!val.length){val = true;}
+            let val;
+            if (this.type == "promptFile"){
+                val = new FileReader();
+                val.readAsText(this.elems.inputFile.files[0]);
+                val.length = 1;
+            }
+            else{
+                val = this.elems.input.value;
+            }
+            if(!val.length){
+                val = true;
+            }
             this.elems.form.removeEventListener("submit", submit);
             resolve(val);
         }

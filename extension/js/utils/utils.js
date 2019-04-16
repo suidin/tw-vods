@@ -129,19 +129,22 @@ class Uitility{
     }
 
     import(){
-        this.dialog.prompt("Please enter settings string").then(importString=>{
-            if(importString){
-                let success = this.storage.import(importString);
-                let returnMsg;
-                if(success){
-                    returnMsg = "successfully imported settings";
-                }
-                else{
-                    returnMsg = "could not import settings";
-                }
-                setTimeout(e=>{
-                    this.dialog.alert(returnMsg);
-                }, 100);
+        this.dialog.promptFile("Please select exported file").then(reader=>{
+            if(reader){
+                reader.onload = ()=>{
+                    let importString = reader.result;
+                    let success = this.storage.import(importString);
+                    let returnMsg;
+                    if(success){
+                        returnMsg = "successfully imported settings";
+                    }
+                    else{
+                        returnMsg = "could not import settings";
+                    }
+                    setTimeout(e=>{
+                        this.dialog.alert(returnMsg);
+                    }, 100);
+                };
             }
         });
     }
@@ -174,7 +177,12 @@ class Uitility{
 
     export(){
         this.storage.export().then(s=>{
-            this.dialog.alert(s);
+            let a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([s], {type: 'text'}));
+            a.download = 'export.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         });
     }
 

@@ -264,9 +264,18 @@ dialog input{
     padding: .5em;
     width: 100%;
 }
+dialog input[type=file]{
+    display:none;
+}
 
 #prompt{
 
+}
+#promptFile input[type=text]{
+    display:none;
+}
+#promptFile input[type=file]{
+    display:inline;
 }
 #dialog input, #alert input{
     display:none;
