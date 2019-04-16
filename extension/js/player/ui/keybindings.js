@@ -75,12 +75,12 @@ class KeyBindings{
                         this.seekVideo(-this.VIDEO_SEEK_AMOUNT);
                         break;
                     case 38:
-                        volume = this.player.volume + 0.05;
+                        volume = this.player.volume + 0.025;
                         if(volume>1){volume = 1;}
                         this.player.volume = volume;
                         break;
                     case 40:
-                        volume = this.player.volume - 0.05;
+                        volume = this.player.volume - 0.025;
                         if(volume<0){volume = 0;}
                         this.player.volume = volume;
                         break;
