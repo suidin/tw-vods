@@ -250,7 +250,7 @@ class Uitility{
 
     getClientId(){
         return this.storage.getItem("clientId").then(storageClientId=>{
-            const clientId = storageClientId || settings.clientId;
+            const clientId =  settings.clientId || storageClientId;
             if(clientId && clientId.length){
                 settings.clientId = clientId;
             }

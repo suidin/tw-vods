@@ -9,7 +9,7 @@ class AbstractApi{
         this.includeClientID = true;
     }
 
-    call(url, includeClientID=true, includeApiHeader=this.includeApiHeader, format=this.format, postBody){
+    call(url, includeClientID=true, includeApiHeader=this.includeApiHeader, format=this.format, postBody=false, oauth=false){
         let headers = {};
         if(includeClientID){
             headers["Client-ID"] = settings.clientId;
@@ -20,6 +20,7 @@ class AbstractApi{
         let params = {
             "headers": headers,
             "mode": this.params.mode,
+            "credentials": this.params.credentials || "include",
             "method": this.params["method"],
         }
         if(params.method === "POST" && postBody){

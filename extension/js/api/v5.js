@@ -7,6 +7,7 @@ class V5Api extends AbstractApi{
         this.params = {
             "method": "GET",
             "accept": "application/vnd.twitchtv.v5+json",
+            "credentials": "omit",
             "mode": "cors",
             "includeClientId": true,
         };
@@ -42,7 +43,7 @@ class V5Api extends AbstractApi{
         else{
             url = `https://api.twitch.tv/v5/videos/${vId}/comments?cursor=${ident}`;
         }
-        return this.call(url); 
+        return this.call(url, true, true, this.format, false, true);
     }
 
     follows(username, limit=25){

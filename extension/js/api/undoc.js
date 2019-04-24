@@ -7,6 +7,7 @@ class UndocumentedApi extends AbstractApi{
         this.params = {
             "method": "GET",
             "accept": "application/vnd.twitchtv.v5+json",
+            "credentials": "omit",
             "mode": "cors",
             "includeClientId": true,
         };
