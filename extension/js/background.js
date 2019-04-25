@@ -1,4 +1,20 @@
+function getFirstPartyClientId(){
+    let urlThatIncludesCoreScript = "https://www.twitch.tv/directory/all";
+    let coreScriptUrlRegex = /<script src="(https:\/\/static\.twitchcdn\.net\/assets\/core-[^"]+)"/;
+    let clientIdRegex = /\.allAuthSettings.*?Www]={clientID:"([^"]+)",cookieName:"twilight-user"/;
 
+    return fetch(urlThatIncludesCoreScript).then(response=>{
+        return response.text();
+    }).then(text=>{
+        let scriptUrl = text.match(coreScriptUrlRegex)[1];
+        return fetch(scriptUrl);
+    }).then(response=>{
+        return response.text();
+    }).then(text=>{
+        let clientId = text.match(clientIdRegex)[1];
+        return clientId;
+    });
+}
 
 function openList(){
     let newUrl = chrome.runtime.getURL("../list.html");
