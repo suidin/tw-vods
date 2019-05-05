@@ -215,9 +215,7 @@ class Ui{
 
     updateAll(){
         let secs = this.player.getCurrentTime();
-        if(settings.mode === "video"){        
-            this.chatInterface.iterate(secs);
-        }
+        this.chatInterface.iterate(secs);
         this.updateCurrentTime(secs);
     }
 }

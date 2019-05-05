@@ -345,11 +345,7 @@ class LiveChatInterface extends ChatInterface{
     }
 
     onMsg(msg){
-        this.removeOldLines();
         this.addMsg(msg);
-        if(this.autoScroll){
-            this.scrollToBottom();
-        }
     }
 
     getBadgeElems(badges){
@@ -366,7 +362,10 @@ class LiveChatInterface extends ChatInterface{
     }
 
     iterate(){
-        // this is just a placeholder until chat rewind in live broadcast is implemented
+        this.removeOldLines();
+        if(this.autoScroll){
+            this.scrollToBottom();
+        }
     }
 }
 
