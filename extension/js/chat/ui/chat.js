@@ -29,6 +29,8 @@ class ChatInterface{
         this.badges = {
             "moderator": "/resources/badges/mod.png",
             "staff": "/resources/badges/staff.png",
+            "vip": "/resources/badges/vip.png",
+            "partner": "/resources/badges/partner.png",
         }
 
         this.autoScroll = true;

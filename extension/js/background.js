@@ -17,12 +17,47 @@ function getFirstPartyClientId(){
 }
 
 function openList(){
+    console.log("test");
     let newUrl = chrome.runtime.getURL("../list.html");
     chrome.tabs.create({ url: newUrl });
 }
-
+function openPlayer(queryStr){
+    let newUrl = chrome.runtime.getURL("../player.html") + queryStr;
+    chrome.tabs.create({ url: newUrl });
+}
+const twitchRegex = /twitch.tv\/([^\/]*)\/?(\d*)\??.*?(t=)?(\d*)?h?(\d*)?m?(\d*)?s?/
 chrome.browserAction.onClicked.addListener(function(tab) {
-    openList();
+    chrome.tabs.getSelected(tab=>{
+        if(tab.url){
+            let match = twitchRegex.exec(tab.url);
+            if(match){
+                if(match[1] === "videos"){
+                    let vid = match[2] && parseInt(match[2]);
+                    if(vid){
+                        let queryStr = `?vid=${vid}`;
+                        if (match[3] == "t="){
+                            let hours = match[6] && match[4] || 0;
+                            let mins = hours && match[5] || 0;
+                            let secs = hours && match[6] || mins && match[5] || match[4] || 0;
+                            secs = parseInt(secs) + parseInt(mins)*60 + parseInt(hours)*3600;
+                            queryStr += `&time=${secs}`;
+                        }
+                        openPlayer(queryStr);
+                        return;
+                    }
+                }
+                else{
+                    let channel = match[1];
+                    if(tab.url.endsWith("videos"))
+                    if(channel){
+                        openPlayer(`?channel=${channel}`);
+                        return;
+                    }
+                }
+            }
+        }
+        openList();
+    });
 });
 chrome.runtime.onInstalled.addListener(function (object) {
     if(chrome.runtime.OnInstalledReason.INSTALL === object.reason){

@@ -23,6 +23,30 @@
             <div class="player-overlay"></div>
             <div class="player-interface">
                 <div class="player-interface__bottom">
+                    <div class="player-buttons-left">
+                        <div class="player-button--play-pause player-button">
+                            <svg id="icon_pause" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 7h-3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1m7 0h-3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1"></path>
+                            </svg>
+                            <svg id="icon_play" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M22.447 14.105l-14-7A1 1 0 0 0 7 8v14a.999.999 0 0 0 1.447.894l14-7a1 1 0 0 0 0-1.789"></path></svg>
+                        </div>
+                        <div class="player-volume">
+                            <div class="player-volume__icon player-button">
+                                <svg style="display:block" class="player-icon-volumefull" id="icon_volumefull" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M18 11.024v7.952c1.208-.913 2-2.348 2-3.976 0-1.628-.792-3.062-2-3.976zM18 7v2.04c2.363 1.06 4 3.325 4 5.96 0 2.634-1.637 4.9-4 5.96V23c3.49-1.17 6-4.309 6-8s-2.51-6.83-6-8zm-2 15a1.002 1.002 0 0 1-1.641.768L8.638 19H7a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h1.638l5.721-3.768A1.002 1.002 0 0 1 16 8v14z"></path></svg>
+                                <svg style="display:none" class="player-icon-volumemute" id="icon_volumemute" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M16 22a1.002 1.002 0 0 1-1.641.768L8.638 19H7a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h1.638l5.721-3.768A1.002 1.002 0 0 1 16 8v14zm6.414-7l1.293 1.293a1 1 0 0 1-1.414 1.414L21 16.414l-1.293 1.293a.997.997 0 0 1-1.414 0 .999.999 0 0 1 0-1.414L19.586 15l-1.293-1.293a1 1 0 0 1 1.414-1.414L21 13.586l1.293-1.293a1 1 0 0 1 1.414 1.414L22.414 15z"></path></svg>
+                            </div>
+                            <div class="player-volume-control">
+                                <input type="range" min=0 max=1 step=0.025 class="player-volume-control__slider" role="slider" tabindex="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="player-buttons-right">
+                        <div class="player-button quality-selector">
+                            <select class="select-quality">
+                            </select>
+                        </div>
+                            
+                    </div>    
                     <div class="player-time">
                         <div class="player-time-display">
                             <span class="player-current-time">0:00:00</span>
@@ -47,30 +71,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="player-buttons-left">
-                        <div class="player-button--play-pause player-button">
-                            <svg id="icon_pause" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M13 7h-3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1m7 0h-3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1"></path>
-                            </svg>
-                            <svg id="icon_play" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M22.447 14.105l-14-7A1 1 0 0 0 7 8v14a.999.999 0 0 0 1.447.894l14-7a1 1 0 0 0 0-1.789"></path></svg>
-                        </div>
-                        <div class="player-volume">
-                            <div class="player-volume__icon player-button">
-                                <svg style="display:block" class="player-icon-volumefull" id="icon_volumefull" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M18 11.024v7.952c1.208-.913 2-2.348 2-3.976 0-1.628-.792-3.062-2-3.976zM18 7v2.04c2.363 1.06 4 3.325 4 5.96 0 2.634-1.637 4.9-4 5.96V23c3.49-1.17 6-4.309 6-8s-2.51-6.83-6-8zm-2 15a1.002 1.002 0 0 1-1.641.768L8.638 19H7a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h1.638l5.721-3.768A1.002 1.002 0 0 1 16 8v14z"></path></svg>
-                                <svg style="display:none" class="player-icon-volumemute" id="icon_volumemute" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><path d="M16 22a1.002 1.002 0 0 1-1.641.768L8.638 19H7a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h1.638l5.721-3.768A1.002 1.002 0 0 1 16 8v14zm6.414-7l1.293 1.293a1 1 0 0 1-1.414 1.414L21 16.414l-1.293 1.293a.997.997 0 0 1-1.414 0 .999.999 0 0 1 0-1.414L19.586 15l-1.293-1.293a1 1 0 0 1 1.414-1.414L21 13.586l1.293-1.293a1 1 0 0 1 1.414 1.414L22.414 15z"></path></svg>
-                            </div>
-                            <div class="player-volume-control">
-                                <input type="range" min=0 max=1 step=0.025 class="player-volume-control__slider" role="slider" tabindex="0">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="player-buttons-right">
-                        <div class="player-button quality-selector">
-                            <select class="select-quality">
-                        </div>
-                            
-                        </select>
-                    </div>    
                 </div>
             </div>
         </div>
