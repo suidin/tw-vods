@@ -100,7 +100,7 @@ class Ui{
 
     init(){
         this.handlers();
-        if(this.player.video.videoStatus && this.player.video.videoStatus === "recording"){
+        if(!this.chatonly && this.player.video.videoStatus && this.player.video.videoStatus === "recording"){
             this.videoRecordingAppendInterval = setInterval(()=>{
                 this.player.video.stream.hls.levelController.loadLevel();
             }, 5*60*1000);
