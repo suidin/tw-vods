@@ -125,6 +125,21 @@ class Storage{
         }
         this.sendToBg(msg, false);
     }
+    getUserId(username){
+        let msg = {
+            "op": "getUserId",
+            "username": username,
+        }
+        return this.sendToBg(msg, true);
+    }
+    setUserId(username, id){
+        let msg = {
+            "op": "setUserId",
+            "username": username,
+            "id": id,
+        }
+        this.sendToBg(msg, false);
+    }
 }
 
 const storage = new Storage();

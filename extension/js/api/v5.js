@@ -23,11 +23,9 @@ class V5Api extends AbstractApi{
         return this.call(url);
     }
 
-    videos(channel, type="archive", limit=30, sort="time", offset=0){
-        let url = `https://api.twitch.tv/kraken/channels/${channel}/videos?limit=${limit}&broadcast_type=${type}&offset=${offset}&sort=${sort}`
-        // for some reason this api call only works if you DONT include the accept header.
-        // otherwise the server expects a clientID and returns 500
-        return this.call(url, true, false);
+    videos(id, type="archive", limit=30, sort="time", offset=0){
+        let url = `https://api.twitch.tv/kraken/channels/${id}/videos?limit=${limit}&broadcast_type=${type}&offset=${offset}&sort=${sort}`
+        return this.call(url);
     }
 
     streams(limit=25, offset=0, language="en", game=""){
@@ -43,12 +41,12 @@ class V5Api extends AbstractApi{
         else{
             url = `https://api.twitch.tv/v5/videos/${vId}/comments?cursor=${ident}`;
         }
-        return this.call(url, true, true, this.format, false, true);
+        return this.call(url);
     }
 
-    follows(username, limit=25){
-        let url = `https://api.twitch.tv/kraken/users/${username}/follows/channels?limit=${limit}`;
-        return this.call(url, true, false);
+    follows(id, limit=25){
+        let url = `https://api.twitch.tv/kraken/users/${id}/follows/channels?limit=${limit}`;
+        return this.call(url);
     }
 
     badges(id){

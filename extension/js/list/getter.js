@@ -20,8 +20,9 @@ class VideosGetter{
         if (this.page > this.lastPage){
             this.page = this.lastPage;
         }
-        let promise = v5Api.videos(this.channel, this.type, this.perPage, this.sort, this.currentOffset());
-        return promise.then(json=>{
+        return utils.getUid(this.channel).then(uid=>{
+            return v5Api.videos(uid, this.type, this.perPage, this.sort, this.currentOffset());
+        }).then(json=>{
             if(!json){return;}
             this.total = json["_total"];
             this.lastPage = Math.ceil(this.total/this.perPage);

@@ -194,7 +194,9 @@ class Uitility{
     }
 
     getUserFollows(username, limit=25){
-        return v5Api.follows(username, limit).then(json=>{
+        return this.getUid(username).then(uid=>{
+            return v5Api.follows(uid, limit);
+        }).then(json=>{
             if(json && json.follows && json.follows.length){
                 return json.follows.map(i=>i.channel.display_name);
             }
@@ -204,13 +206,23 @@ class Uitility{
         });
     }
 
-    userIdFromUsername(name){
-        return v5Api.userID(name).then(json=>{
-            if(json && json.users && json.users.length){
-                return json.users[0]["_id"];
+    getUid(name){
+        return this.storage.getUserId(name).then(id=>{
+            if (id){
+                console.log("got uid from storage:", name, id);
+                return id;
             }
             else{
-                return false;
+                return v5Api.userID(name).then(json=>{
+                    if(json && json.users && json.users.length){
+                        id = json.users[0]["_id"];
+                        this.storage.setUserId(name, id);
+                        return id;
+                    }
+                    else{
+                        return false;
+                    }
+                });
             }
         });
     }

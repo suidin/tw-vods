@@ -349,11 +349,9 @@ class Ui{
                     }
                 });
                 elements.channelTitleChannelFav.style.display = "block";
-                if(this.media.currentVideoData && this.media.currentVideoData[0].preview.startsWith("https://vod-secure.twitch.tv/_404")){
-                    utils.userIdFromUsername(channel).then(id=>{
-                        elements.channelTitleChannelName.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
-                    });
-                }
+                utils.getUid(channel).then(id=>{
+                    elements.channelTitleChannelName.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
+                });
                 elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
             }
             else{
