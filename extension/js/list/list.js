@@ -7,6 +7,7 @@ import {settings} from '../settings.js';
 import {Pagination} from '../utils/pagination.js';
 import {utils} from '../utils/utils.js';
 import {v5Api} from '../api/v5.js';
+import {HelixEndpoint} from '../api/helix.js';
 
 
 const typeNames = {
@@ -25,6 +26,7 @@ const defaultParams = {
 class Ui{
     constructor(){
         this.favs = new Favourites();
+        this.userStreamsEndpoint = new HelixEndpoint("userStreams");
         this.pagination = new Pagination(elements.paginationPages);
         // this.channelAwesomeplete = new Awesomplete(elements.optionsChannel, {list: this.favs.channels, autoFirst: true, minChars: 1});
         new AweSearcher(elements.optionsGame, "games");
@@ -34,6 +36,26 @@ class Ui{
         if(!this.loadFromGET() && settings.clientId.length){
             this.updateFormElements(defaultParams.type);
             this.load(defaultParams, true);
+        }
+    }
+
+    showLiveFavs(channels){
+        if(!this.favStreams){
+            this.favStreams = new Streams();
+        }
+        this.clean();
+
+        if(channels){
+            this.userStreamsEndpoint.call(channels).then(data=>{
+                this.favStreams.addStreamsHelix(data);
+            });
+        }
+        else{            
+            utils.storage.getItem("favourites").then(channels=>{
+                this.userStreamsEndpoint.call(channels).then(data=>{
+                    this.favStreams.addStreamsHelix(data);
+                });
+            });
         }
     }
 
@@ -191,6 +213,12 @@ class Ui{
             elements.linkList.style.display = "none";
             hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
             showElems = elements.form.querySelectorAll(".search-option.search-option--live");
+        }
+        else if(type === "favs"){
+            elements.linkList.style.display = "none";
+            hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
+            showElems = elements.form.querySelectorAll(".search-option.search-option--live");
+            this.showLiveFavs();
         }
         else{
             elements.linkList.style.display = "flex";

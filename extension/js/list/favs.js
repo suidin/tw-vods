@@ -1,14 +1,16 @@
 import {utils} from '../utils/utils.js';
 import {elements} from './elements.js';
 
+
 class Favourites{
     constructor(){
         this.storageName = "favourites";
         this.init();
+
     }
     init(){
+        let channel, elem;
         utils.storage.getItem(this.storageName).then(channels=>{
-            let channel, elem;
             for(channel of channels){
                 elem = this.makeChannelLink(channel);
                 elements.linkList.appendChild(elem);

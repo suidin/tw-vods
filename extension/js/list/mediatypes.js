@@ -188,7 +188,7 @@ class Streams{
             this.nonlisted = true;
             this.loadnonlisted();
         }
-        else{
+        else if (params){
             this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
         }
 
@@ -286,6 +286,33 @@ class Streams{
         return elem;
     }
 
+    createStreamCardHelix(stream){
+        let uptime = utils.twTimeStrToTimePassed(stream.started_at);
+        let game = "";
+        let thumb = stream.thumbnail_url;
+        thumb = thumb.replace("{width}", "320");
+        thumb = thumb.replace("{height}", "180");
+        let title = utils.escape(stream["title"]);
+        let viewers = stream["viewer_count"].toString();
+        if(viewers.length > 3){
+            viewers = viewers.substring(0, viewers.length-3) + "," + viewers.substring(viewers.length-3);
+        }
+        let channel = stream["user_name"];
+        let logoElem = "";
+        let playerUrl = `player.html?channel=${channel}&channelID=${stream["id"]}`;
+        let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
+        let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
+        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
+        let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div>${viewersElem}${lengthElem}</a>`;
+        let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${channel}</a></div>`;
+        let elem = document.createElement("div");
+        elem.className = "video-card";
+        elem.innerHTML = `${thumbElem}${logoElem}${titleElem}${nameElem}${gameElem}`;
+
+        return elem;
+    }
+
     addStream(stream){
         let card = this.createStreamCard(stream);
         elements.resultList.appendChild(card);
@@ -296,6 +323,19 @@ class Streams{
         let stream;
         for(stream of streams){
             this.addStream(stream);
+        }
+    }
+
+    addStreamHelix(stream){
+        let card = this.createStreamCardHelix(stream);
+        elements.resultList.appendChild(card);
+    }
+
+    addStreamsHelix(streams){
+        this.makeThumbTimeParam();
+        let stream;
+        for(stream of streams){
+            this.addStreamHelix(stream);
         }
     }
 }

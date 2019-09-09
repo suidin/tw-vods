@@ -6,7 +6,7 @@ class HelixApi extends AbstractApi{
         super();
         this.params = {
             "method": "GET",
-            "accept": "application/vnd.twitchtv.v5+json",
+            "accept": "",
             "credentials": "omit",
             "mode": "cors",
             "includeClientId": true,
@@ -35,19 +35,19 @@ class HelixApi extends AbstractApi{
         return this.call(url);
     }
 
-    userVideos(uid, first=30, direction="after", cursor=false, type="archive", sort="time"){
+    userVideos(uid, first=30, type="archive", sort="time", direction="after", cursor=false){
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/videos?user_id=${uid}&first=${first}&type=${type}${cursorParam}&sort=${sort}`;
         return this.call(url);
     }
 
-    gameVideos(gid, first=30, direction="after", cursor=false, type="archive", sort="views", period="month"){
+    gameVideos(gid, first=30, type="archive", sort="views", period="month", direction="after", cursor=false){
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/videos?game_id=${gid}&first=${first}&type=${type}${cursorParam}&sort=${sort}&language=en&period=${period}`;
         return this.call(url);
     }
 
-    streams(first=30, direction="after", cursor=false, languages=["en"], game_ids=false){
+    streams(first=30, languages=["en"], game_ids=false, direction="after", cursor=false){
         let gamesParam = this.arrToHelixStr("game_id", game_ids);
         let languagesParam = this.arrToHelixStr("language", languages);
         let cursorParam = this.cursorStr(direction, cursor);
@@ -58,7 +58,7 @@ class HelixApi extends AbstractApi{
     userStreams(users, first=30, direction="after", cursor=false){
         let usersPart = this.arrToHelixStr("user_login", users);
         let cursorParam = this.cursorStr(direction, cursor);
-        let url = `https://api.twitch.tv/helix/streams?first=${first}${cursorParam}${usersParam}`;
+        let url = `https://api.twitch.tv/helix/streams?first=${first}${cursorParam}${usersPart}`;
         return this.call(url);
     }
 
@@ -87,6 +87,43 @@ class HelixApi extends AbstractApi{
 }
 
 
-const helixApi = new helixApi();
+const helixApi = new HelixApi();
 
-export {helixApi};
+
+class HelixEndpoint{
+    constructor(endpoint){
+        this.endpoint = endpoint;
+    }
+    _call(params, direction, cursor){
+        if (params){
+            this.lastParams = params;
+        }
+        else{
+            params = this.lastParams;
+        }
+        if (direction && cursor){
+            params.push(direction, cursor);
+        }
+        let p = helixApi[this.endpoint](...params, direction, cursor);
+        return p.then(r=>{
+            this.lastPagination = r.pagination;
+            this.lastData = r.data;
+            return r.data;
+        });
+    }
+
+    call(...params){
+        return this._call(params)
+    }
+
+    next(){
+        return this.call(null, "after", this.lastPagination.cursor);
+    }
+
+    previous(){
+        return this.call(null, "before", this.lastPagination.cursor);
+    }
+
+}
+
+export {helixApi, HelixEndpoint};
