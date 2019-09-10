@@ -19,7 +19,7 @@ class HelixApi extends AbstractApi{
             return "";
         }
         let parts = arr.map(e=>`&${paramName}=${e}`);
-        return parts.join();
+        return parts.join("");
     }
 
     cursorStr(direction, cursor){
@@ -35,19 +35,19 @@ class HelixApi extends AbstractApi{
         return this.call(url);
     }
 
-    userVideos(uid, first=30, type="archive", sort="time", direction="after", cursor=false){
+    userVideos({uid, first=30, type="archive", sort="time"}={}, direction="after", cursor=false){
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/videos?user_id=${uid}&first=${first}&type=${type}${cursorParam}&sort=${sort}`;
         return this.call(url);
     }
 
-    gameVideos(gid, first=30, type="archive", sort="views", period="month", direction="after", cursor=false){
+    gameVideos({gid, first=30, type="archive", sort="views", period="month"}={}, direction="after", cursor=false){
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/videos?game_id=${gid}&first=${first}&type=${type}${cursorParam}&sort=${sort}&language=en&period=${period}`;
         return this.call(url);
     }
 
-    streams(first=30, languages=["en"], game_ids=false, direction="after", cursor=false){
+    streams({first=30, languages=["en"], game_ids=false} = {}, direction="after", cursor=false){
         let gamesParam = this.arrToHelixStr("game_id", game_ids);
         let languagesParam = this.arrToHelixStr("language", languages);
         let cursorParam = this.cursorStr(direction, cursor);
@@ -55,7 +55,7 @@ class HelixApi extends AbstractApi{
         return this.call(url);
     }
 
-    userStreams(users, first=30, direction="after", cursor=false){
+    userStreams({users, first=100}={}, direction="after", cursor=false){
         let usersPart = this.arrToHelixStr("user_login", users);
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/streams?first=${first}${cursorParam}${usersPart}`;
@@ -93,6 +93,7 @@ const helixApi = new HelixApi();
 class HelixEndpoint{
     constructor(endpoint){
         this.endpoint = endpoint;
+        this.lastCursor = null;
     }
     _call(params, direction, cursor){
         if (params){
@@ -101,27 +102,43 @@ class HelixEndpoint{
         else{
             params = this.lastParams;
         }
-        if (direction && cursor){
-            params.push(direction, cursor);
-        }
-        let p = helixApi[this.endpoint](...params, direction, cursor);
+
+        let p = helixApi[this.endpoint](params, direction, cursor);
         return p.then(r=>{
-            this.lastPagination = r.pagination;
+            this.lastCursor = r.pagination && r.pagination.cursor;
             this.lastData = r.data;
             return r.data;
         });
     }
 
-    call(...params){
+    call(params){
         return this._call(params)
     }
 
     next(){
-        return this.call(null, "after", this.lastPagination.cursor);
+        return new Promise((resolve, reject)=>{
+            if(this.lastCursor){
+                this._call(null, "after", this.lastCursor).then(data=>{
+                    resolve(data);
+                });
+            }
+            else{
+                reject();
+            }
+        });
     }
 
     previous(){
-        return this.call(null, "before", this.lastPagination.cursor);
+        return new Promise((resolve, reject)=>{
+            if(this.lastCursor){
+                this._call(null, "before", this.lastCursor).then(data=>{
+                    resolve(data);
+                });
+            }
+            else{
+                reject();
+            }
+        });
     }
 
 }

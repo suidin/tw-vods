@@ -369,6 +369,22 @@ class Uitility{
         return values.map(v => v.toString().padStart(2, "0")).join(":");
     }
 
+    HMSToSecs(s){
+        const timeIds = ["h", "m", "s"];
+        const multipliers = [3600, 60, 1];
+        let i;
+        let secs = 0;
+        let split;
+        for(i=0;i<timeIds.length;i++){
+            split = s.split(timeIds[i]);
+            if (split.length == 2){
+                secs += parseInt(split[0]) * multipliers[i];
+                s = split[1];
+            }
+        }
+        return secs;
+    }
+
     twTimeStrToDate(str){
         let date = new Date(Date.parse(str));
         return date;
@@ -443,6 +459,20 @@ class Uitility{
             rect.right <= (window.innerWidth)
         );
     }
+
+    getDocHeight() {
+        let D = document;
+        return Math.max(
+            D.body.scrollHeight, D.documentElement.scrollHeight,
+            D.body.offsetHeight, D.documentElement.offsetHeight,
+            D.body.clientHeight, D.documentElement.clientHeight
+        );
+    }
+
+    percentageScrolled(){
+        return Math.floor(window.pageYOffset/(this.getDocHeight() - window.innerHeight) * 100);
+    }
+
 }
 const utils = new Uitility();
 export {utils, FixedSizeArray};

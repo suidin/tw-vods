@@ -6,8 +6,6 @@ class Elements{
         this.optionsType = this.form.querySelector(".search-option__type");
         this.optionsChannel = this.form.querySelector(".search-option__channel");
         this.optionsGame = this.form.querySelector(".search-option__game");
-        this.optionsLimit = this.form.querySelector(".search-option__limit");
-        this.optionsPage = this.form.querySelector(".search-option__page");
         this.optionsElem = document.querySelector(".search-options");
 
         this.clientIdButton = document.querySelector(".client-id-button");

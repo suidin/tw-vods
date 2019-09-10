@@ -1,10 +1,9 @@
-import {Videos, Streams} from './mediatypes.js';
+import {Videos, StreamCards} from './cardrenderer.js';
 import {AweSearcher} from './searcher.js';
 import {Favourites} from './favs.js';
 
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
-import {Pagination} from '../utils/pagination.js';
 import {utils} from '../utils/utils.js';
 import {v5Api} from '../api/v5.js';
 import {HelixEndpoint} from '../api/helix.js';
@@ -14,24 +13,24 @@ const typeNames = {
     "live": "Live",
     "archive": "Past Broadcasts",
     "highlight": "Highlights",
-    "upload": "Uploads"
 }
 const defaultParams = {
-    perPage: 30,
-    page: 1,
     type: "live",
     game: ""
 };
 
 class Ui{
     constructor(){
-        this.favs = new Favourites();
+        this.streamsEndpoint = new HelixEndpoint("streams");
         this.userStreamsEndpoint = new HelixEndpoint("userStreams");
-        this.pagination = new Pagination(elements.paginationPages);
-        // this.channelAwesomeplete = new Awesomplete(elements.optionsChannel, {list: this.favs.channels, autoFirst: true, minChars: 1});
+        this.userVideosEndpoint = new HelixEndpoint("userVideos");
+
+        this.streamCardRenderer = new StreamCards();
+        this.videoCardRenderer = new Videos();
+
+        this.favs = new Favourites();
         new AweSearcher(elements.optionsGame, "games");
         new AweSearcher(elements.optionsChannel, "channels");
-        // this.gamesAwesomeplete = new Awesomplete(elements.optionsGame, {list: [], autoFirst: true, minChars: 1});
         this.handlers();
         if(!this.loadFromGET() && settings.clientId.length){
             this.updateFormElements(defaultParams.type);
@@ -40,26 +39,31 @@ class Ui{
     }
 
     showLiveFavs(channels){
-        if(!this.favStreams){
-            this.favStreams = new Streams();
-        }
         this.clean();
 
         if(channels){
             this.userStreamsEndpoint.call(channels).then(data=>{
-                this.favStreams.addStreamsHelix(data);
+                this.streamCardRenderer.addCards(data);
             });
         }
         else{            
             utils.storage.getItem("favourites").then(channels=>{
-                this.userStreamsEndpoint.call(channels).then(data=>{
-                    this.favStreams.addStreamsHelix(data);
+                this.userStreamsEndpoint.call({users:channels}).then(data=>{
+                    this.streamCardRenderer.addCards(data);
                 });
             });
         }
     }
 
     handlers(){
+        window.addEventListener("scroll", e=>{
+            if(this.loading)return;
+            if(utils.percentageScrolled()>95){
+                this.load();
+            }
+        });
+
+
         elements.channelTitleChannelFav.addEventListener("click",e=>{
             let faved = elements.channelTitleChannelFav.classList.contains("faved");
             if(faved){
@@ -110,12 +114,11 @@ class Ui{
             let focused = elements.form.querySelector(":focus");
             focused && focused.blur();
             let params = this.loadParams();
-            this.load(params, true);
+            this.load(params);
         });
         elements.optionsType.addEventListener("click", e=>{
             if(e.target.classList.contains("search-type-button")){
                 let type = e.target.dataset.type;
-                elements.optionsPage.value = 1;
                 this.updateFormElements(type);
             }
         });
@@ -125,7 +128,7 @@ class Ui{
                 let channel = e.target.textContent;
                 elements.optionsChannel.value = channel;
                 let params = this.loadParams();
-                this.load(params, true);
+                this.load(params);
             }
         });
         elements.linkList.addEventListener("click", (e)=>{
@@ -135,47 +138,6 @@ class Ui{
                 this.favs.remove(channel);
                 if(this.media && this.media.getter && this.media.getter.channel && this.media.getter.channel === channel){
                     elements.channelTitleChannelFav.classList.remove("faved");
-                }
-            }
-        });
-        elements.paginationPages.addEventListener("click", (e)=>{
-            let elem = e.target;
-            if(elem.className === "pagination-page"){
-                this.changePage(parseInt(elem.textContent));
-            }
-            else if(elem.classList.contains("pagination-page-gap")){
-                let direction;
-                if(elem.previousSibling.textContent === "1"){
-                    direction = -1;
-                }
-                else{
-                    direction = 1;
-                }
-                this.pagination.rotate(direction);
-            }
-        });
-
-        document.addEventListener("keydown", e=>{
-            if(e.ctrlKey || e.altKey)return;
-            if(e.keyCode === 9){
-                e.preventDefault();
-                let i;
-                if(e.shiftKey){
-                    i = -1;
-                }
-                else{
-                    i = 1;
-                }
-                this.changeSelectedCard(i);
-            }
-            else if(e.keyCode === 37){
-                if(this.media && this.media.getter && !this.loading && this.media.getter.page > 1){
-                    this.changePage(this.media.getter.page - 1);
-                }
-            }
-            else if(e.keyCode === 39){
-                if(this.media && this.media.getter && !this.loading && this.media.getter.page < this.media.getter.lastPage){
-                    this.changePage(this.media.getter.page + 1);
                 }
             }
         });
@@ -214,7 +176,7 @@ class Ui{
             hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
             showElems = elements.form.querySelectorAll(".search-option.search-option--live");
         }
-        else if(type === "favs"){
+        else if(type === "livefavs"){
             elements.linkList.style.display = "none";
             hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
             showElems = elements.form.querySelectorAll(".search-option.search-option--live");
@@ -235,22 +197,6 @@ class Ui{
         }
     }
 
-    changePage(page){
-        let params = {
-            "type": this.media.getter.type,
-            "perPage": this.media.getter.perPage,
-            "page": page
-        };
-        if(this.media.getter.type === "live"){
-            params["game"] = decodeURIComponent(this.media.getter.game);
-        }
-        else{
-            params["channel"] = this.media.getter.channel;
-        }
-        this.load(params, false);
-    }
-
-
     clean(){
         this.selectedCard = undefined;
         elements.paginationPages.innerHTML = "";
@@ -261,43 +207,9 @@ class Ui{
         elements.channelTitleChannelFav.classList.remove("faved");
     }
 
-    changeSelectedCard(i){
-        let selected, cont;
-        let cards = elements.resultList.children.length;
-        if(!cards)return;
-        if(this.selectedCard === undefined){
-            this.selectedCard = 0;
-        }
-        else{
-            selected = elements.resultList.children[this.selectedCard];
-            cont = selected.querySelector(".img-container");
-            this.selectedCard += i;
-            if(this.selectedCard>=cards){
-                this.selectedCard = 0;
-            }
-            else if(this.selectedCard<0){
-                this.selectedCard = cards-1;
-            }
-            selected.classList.remove("video-card--selected");
-            cont.classList.remove("animated")
-        }
-        selected = elements.resultList.children[this.selectedCard];
-        cont = selected.querySelector(".img-container");
-        selected.classList.add("video-card--selected");
-        if(cont.classList.contains("can-animate")){
-            cont.classList.add("animated");
-        }
-        selected.querySelector(".ext-player-link").focus();
-        if(!utils.isElementInViewport(selected)){
-            selected.scrollIntoView();
-        }
-    }
-
     loadParams(){
         let type = elements.optionsType.querySelector(".active").dataset.type;
         let params = {
-            perPage: parseInt(elements.optionsLimit.value),
-            page: parseInt(elements.optionsPage.value),
             "type": type
         };
         if(type === "live"){
@@ -312,6 +224,7 @@ class Ui{
     loadFromGET(){
         let params = utils.getStrToObj();
         let type = params["type"] || defaultParams["type"];
+        if(!params)params = {type: type};
         if(type === "watchlater"){
             this.loadWatchLater();
             return true;
@@ -321,17 +234,21 @@ class Ui{
         	return true;
         }
         if(params){
-            params["perPage"] = parseInt(params["perPage"]) || defaultParams["perPage"];
-            params["page"] = parseInt(params["page"]) || defaultParams["page"];
             if(type === "live"){
                 params["game"] = params["game"] || defaultParams["game"];
+            }
+            else if (type==="livefavs"){
+                this.showLiveFavs();
+                this.updateOptionsElem(params);
+                this.updateFormElements();
+                return true;
             }
             else{
                 params["type"] = type;
             }
             this.updateOptionsElem(params);
             this.updateFormElements();
-            this.load(params, true);
+            this.load(params);
             return true;
         }
         else{
@@ -343,8 +260,6 @@ class Ui{
         let active = elements.optionsType.querySelector(".active")
         active && active.classList.remove(".active");
         elements.optionsType.querySelector(`[data-type="${params.type}"]`).classList.add("active");
-        elements.optionsLimit.value = params.perPage;
-        elements.optionsPage.value = params.page;
         if(params.type === "live"){
             elements.optionsGame.value = params.game;
         }
@@ -358,88 +273,45 @@ class Ui{
         history.replaceState(params, "twitch-list | " + params.channel, getStr);
     }
 
-    updateResultsTitle(channel, success){
-        if(success){
-            this.currentChannel = channel;
-            let total = this.media.getter.total;
-            let page = this.media.getter.page;
-            let perPage = this.media.getter.perPage;
-            if(this.media.getter.type !== "live"){
-                let currentFrom = (page-1)*perPage+1;
-                let currentTo = page*perPage;
-                currentTo = currentTo>total ? total : currentTo;
-                let typeName = typeNames[this.media.getter.type];
-                document.title = channel + " " + typeName;
-                elements.channelTitleChannelName.textContent = `${channel}`;
-                this.favs.faved(channel).then(faved=>{
-                    if(faved){
-                        elements.channelTitleChannelFav.classList.add("faved");
-                    }
-                });
-                elements.channelTitleChannelFav.style.display = "block";
-                utils.getUid(channel).then(id=>{
-                    elements.channelTitleChannelName.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${id}">${channel}</a>`;
-                });
-                elements.channelTitleInfo.textContent = `Showing ${typeName} ${currentFrom}-${currentTo} of ${total}`;
+
+    load(params){
+        this.loading = true;
+        let p;
+        if(params){
+            this.clean();
+            if(params.type === "live"){
+                this.endpoint = this.streamsEndpoint;
+                this.cardRenderer = this.streamCardRenderer;
+                p = this.endpoint.call();
             }
             else{
-                let game = decodeURIComponent(this.media.getter.game);
-                let text = "Live Channels";
-                document.title = (game && game + " | Live Channels") || "Live Channels";
-                elements.channelTitleChannelName.textContent = text;
-                if(game.length){
-                    elements.channelTitleInfo.textContent = game;
+                this.endpoint = this.userVideosEndpoint;
+                this.cardRenderer = this.videoCardRenderer;
+                if(params.channel){
+                    p = utils.getUid(params.channel).then(uid=>{
+                        params.uid = uid;
+                        return this.endpoint.call(params);
+                    });
+                }
+                else{
+                    p = this.endpoint.call(params);
                 }
             }
         }
         else{
-            if(channel){
-                elements.channelTitleChannelName.textContent = `<${channel}>`;
-                elements.channelTitleInfo.textContent = `No videos found`;
-            }
-            else{
-                elements.channelTitleChannelName.textContent = `<No Live Channels could be found>`;
-                elements.channelTitleInfo.textContent = "page number probably too high";
-            }
-        }
-    }
-
-    load(params, first){
-        this.loading = true;
-        this.clean();
-        if(first){
-            if(!params){
-                params = defaultParams;
-            }
-            if(params.type === "live"){
-                this.media = new Streams(params);
-            }
-            else{
-                this.media = new Videos(params);
-            }
-        }
-        else{
-            this.updateOptionsElem(params);
-            this.updateFormElements();
+            // this.updateOptionsElem(params);
+            // this.updateFormElements();
+                p = this.endpoint.next();
         }
 
-        let loaded = this.media.load(params.page);
-        loaded.then(success => {
-            if(success){
-                this.updatePagination();
-                this.updateResultsTitle(success, true);
-            }
-            else{
-                this.updateResultsTitle(params.channel, false);
-            }
-            this.replaceState(params);
+        p.then(data=>{
+            this.cardRenderer.addCards(data);
+            params && this.replaceState(params);
             this.loading = false;
         });
     }
 
-    updatePagination(){
-        this.pagination.update(this.media.getter.lastPage, this.media.getter.page);
-    }
+
 }
 
 export {Ui};

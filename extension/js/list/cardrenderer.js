@@ -14,9 +14,6 @@ class Videos{
             if(wl){
                 this.loadWatchLater();
             }
-            else{
-                this.getter = new VideosGetter(params.channel, params.perPage, params.page, params.type);
-            }
         });
     }
 
@@ -56,22 +53,19 @@ class Videos{
         return `<div class="video-card__info video-${classPostfix}">${title}: ${val}</div>`;
     }
 
-    createVideoCard(video){
-        let length = utils.secsToReadable(video.length);
-        if(this.drawingWatchLaterList && video.status === "recording"){
-            length = ">"+length;
-        }
-        let game = video.game;
+    createCard(video){
+        let length = video.duration;
+        let secs = utils.HMSToSecs(length);
+        let game = "";
         let title = utils.escape(video.title);
-        let url = video.url;
-        let date = video.recorded_at;
+        let date = video.created_at;
         let when = utils.twTimeStrToReadable(date);
-        let id = video["_id"].substr(1);
+        let id = video["id"];
         let resumePos = this.resumePositions[id] || 0;
-        let resumeBarWidth = (resumePos / video.length) * 100;
+        let resumeBarWidth = (resumePos / secs) * 100;
         let playerUrl = "player.html";
-        let displayName = video.channel.display_name;
-        let views = video["views"].toString();
+        let displayName = video.user_name;
+        let views = video.view_count.toString();
         if(views.length > 3){
             views = views.substring(0, views.length-3) + "," + views.substring(views.length-3);
         }
@@ -110,52 +104,19 @@ class Videos{
         let imgCont = card.querySelector(".img-container");
         let img = imgCont.querySelector("img");
         let animatedThumbUrl = video["animated_preview_url"];
-        let thumb = video.thumbnails[0];
+        let thumb = video.thumbnail_url;
+        thumb = thumb.replace("%{width}", "320");
+        thumb = thumb.replace("%{height}", "180");
         let thumbUrl;
-        if(thumb && thumb.url){
-            thumbUrl = thumb.url;
-        }
-        else{
-            thumbUrl = "https://vod-secure.twitch.tv/_404/404_processing_320x240.png";
-        }
-        if(video.status === "recorded"){
-            function imgLoaded(imgElement) {
-              return imgElement.complete && imgElement.naturalHeight !== 0;
-            }
-            function switchSrc(){
-                img.onerror = undefined;
-                img.onload = undefined;
-                img.src = thumbUrl;
-                imgCont.style.transform = "translateY(-30px)";
-            }
-
-            img.onload = e=>{
-                if(!imgLoaded(img)){
-                    switchSrc();
-                }
-                else{
-                    imgCont.classList.add("can-animate");
-                    imgCont.addEventListener("mouseenter", e=>{
-                        imgCont.classList.add("animated");
-                    });
-                    imgCont.addEventListener("mouseleave", e=>{
-                        imgCont.classList.remove("animated");
-                    });
-                }
-            };
-            img.onerror = e=>{
-                switchSrc();
-            }
-            img.src = animatedThumbUrl;
-        }
-        else{
-            img.src = thumbUrl;
+        if(!thumb){
+            thumb = "https://vod-secure.twitch.tv/_404/404_processing_320x240.png";
             imgCont.style.transform = "translateY(-30px)";
         }
+        img.src = thumb;
     }
 
-    addVideo(video){
-        let card = this.createVideoCard(video);
+    addCard(video){
+        let card = this.createCard(video);
         // card.video = video;
         let wl = this.drawingWatchLaterList;
         let wlButton = card.querySelector(".video-card__overlay.video-wl");
@@ -173,76 +134,17 @@ class Videos{
         elements.resultList.appendChild(card);
     }
 
-    addVideos(videos){
+    addCards(videos){
         let video;
         for(video of videos){
-            this.addVideo(video);
+            this.addCard(video);
         }
     }
 }
 
 
-class Streams{
-    constructor(params, nonlisted=false){
-        if(nonlisted){
-            this.nonlisted = true;
-            this.loadnonlisted();
-        }
-        else if (params){
-            this.getter = new LiveStreamsGetter(params.perPage, params.page, params.game);
-        }
-
-    }
-
-    loadnonlisted(){
-        this.getter = new LiveStreamsGetter(100, 1, "", "en");
-        let tryPages = 50;
-        let delay = 5000;
-        let fn = p=>{
-            if(p<=tryPages && !this.noresults){
-                this.load(p);
-                setTimeout(()=>{
-                    fn(p+1);
-                }, delay);
-            }
-        };
-        fn(1);
-    }
-
-    load(pageNr){
-        if(pageNr){
-            this.getter.page = pageNr;
-        }
-        return this.getter.get().then(streams=>{
-            if(streams && streams.length){
-                let s = [];
-                if(this.nonlisted){
-                    let i;
-                    for(i of streams){
-                        if(!i.game){
-                            s.push(i);
-                        }
-                    }
-                    streams = s;
-                    if(!streams.length){
-                        return false;
-                    }
-                }
-
-                this.currentStreamsData = streams;
-                this.processStreams(streams);
-                return true;
-            }
-            else{
-                this.noresults = true;
-                return false;
-            }
-        });
-    }
-
-    processStreams(streams){
-        utils.log(streams[0]);
-        this.addStreams(streams);
+class StreamCards{
+    constructor(){
     }
 
     makeThumbTimeParam(){
@@ -250,43 +152,8 @@ class Streams{
         this.thumbTimeParam = "" + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + (Math.floor(d.getMinutes() / 5));
     }
 
-    createStreamCard(stream){
-        let uptime = utils.twTimeStrToTimePassed(stream.created_at);
-        let game = stream.game;
-        let thumb = stream.preview["medium"];
-        let title = utils.escape(stream["channel"]["status"]);
-        let url = stream["channel"]["url"];
-        let viewers = stream["viewers"].toString();
-        if(viewers.length > 3){
-            viewers = viewers.substring(0, viewers.length-3) + "," + viewers.substring(viewers.length-3);
-        }
-        let channel = stream["channel"]["name"];
-        let displayName = stream["channel"]["display_name"];
-        let logoUrl = stream["channel"]["logo"];
-        let logoElem;
-        if(logoUrl){
-            logoUrl = logoUrl.replace("300x300", "50x50");
-            logoElem = `<div class="video-card__logo"><img src="${logoUrl}"></div>`;
-        }
-        else{
-            // logoUrl = "https://static-cdn.jtvnw.net/user-default-pictures/0ecbb6c3-fecb-4016-8115-aa467b7c36ed-profile_image-50x50.jpg";
-            logoElem = "";
-        }
-        let playerUrl = `player.html?channel=${channel}&channelID=${stream["channel"]["_id"]}`;
-        let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
-        let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
-        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
-        let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div>${viewersElem}${lengthElem}</a>`;
-        let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${displayName}</a></div>`;
-        let elem = document.createElement("div");
-        elem.className = "video-card";
-        elem.innerHTML = `${thumbElem}${logoElem}${titleElem}${nameElem}${gameElem}`;
 
-        return elem;
-    }
-
-    createStreamCardHelix(stream){
+    createCard(stream){
         let uptime = utils.twTimeStrToTimePassed(stream.started_at);
         let game = "";
         let thumb = stream.thumbnail_url;
@@ -313,32 +180,19 @@ class Streams{
         return elem;
     }
 
-    addStream(stream){
-        let card = this.createStreamCard(stream);
+    addCard(obj){
+        let card = this.createCard(obj);
         elements.resultList.appendChild(card);
     }
 
-    addStreams(streams){
+    addCards(mediaObjects){
         this.makeThumbTimeParam();
-        let stream;
-        for(stream of streams){
-            this.addStream(stream);
-        }
-    }
-
-    addStreamHelix(stream){
-        let card = this.createStreamCardHelix(stream);
-        elements.resultList.appendChild(card);
-    }
-
-    addStreamsHelix(streams){
-        this.makeThumbTimeParam();
-        let stream;
-        for(stream of streams){
-            this.addStreamHelix(stream);
+        let obj;
+        for(obj of mediaObjects){
+            this.addCard(obj);
         }
     }
 }
 
 
-export {Videos, Streams};
+export {Videos, StreamCards};
