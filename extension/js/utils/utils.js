@@ -3,6 +3,7 @@ import {storage} from './storage.js';
 import {Dialog} from './dialog.js';
 import {colors} from './colors.js';
 import {v5Api} from '../api/v5.js';
+import {helixApi} from '../api/helix.js';
 
 
 const htmlEntities = {
@@ -221,6 +222,39 @@ class Uitility{
                     }
                     else{
                         return false;
+                    }
+                });
+            }
+        });
+    }
+
+    getGames(...ids){
+        let ids_set = new Set(ids);
+        return this.storage.getGames().then(games=>{
+            let result = [];
+            let result_set = new Set();
+            if (games){
+                let game, id;
+                for (id in games){
+                    if(ids_set.has(id) && !result_set.has(id)){
+                        result.push(games[id]);
+                        result_set.add(id);
+                    }
+                }
+            }
+            let rest = [...ids].filter(x => !result_set.has(x));
+            if(rest.length === 0){
+                return result;
+            }
+            else{
+                return helixApi.games(rest).then(json=>{
+                    if(json && json.data && json.data.length){
+                        let game;
+                        for(game of json.data){
+                            this.storage.setGame(game.id, game);
+                            result.push(game);
+                        }
+                        return result;
                     }
                 });
             }
@@ -471,6 +505,17 @@ class Uitility{
 
     percentageScrolled(){
         return Math.floor(window.pageYOffset/(this.getDocHeight() - window.innerHeight) * 100);
+    }
+
+    assurePromise(p){
+        // if its already a promise; return as is
+        if(p["then"]){
+            return p;
+        }
+        // return a promise that immediately resolves with p
+        return new Promise(resolve=>{
+            resolve(p);
+        });
     }
 
 }

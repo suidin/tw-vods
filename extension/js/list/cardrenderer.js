@@ -7,7 +7,12 @@ import {utils} from '../utils/utils.js';
 
 const watchLater = new WatchLater();
 
-class Videos{
+
+class Cards{
+
+}
+
+class VideoCards{
     constructor(params, wl=false){
         this.ready = utils.storage.getItem("resumePositions").then(rp=>{
             this.resumePositions = rp;
@@ -17,46 +22,19 @@ class Videos{
         });
     }
 
-    loadWatchLater(){
-        this.drawingWatchLaterList = true;
-        watchLater.get().then(videos=>{
-            this.processVideos(videos);
-            this.drawingWatchLaterList = false;
-        });
-    }
-
-    load(pageNr){
-        return this.ready.then(()=>{
-            if(pageNr){
-                this.getter.page = pageNr;
-            }
-            return this.getter.get().then(videos=>{
-                if(videos && videos.length){
-                    this.currentVideoData = videos;
-                    this.processVideos(videos);
-                    return videos[0].channel.display_name;
-                }
-                else{
-                    return false;
-                }
-            });
-        });
-    }
-
-    processVideos(videos){
-        utils.log(videos[0]);
-        this.addVideos(videos);
-    }
-
     makeInfoElem(title, val){
         let classPostfix = title.toLowerCase();
-        return `<div class="video-card__info video-${classPostfix}">${title}: ${val}</div>`;
+        return `<div class="card__info video-${classPostfix}">${title}: ${val}</div>`;
     }
 
     createCard(video){
         let length = video.duration;
         let secs = utils.HMSToSecs(length);
         let game = "";
+        if(video.game){
+            game = video.game.name;
+        }
+
         let title = utils.escape(video.title);
         let date = video.created_at;
         let when = utils.twTimeStrToReadable(date);
@@ -69,9 +47,9 @@ class Videos{
         if(views.length > 3){
             views = views.substring(0, views.length-3) + "," + views.substring(views.length-3);
         }
-        let viewersElem = `<div class="video-card__overlay video-viewers">${views} views</div>`;
+        let viewersElem = `<div class="card__overlay video-viewers">${views} views</div>`;
         let nameElem = this.drawingWatchLaterList ? `<a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a>`: "";
-        let lengthElem = `<div class="video-card__overlay video-length">${length}</div>`;
+        let lengthElem = `<div class="card__overlay video-length">${length}</div>`;
         let watchLaterIcon;
         let watchLaterTitle;
         if(this.drawingWatchLaterList){
@@ -88,13 +66,13 @@ class Videos{
                 watchLaterTitle = "Add to Watch Later";
             }
         }
-        let watchLaterOverlay = `<div class="video-card__overlay video-wl"><img title="${watchLaterTitle}" src="/resources/icons/${watchLaterIcon}"></div>`;
-        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
-        let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${viewersElem}${lengthElem}</a>`;
-        let timePassedElem = `<div class="video-card__date">${when} ${nameElem}</div>`;
+        let watchLaterOverlay = `<div class="card__overlay video-wl"><img title="${watchLaterTitle}" src="/resources/icons/${watchLaterIcon}"></div>`;
+        let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
+        let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${viewersElem}${lengthElem}</a>`;
+        let timePassedElem = `<div class="card__date">${when} ${nameElem}</div>`;
         let elem = document.createElement("div");
-        elem.className = "video-card";
+        elem.className = "card card--video";
         elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}${watchLaterOverlay}`;
 
         return elem;
@@ -119,7 +97,7 @@ class Videos{
         let card = this.createCard(video);
         // card.video = video;
         let wl = this.drawingWatchLaterList;
-        let wlButton = card.querySelector(".video-card__overlay.video-wl");
+        let wlButton = card.querySelector(".card__overlay.video-wl");
         wlButton.addEventListener("click", e=>{
             if(wl){
                 watchLater.remove(video);
@@ -152,10 +130,21 @@ class StreamCards{
         this.thumbTimeParam = "" + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + (Math.floor(d.getMinutes() / 5));
     }
 
+    setImgSize(img, width, height){
+        return img.replace("{width}x{height}", `${width}x${height}`);
+    }
+
 
     createCard(stream){
         let uptime = utils.twTimeStrToTimePassed(stream.started_at);
         let game = "";
+        let logoElem = "";
+        if(stream.game){
+            game = stream.game.name;
+            let gameArtUrl = this.setImgSize(stream.game.box_art_url, 50, 60);
+            logoElem = `<div class="card__logo"><img src="${gameArtUrl}" alt="" /></div>`;
+        }
+
         let thumb = stream.thumbnail_url;
         thumb = thumb.replace("{width}", "320");
         thumb = thumb.replace("{height}", "180");
@@ -165,16 +154,15 @@ class StreamCards{
             viewers = viewers.substring(0, viewers.length-3) + "," + viewers.substring(viewers.length-3);
         }
         let channel = stream["user_name"];
-        let logoElem = "";
         let playerUrl = `player.html?channel=${channel}&channelID=${stream["id"]}`;
-        let lengthElem = `<div class="video-card__overlay video-length">${uptime}</div>`;
-        let viewersElem = `<div class="video-card__overlay video-viewers">${viewers} viewers</div>`;
-        let gameElem = `<div class="video-card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
-        let titleElem = `<div title="${title}" class="video-card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="video-card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div>${viewersElem}${lengthElem}</a>`;
-        let nameElem = `<div class="video-card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${channel}</a></div>`;
+        let lengthElem = `<div class="card__overlay video-length">${uptime}</div>`;
+        let viewersElem = `<div class="card__overlay video-viewers">${viewers} viewers</div>`;
+        let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
+        let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div>${viewersElem}${lengthElem}</a>`;
+        let nameElem = `<div class="card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${channel}</a></div>`;
         let elem = document.createElement("div");
-        elem.className = "video-card";
+        elem.className = "card card--stream";
         elem.innerHTML = `${thumbElem}${logoElem}${titleElem}${nameElem}${gameElem}`;
 
         return elem;
@@ -194,5 +182,44 @@ class StreamCards{
     }
 }
 
+class GameCards{
+    constructor(){
+    }
 
-export {Videos, StreamCards};
+    makeThumbTimeParam(){
+        let d = new Date();
+        this.thumbTimeParam = "" + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + (Math.floor(d.getMinutes() / 5));
+    }
+
+
+    createCard(game){
+        let title = utils.escape(game.name);
+        let thumb = game.box_art_url;
+        thumb = thumb.replace("{width}x{height}", "285x380");
+        let listUrl = `list.html?type=live&game_ids=${game.id}`;
+        let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${listUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div></a>`;
+        let elem = document.createElement("div");
+        elem.className = "card card--game";
+        elem.innerHTML = `${thumbElem}${titleElem}`;
+
+        return elem;
+    }
+
+    addCard(obj){
+        let card = this.createCard(obj);
+        elements.resultList.appendChild(card);
+    }
+
+    addCards(mediaObjects){
+        this.makeThumbTimeParam();
+        let obj;
+        for(obj of mediaObjects){
+            this.addCard(obj);
+        }
+    }
+}
+
+
+
+export {GameCards, VideoCards, StreamCards};

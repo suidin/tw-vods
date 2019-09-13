@@ -140,6 +140,27 @@ class Storage{
         }
         this.sendToBg(msg, false);
     }
+    getGames(){
+        let msg = {
+            "op": "getGames",
+        }
+        return this.sendToBg(msg, true);
+    }
+    getGame(id){
+        let msg = {
+            "op": "getGame",
+            "id": id,
+        }
+        return this.sendToBg(msg, true);
+    }
+    setGame(id, game){
+        let msg = {
+            "op": "setGame",
+            "game": game,
+            "id": id,
+        }
+        this.sendToBg(msg, false);
+    }
 }
 
 const storage = new Storage();

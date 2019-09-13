@@ -42,7 +42,7 @@ a:visited{
     flex-wrap: wrap;
     justify-content: center;
 }
-.video-card{
+.card{
     margin: .7em;
     max-width: 320px;
     padding: 1em;
@@ -50,77 +50,80 @@ a:visited{
     border-radius: 5px;
     position: relative;
 }
+.card--game{
+    max-width: 200px;
+}
 @media screen and (max-width: 350px){
-    .video-card{
+    .card{
         padding: 1em 0;
     }
 }
-.video-card--selected{
+.card--selected{
     background: #1c4a75;
 }
-.video-card-thumb{
+.card-thumb{
 }
-.video-card__title{
+.card__title{
     font-weight: bold;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
-.video-card__name{
+.card__name{
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
-.video-card__game{
+.card__game{
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
-.video-card__game a {
+.card__game a {
     color: white;
 }
-.video-card__overlay{
+.card__overlay{
     position: absolute;
     background-color: rgba(0,0,0,.6);
     padding: 0 .2em;
     font-size: .8em;
     color: white;
 }
-.video-card__overlay.video-length{
+.card__overlay.video-length{
     top:25px;
     right: 25px;
 }
-.video-card__overlay.video-viewers{
+.card__overlay.video-viewers{
     top:176px;
     left: 20px;
 }
-.video-card__overlay.video-wl{
+.card__overlay.video-wl{
     top: 17px;
     left: 16px;
     background:none;
     cursor:pointer;
     display: none;
 }
-.video-card:hover .video-card__overlay.video-wl{
+.card:hover .card__overlay.video-wl{
     display: block;
 }
-.video-card__overlay.video-wl img{
+.card__overlay.video-wl img{
     width: 25px;    
     height: 25px;
 }
-.video-card__viewers a{
+.card__viewers a{
     float: right;
 }
-.video-card__name a{
+.card__name a{
     color: #60a4ff;
 }
-.video-card__logo{
+.card__logo{
     float: left;
     margin-right: 5px;
 }
-.video-card__logo img{
-    width: 50px;
-    height: 50px;
+.card__logo img{
+/*    width: 50px;
+    height: 50px;*/
 }
 
 .form-head{
@@ -209,20 +212,31 @@ input{
     fill: #af43ea;
 }
 
-.video-card .thumb-container{
+.card .thumb-container{
     position: relative;
     overflow: hidden;
     width: 320px;
     height: 180px;
     margin-bottom: .2em;
 }
-.video-card .resume-bar{
+.card--game .thumb-container{
+    position: relative;
+    overflow: hidden;
+    width: 200px;
+    height: auto;
+    margin-bottom: .2em;
+}
+img.card-thumb{
+    max-width: 100%;
+    height: auto;
+}
+.card .resume-bar{
     position: absolute;
     bottom: 0px;
     background: #9a7fcc;
     height: 6px;
 }
-.video-card__date a{
+.card__date a{
     float: right;
 }
 .img-container{

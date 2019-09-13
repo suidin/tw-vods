@@ -1,3 +1,4 @@
+import {elements} from './elements.js';
 import {v5Api} from '../api/v5.js';
 
 
@@ -7,7 +8,8 @@ const searcherCache = {
 };
 
 const defaultParams = {
-    "minChars": 4,
+    "minChars": 3,
+    "maxItems": 10,
     "cooldown": 2000,
     "delay": 200,
 }
@@ -15,12 +17,13 @@ const defaultParams = {
 const typeDefs = {
     "games": {
         "listAttr": "games",
-        "itemAttr": "name",
+        "labelAttr": "name",
+        "valAttr": "_id",
         "sort": false,
     },
     "channels": {
         "listAttr": "channels",
-        "itemAttr": "display_name",
+        "labelAttr": "display_name",
         "sort": (c1, c2)=>{
             return c2.followers - c1.followers;
         },
@@ -56,6 +59,14 @@ class AweSearcher{
         let justSelected = false;
         this.elem.addEventListener("awesomplete-select", e=>{
             justSelected = true;
+            let label = e.text.label;
+            let value = e.text.value;
+            if(value){
+                // elements.optionsGame.value = label;
+                elements.optionsGameId.value = value;
+                e.text.value = label;
+                // e.preventDefault();
+            }
         });
 
 
@@ -98,7 +109,12 @@ class AweSearcher{
                     arr = json[typeDef.listAttr];
                     typeDef.sort && arr.sort(typeDef.sort);
                     arr = arr.map(g=>{
-                        return g[typeDef.itemAttr];
+                        if (typeDef.valAttr){
+                            return [g[typeDef.labelAttr], g[typeDef.valAttr]];
+                        }
+                        else{
+                            return g[typeDef.labelAttr];
+                        }
                     });
                     this.setCache(currentVal, arr);
                     if(justSelected){

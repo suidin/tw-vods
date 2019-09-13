@@ -30,6 +30,20 @@ class HelixApi extends AbstractApi{
         return cursorParam;
     }
 
+    games(game_ids){
+        let gamesParam = this.arrToHelixStr("id", game_ids);
+        gamesParam = gamesParam.substr(1);
+        let url = `https://api.twitch.tv/helix/games?${gamesParam}`;
+        return this.call(url);
+    }
+
+    topGames({first=100}={}, direction, cursor){
+        let cursorParam = this.cursorStr(direction, cursor);
+        let url = `https://api.twitch.tv/helix/games/top?first=${first}${cursorParam}`;
+        return this.call(url);
+    }
+
+
     video(vId){
         let url = `https://api.twitch.tv/helix/videos?id=${vId}`;
         return this.call(url);
@@ -56,9 +70,9 @@ class HelixApi extends AbstractApi{
     }
 
     userStreams({users, first=100}={}, direction="after", cursor=false){
-        let usersPart = this.arrToHelixStr("user_login", users);
+        let usersParam = this.arrToHelixStr("user_login", users);
         let cursorParam = this.cursorStr(direction, cursor);
-        let url = `https://api.twitch.tv/helix/streams?first=${first}${cursorParam}${usersPart}`;
+        let url = `https://api.twitch.tv/helix/streams?first=${first}${cursorParam}${usersParam}`;
         return this.call(url);
     }
 

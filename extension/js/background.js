@@ -68,10 +68,11 @@ chrome.runtime.onInstalled.addListener(function (object) {
 let ready = false;
 class Storage{
     constructor(){
-        this.maxResumePositions = 3000;
+        this.maxResumePositions = 1000;
         this.maxFavourites = 200;
         this.data = {
             "userIds": {},
+            "games": {},
             "resumePositions": {},
             "lastChatPos": {left:0,top:0},
             "lastChatDim": {width: "300px", height: "500px"},
@@ -160,6 +161,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         else if (request.op === "setUserId"){
             storage.data["userIds"][request.username] = request.id;
+        }
+        else if (request.op === "getGames"){
+            sendResponse(storage.data["games"]);
+        }
+        else if (request.op === "getGame"){
+            sendResponse(storage.data["games"][request.id]);
+        }
+        else if (request.op === "setGame"){
+            storage.data["games"][request.id] = request.game;
         }
         else if (request.op === "setAllData"){
             storage.data = request.data;

@@ -1,4 +1,4 @@
-import {Videos, StreamCards} from './cardrenderer.js';
+import {VideoCards, StreamCards, GameCards} from './cardrenderer.js';
 import {AweSearcher} from './searcher.js';
 import {Favourites} from './favs.js';
 
@@ -10,7 +10,9 @@ import {HelixEndpoint} from '../api/helix.js';
 
 
 const typeNames = {
-    "live": "Live",
+    "live": "Live Channels",
+    "games": "Top Games",
+    "livefavs": "Live Favourites",
     "archive": "Past Broadcasts",
     "highlight": "Highlights",
 }
@@ -24,9 +26,11 @@ class Ui{
         this.streamsEndpoint = new HelixEndpoint("streams");
         this.userStreamsEndpoint = new HelixEndpoint("userStreams");
         this.userVideosEndpoint = new HelixEndpoint("userVideos");
+        this.gamesEndpoint = new HelixEndpoint("topGames");
 
         this.streamCardRenderer = new StreamCards();
-        this.videoCardRenderer = new Videos();
+        this.videoCardRenderer = new VideoCards();
+        this.gameCardRenderer = new GameCards();
 
         this.favs = new Favourites();
         new AweSearcher(elements.optionsGame, "games");
@@ -42,17 +46,19 @@ class Ui{
         this.clean();
 
         if(channels){
-            this.userStreamsEndpoint.call(channels).then(data=>{
-                this.streamCardRenderer.addCards(data);
-            });
+            this.load({"type": "livefavs", "users": channels});
         }
         else{            
             utils.storage.getItem("favourites").then(channels=>{
-                this.userStreamsEndpoint.call({users:channels}).then(data=>{
-                    this.streamCardRenderer.addCards(data);
-                });
+                this.load({"type": "livefavs", "users": channels}); 
             });
         }
+    }
+
+    showTopGames(){
+        this.clean();
+
+        this.load({"type": "games"});
     }
 
     handlers(){
@@ -119,6 +125,12 @@ class Ui{
         elements.optionsType.addEventListener("click", e=>{
             if(e.target.classList.contains("search-type-button")){
                 let type = e.target.dataset.type;
+                if (type === "livefavs"){
+                    this.showLiveFavs();
+                }
+                else if (type === "games"){
+                    this.showTopGames();
+                }
                 this.updateFormElements(type);
             }
         });
@@ -176,12 +188,12 @@ class Ui{
             hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
             showElems = elements.form.querySelectorAll(".search-option.search-option--live");
         }
-        else if(type === "livefavs"){
-            elements.linkList.style.display = "none";
-            hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
-            showElems = elements.form.querySelectorAll(".search-option.search-option--live");
-            this.showLiveFavs();
-        }
+        // else if(type === "livefavs"){
+        //     elements.linkList.style.display = "none";
+        //     hideElems = elements.form.querySelectorAll(".search-option.search-option--vod");
+        //     showElems = elements.form.querySelectorAll(".search-option.search-option--live");
+        //     this.showLiveFavs();
+        // }
         else{
             elements.linkList.style.display = "flex";
             hideElems = elements.form.querySelectorAll(".search-option.search-option--live");
@@ -213,7 +225,11 @@ class Ui{
             "type": type
         };
         if(type === "live"){
-            params["game"] = elements.optionsGame.value;
+            let game = elements.optionsGameId.value.trim();
+            if (game.length){
+                params["game_ids"] = game.split(",");
+            }
+            // params["game_id"] = elements.optionsGameId.value;
         }
         else{
             params["channel"] = elements.optionsChannel.value;
@@ -235,7 +251,9 @@ class Ui{
         }
         if(params){
             if(type === "live"){
-                params["game"] = params["game"] || defaultParams["game"];
+                if(params["game_ids"]){
+                    params["game_ids"] = params["game_ids"].split(",");
+                }
             }
             else if (type==="livefavs"){
                 this.showLiveFavs();
@@ -261,7 +279,7 @@ class Ui{
         active && active.classList.remove(".active");
         elements.optionsType.querySelector(`[data-type="${params.type}"]`).classList.add("active");
         if(params.type === "live"){
-            elements.optionsGame.value = params.game;
+            elements.optionsGame.value = params.game_ids;
         }
         else{
             elements.optionsChannel.value = params.channel;
@@ -269,8 +287,38 @@ class Ui{
     }
 
     replaceState(params){
+        if(params.type==="livefavs"){
+            params = {type:params.type};
+        }
         let getStr = utils.objToGetStr(params);
         history.replaceState(params, "twitch-list | " + params.channel, getStr);
+    }
+
+    updateResultsTitle(params){
+        let type = params.type;
+        let typeName = typeNames[type];
+        if(type === "archive" || type === "highlight"){
+            let channel = params.channel;
+            document.title = channel + " " + typeName;
+            elements.channelTitleChannelName.textContent = `${channel}`;
+            this.favs.faved(channel).then(faved=>{
+                if(faved){
+                    elements.channelTitleChannelFav.classList.add("faved");
+                }
+            });
+            elements.channelTitleChannelFav.style.display = "block";
+            elements.channelTitleChannelName.innerHTML = `<a class="channel-currently-live-link" target="_blank" href="/player.html?channel=${channel}&channelID=${params.uid}">${channel}</a>`;
+            elements.channelTitleInfo.textContent = `${typeName} of ${channel}`;
+        }
+        else{
+            let game = params.game && decodeURIComponent(params.game) || "";
+            document.title = (game && game + " | " + typeName) || typeName;
+            elements.channelTitleChannelName.textContent = typeName;
+            if(game.length){
+                elements.channelTitleInfo.textContent = game;
+            }
+            elements.channelTitleInfo.textContent = "";
+        }
     }
 
 
@@ -278,16 +326,28 @@ class Ui{
         this.loading = true;
         let p;
         if(params){
+            this.currentlyRenderedType = params.type;
             this.clean();
             if(params.type === "live"){
                 this.endpoint = this.streamsEndpoint;
                 this.cardRenderer = this.streamCardRenderer;
-                p = this.endpoint.call();
+                p = this.endpoint.call(params);
+            }
+            else if (params.type === "livefavs"){
+                this.endpoint = this.userStreamsEndpoint;
+                this.cardRenderer = this.streamCardRenderer;
+                p = this.endpoint.call(params);
+            }
+            else if (params.type === "games"){
+                this.endpoint = this.gamesEndpoint;
+                this.cardRenderer = this.gameCardRenderer;
+                p = this.endpoint.call(params);
             }
             else{
                 this.endpoint = this.userVideosEndpoint;
                 this.cardRenderer = this.videoCardRenderer;
                 if(params.channel){
+                    this.currentChannel = params.channel;
                     p = utils.getUid(params.channel).then(uid=>{
                         params.uid = uid;
                         return this.endpoint.call(params);
@@ -299,16 +359,53 @@ class Ui{
             }
         }
         else{
-            // this.updateOptionsElem(params);
-            // this.updateFormElements();
-                p = this.endpoint.next();
+            p = this.endpoint.next();
         }
 
-        p.then(data=>{
-            this.cardRenderer.addCards(data);
+        this.p = p.then(data=>{
+            if(this.currentlyRenderedType==="live"){
+                this.addGamesToData(data).then(()=>{
+                    this.cardRenderer.addCards(data);
+                });
+            }
+            else{
+                this.cardRenderer.addCards(data);
+                this.cacheData(data);
+            }
             params && this.replaceState(params);
+            params && this.updateResultsTitle(params);
             this.loading = false;
         });
+    }
+
+    addGamesToData(data){
+        let obj;
+        let game_ids = new Set();
+        for(obj of data){
+            game_ids.add(obj.game_id);
+        }
+
+        return utils.getGames(...game_ids).then(games=>{
+            let game, obj;
+            for(game of games){
+                for(obj of data){
+                    if(obj.game_id === game.id){
+                        obj.game = game;
+                    }
+                }
+            }
+        });
+
+    }
+
+    cacheData(data){
+        if(!data.length) return;
+        if(this.currentlyRenderedType==="games"){
+            let game;
+            for(game of data){
+                utils.storage.setGame(game.id, game);
+            }
+        }
     }
 
 
