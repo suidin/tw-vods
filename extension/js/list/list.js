@@ -108,7 +108,7 @@ class Ui{
 
         elements.nlButton.addEventListener("click", e=>{
             e.preventDefault();
-            this.loadNonlisted();
+            this.loadUnlisted();
         });
 
         elements.exportButton.addEventListener("click", e=>{
@@ -156,6 +156,45 @@ class Ui{
                 if(this.media && this.media.getter && this.media.getter.channel && this.media.getter.channel === channel){
                     elements.channelTitleChannelFav.classList.remove("faved");
                 }
+            }
+        });
+
+        document.addEventListener("keydown", e=>{
+            if (e.key === "Escape"){
+                e.preventDefault();
+                console.log("esc");
+                elements.optionsChannel.blur();
+                elements.optionsGame.blur();
+                return;
+            }
+            if (document.activeElement.tagName === "INPUT") return;
+
+            switch(e.key){
+                case "l":
+                    e.preventDefault();
+                    elements.optionsType.querySelector("[data-type='live']").click();
+                    elements.optionsGame.focus();
+                    break;
+                case "g":
+                    e.preventDefault();
+                    elements.optionsType.querySelector("[data-type='games']").click();
+                    break;
+                case "f":
+                    e.preventDefault();
+                    elements.optionsType.querySelector("[data-type='livefavs']").click();
+                    break;
+                case "v":
+                    e.preventDefault();
+                    elements.optionsType.querySelector("[data-type='archive']").click();
+                    elements.optionsChannel.focus();
+                    break;
+                case "h":
+                    e.preventDefault();
+                    elements.optionsType.querySelector("[data-type='highlight']").click();
+                    elements.optionsChannel.focus();
+                    break;
+                default:
+                    break;
             }
         });
     }
@@ -295,7 +334,9 @@ class Ui{
             }
         }
         else{
-            elements.optionsChannel.value = params.channel;
+            if(params.channel){
+                elements.optionsChannel.value = params.channel;
+            }
         }
     }
 
