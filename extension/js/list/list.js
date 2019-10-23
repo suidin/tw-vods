@@ -1,5 +1,6 @@
 import {VideoCards, StreamCards, GameCards} from './cardrenderer.js';
 import {AweSearcher} from './searcher.js';
+import {WatchLater} from './watchlater.js';
 import {Favourites} from './favs.js';
 
 import {elements} from './elements.js';
@@ -7,6 +8,9 @@ import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
 import {v5Api} from '../api/v5.js';
 import {HelixEndpoint} from '../api/helix.js';
+
+
+const watchLater = new WatchLater();
 
 
 const typeNames = {
@@ -25,6 +29,7 @@ class Ui{
     constructor(){
         this.streamsEndpoint = new HelixEndpoint("streams");
         this.userStreamsEndpoint = new HelixEndpoint("userStreams");
+        this.videosEndpoint = new HelixEndpoint("videos");
         this.userVideosEndpoint = new HelixEndpoint("userVideos");
         this.gamesEndpoint = new HelixEndpoint("topGames");
 
@@ -157,20 +162,21 @@ class Ui{
 
     loadWatchLater(){
         this.clean();
-        this.media = new Videos(null, true);
+
+        this.load({"type":"watchlater", "vIds": watchLater.videos});
         elements.channelTitleChannelName.textContent = "Watch Later";
         elements.channelTitleInfo.textContent = "";
         history.replaceState("watchlater", "twitch-list | Watch Later", "?type=watchlater");
         document.title = "Watch Later";
     }
 
-    loadNonlisted(){
+    loadUnlisted(){
         this.clean();
-        this.media = new Streams(null, true);
+        this.load({"type":"unlisted"});
         elements.channelTitleChannelName.textContent = "Fetching unlisted Streams";
         elements.channelTitleInfo.textContent = "this can take some time...";
-        history.replaceState("nonlisted", "twitch-list | Nonlisted Streams", "?type=nonlisted");
-        document.title = "Nonlisted Streams";
+        history.replaceState("unlisted", "twitch-list | Unlisted Streams", "?type=unlisted");
+        document.title = "Unlisted Streams";
     }
 
     updateFormElements(type){
@@ -225,9 +231,13 @@ class Ui{
             "type": type
         };
         if(type === "live"){
-            let game = elements.optionsGameId.value.trim();
+            let game_ids = elements.optionsGameId.value.trim();
+            if (game_ids.length){
+                params["game_ids"] = game_ids.split(",");
+            }
+            let game = elements.optionsGame.value;
             if (game.length){
-                params["game_ids"] = game.split(",");
+                params["game"] = game;
             }
             // params["game_id"] = elements.optionsGameId.value;
         }
@@ -245,8 +255,8 @@ class Ui{
             this.loadWatchLater();
             return true;
         }
-        if(type === "nonlisted"){
-        	this.loadNonlisted();
+        if(type === "unlisted"){
+        	this.loadUnlisted();
         	return true;
         }
         if(params){
@@ -278,8 +288,11 @@ class Ui{
         let active = elements.optionsType.querySelector(".active")
         active && active.classList.remove(".active");
         elements.optionsType.querySelector(`[data-type="${params.type}"]`).classList.add("active");
-        if(params.type === "live"){
-            elements.optionsGame.value = params.game_ids;
+        if(params.type === "live" && params.game_ids){
+            elements.optionsGameId.value = params.game_ids;
+            if (params.game){
+                elements.optionsGame.value = params.game;
+            }
         }
         else{
             elements.optionsChannel.value = params.channel;
@@ -343,6 +356,12 @@ class Ui{
                 this.cardRenderer = this.gameCardRenderer;
                 p = this.endpoint.call(params);
             }
+            else if (params.type === "watchlater"){
+                this.endpoint = this.videosEndpoint;
+                this.cardRenderer = this.videoCardRenderer;
+
+                p = this.endpoint.call(params);
+            }
             else{
                 this.endpoint = this.userVideosEndpoint;
                 this.cardRenderer = this.videoCardRenderer;
@@ -363,6 +382,8 @@ class Ui{
         }
 
         this.p = p.then(data=>{
+            params && this.replaceState(params);
+            params && this.updateResultsTitle(params);
             if(this.currentlyRenderedType==="live"){
                 this.addGamesToData(data).then(()=>{
                     this.cardRenderer.addCards(data);
@@ -372,8 +393,6 @@ class Ui{
                 this.cardRenderer.addCards(data);
                 this.cacheData(data);
             }
-            params && this.replaceState(params);
-            params && this.updateResultsTitle(params);
             this.loading = false;
         });
     }

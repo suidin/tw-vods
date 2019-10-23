@@ -254,8 +254,8 @@ class Uitility{
                             this.storage.setGame(game.id, game);
                             result.push(game);
                         }
-                        return result;
                     }
+                    return result;
                 });
             }
         });

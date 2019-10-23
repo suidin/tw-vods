@@ -13,12 +13,9 @@ class Cards{
 }
 
 class VideoCards{
-    constructor(params, wl=false){
+    constructor(params){
         this.ready = utils.storage.getItem("resumePositions").then(rp=>{
             this.resumePositions = rp;
-            if(wl){
-                this.loadWatchLater();
-            }
         });
     }
 
@@ -48,16 +45,17 @@ class VideoCards{
             views = views.substring(0, views.length-3) + "," + views.substring(views.length-3);
         }
         let viewersElem = `<div class="card__overlay video-viewers">${views} views</div>`;
-        let nameElem = this.drawingWatchLaterList ? `<a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${displayName}">${displayName}</a>`: "";
+        let nameElem = this.drawingWatchLaterList ? `<a target="_blank" href="${location.pathname}?type=archive&channel=${displayName}">${displayName}</a>`: "";
         let lengthElem = `<div class="card__overlay video-length">${length}</div>`;
         let watchLaterIcon;
         let watchLaterTitle;
-        if(this.drawingWatchLaterList){
-            watchLaterIcon = "remove-icon.png";
-            watchLaterTitle = "Remove from Watch Later";
+
+        if (this.urlParams.type && this.urlParams.type === "watchlater"){
+                watchLaterIcon = "remove-icon.png";
+                watchLaterTitle = "Remove from Watch Later";
         }
         else{
-            if(watchLater.contains(video)>=0){
+            if(watchLater.contains(video.id)){
                 watchLaterIcon = "added-icon.png";
                 watchLaterTitle = "Already in Watch Later";
             }
@@ -67,7 +65,7 @@ class VideoCards{
             }
         }
         let watchLaterOverlay = `<div class="card__overlay video-wl"><img title="${watchLaterTitle}" src="/resources/icons/${watchLaterIcon}"></div>`;
-        let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
+        let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}?vid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="" /></div><div class="resume-bar" style="width:${resumeBarWidth}%"></div></div>${viewersElem}${lengthElem}</a>`;
         let timePassedElem = `<div class="card__date">${when} ${nameElem}</div>`;
@@ -96,16 +94,21 @@ class VideoCards{
     addCard(video){
         let card = this.createCard(video);
         // card.video = video;
-        let wl = this.drawingWatchLaterList;
         let wlButton = card.querySelector(".card__overlay.video-wl");
+        let wlImg = wlButton.querySelector("img");
         wlButton.addEventListener("click", e=>{
-            if(wl){
-                watchLater.remove(video);
-                card.remove();
+            if(wlImg.src.includes("added-icon")){
+                watchLater.remove(video["id"]);
+                wlImg.src = "/resources/icons/add-icon.png";
+
+            }
+            else if (wlImg.src.includes("add-icon")){
+                watchLater.add(video["id"]);
+                wlImg.src = "/resources/icons/added-icon.png";
             }
             else{
-                watchLater.add(video);
-                wlButton.querySelector("img").src = "/resources/icons/added-icon.png";
+                watchLater.remove(video["id"]);
+                card.remove();
             }
         });
         this.prepareThumb(video, card);
@@ -113,6 +116,7 @@ class VideoCards{
     }
 
     addCards(videos){
+        this.urlParams = utils.getStrToObj();
         let video;
         for(video of videos){
             this.addCard(video);
@@ -139,10 +143,12 @@ class StreamCards{
         let uptime = utils.twTimeStrToTimePassed(stream.started_at);
         let game = "";
         let logoElem = "";
+        let gameElem = "";
         if(stream.game){
             game = stream.game.name;
             let gameArtUrl = this.setImgSize(stream.game.box_art_url, 50, 60);
             logoElem = `<div class="card__logo"><img src="${gameArtUrl}" alt="" /></div>`;
+            gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}&game_ids=${stream.game.id}">${game}</a></div>`;
         }
 
         let thumb = stream.thumbnail_url;
@@ -157,7 +163,6 @@ class StreamCards{
         let playerUrl = `player.html?channel=${channel}&channelID=${stream["id"]}`;
         let lengthElem = `<div class="card__overlay video-length">${uptime}</div>`;
         let viewersElem = `<div class="card__overlay video-viewers">${viewers} viewers</div>`;
-        let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
         let thumbElem = `<a class="ext-player-link" href="${playerUrl}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="${thumb}?time=${this.thumbTimeParam}" /></div></div>${viewersElem}${lengthElem}</a>`;
         let nameElem = `<div class="card__name"><a target="_blank" href="${location.pathname}?perPage=30&page=1&type=archive&channel=${channel}">${channel}</a></div>`;

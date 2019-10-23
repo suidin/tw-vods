@@ -44,8 +44,9 @@ class HelixApi extends AbstractApi{
     }
 
 
-    video(vId){
-        let url = `https://api.twitch.tv/helix/videos?id=${vId}`;
+    videos({vIds}={}){
+        let idsParam = this.arrToHelixStr("id", vIds).substr(1);;
+        let url = `https://api.twitch.tv/helix/videos?${idsParam}`;
         return this.call(url);
     }
 

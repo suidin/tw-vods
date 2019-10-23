@@ -85,6 +85,9 @@ class AweSearcher{
         const minChars = this.params.minChars;
 
         this.elem.addEventListener("input", e=>{
+            if (type==="games"){
+                elements.optionsGameId.value = "";
+            }
             if(justSelected){
                 clearTimeout(timeout);
                 justSelected = false;
