@@ -50,19 +50,19 @@ class HelixApi extends AbstractApi{
         return this.call(url);
     }
 
-    userVideos({uid, first=30, type="archive", sort="time"}={}, direction="after", cursor=false){
+    userVideos({uid, first=100, type="archive", sort="time"}={}, direction="after", cursor=false){
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/videos?user_id=${uid}&first=${first}&type=${type}${cursorParam}&sort=${sort}`;
         return this.call(url);
     }
 
-    gameVideos({gid, first=30, type="archive", sort="views", period="month"}={}, direction="after", cursor=false){
+    gameVideos({gid, first=100, type="archive", sort="views", period="month"}={}, direction="after", cursor=false){
         let cursorParam = this.cursorStr(direction, cursor);
         let url = `https://api.twitch.tv/helix/videos?game_id=${gid}&first=${first}&type=${type}${cursorParam}&sort=${sort}&language=en&period=${period}`;
         return this.call(url);
     }
 
-    streams({first=30, languages=["en"], game_ids=false} = {}, direction="after", cursor=false){
+    streams({first=100, languages=["en"], game_ids=false} = {}, direction="after", cursor=false){
         let gamesParam = this.arrToHelixStr("game_id", game_ids);
         let languagesParam = this.arrToHelixStr("language", languages);
         let cursorParam = this.cursorStr(direction, cursor);

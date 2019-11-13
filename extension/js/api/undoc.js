@@ -19,7 +19,7 @@ class UndocumentedApi extends AbstractApi{
     }
 
     streamAuth(sId){
-        let url = `https://api.twitch.tv/api/channels/${sId}/access_token.json?as3=t&adblock=false&need_https=true&platform=web&player_type=site`;
+        let url = `https://api.twitch.tv/api/channels/${sId}/access_token?as3=t&adblock=false&need_https=true&platform=_`;
         return this.call(url);
     }
 
@@ -40,7 +40,7 @@ class UndocumentedApi extends AbstractApi{
             let sig = json.sig;
             let token = json.token;
             let p = parseInt(Math.random() * 999999);
-            let url = `https://usher.ttvnw.net/api/channel/hls/${sId.toLowerCase()}.m3u8?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&nauthsig=${sig}&nauth=${token}`;
+            let url = `https://usher.ttvnw.net/api/channel/hls/${sId.toLowerCase()}.m3u8?player=twitchweb&p=${p}&type=any&allow_source=true&allow_audio_only=true&allow_spectre=false&sig=${sig}&token=${token}`;
             return url;
         });
     }
