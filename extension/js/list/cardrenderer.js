@@ -125,6 +125,57 @@ class VideoCards{
 }
 
 
+class ClipCards{
+
+    makeInfoElem(title, val){
+        let classPostfix = title.toLowerCase();
+        return `<div class="card__info video-${classPostfix}">${title}: ${val}</div>`;
+    }
+
+    createCard(video){
+        let game = video.game;
+        let title = utils.escape(video.title);
+        let date = video.created_at;
+        let when = utils.twTimeStrToReadable(date);
+        let id = video["id"];
+        let playerUrl = "player.html";
+        let views = video.views.toString();
+        if(views.length > 3){
+            views = views.substring(0, views.length-3) + "," + views.substring(views.length-3);
+        }
+        let viewersElem = `<div class="card__overlay video-viewers">${views} views</div>`;
+        let lengthElem = `<div class="card__overlay video-length">${length}</div>`;
+
+        let thumbUrl = video.thumb;
+
+
+        let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
+        let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
+        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?cid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="${thumbUrl}" /></div></div>${viewersElem}</a>`;
+        let timePassedElem = `<div class="card__date">${when}</div>`;
+        let elem = document.createElement("div");
+        elem.className = "card card--video";
+        elem.innerHTML = `${thumbElem}${titleElem}${gameElem}${timePassedElem}`;
+
+        return elem;
+    }
+
+    addCard(video){
+        let card = this.createCard(video);
+        // card.video = video;
+        elements.resultList.appendChild(card);
+    }
+
+    addCards(videos){
+        this.urlParams = utils.getStrToObj();
+        let video;
+        for(video of videos){
+            this.addCard(video);
+        }
+    }
+}
+
+
 class StreamCards{
     constructor(){
     }
@@ -227,4 +278,4 @@ class GameCards{
 
 
 
-export {GameCards, VideoCards, StreamCards};
+export {GameCards, VideoCards, StreamCards,ClipCards};

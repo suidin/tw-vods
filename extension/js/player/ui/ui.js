@@ -11,12 +11,16 @@ import { settings } from '../../settings.js';
 class Ui{
     constructor(){
         let vid = utils.findGetParameter("vid");
+        let cid = utils.findGetParameter("cid");
         let chatonly = utils.findGetParameter("chatonly");
         let channel = utils.findGetParameter("channel");
         let channelID = utils.findGetParameter("channelID");
         if(vid){
             settings.mode = "video";
             this.lastResumePoint = 0;
+        }
+        else if(cid){
+            settings.mode = "clip";
         }
         else if(channel){
             settings.mode = "live";
@@ -46,6 +50,9 @@ class Ui{
         this.chatonly = chatonly;
         if(settings.mode === "video"){
             this.loadVideo(vid);
+        }
+        else if (settings.mode === "clip"){
+            this.loadClip(cid);
         }
         else{
             this.loadChannel(channel, channelID);  
@@ -100,7 +107,7 @@ class Ui{
 
     init(){
         this.handlers();
-        if(!this.chatonly && this.player.video.videoStatus && this.player.video.videoStatus === "recording"){
+        if(settings.mode === "video" && !this.chatonly && this.player.video.videoStatus && this.player.video.videoStatus === "recording"){
             this.videoRecordingAppendInterval = setInterval(()=>{
                 this.player.video.stream.hls.levelController.loadLevel();
             }, 5*60*1000);
@@ -176,6 +183,35 @@ class Ui{
 
             document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
         });
+
+    }
+
+    loadClip(cid){
+        // this.chatInterface = new ReChatInterface(elements.chat);
+        this.player.start(cid).then(()=>{
+            if(!this.uiInitialized){
+                this.init();
+                this.uiInitialized = true;
+            }
+            this.player.play();
+            if(!this.chatonly){
+                this.components.qualityOptions.loadQualityOptions();
+                this.components.qualityOptions.initOnLevelChange();
+                this.components.slider.initOnBufferAppended();
+            }
+        });
+        // this.player.video.loaded.then(()=>{
+        //     if(this.player.video.hoverThumbsInfoLoaded){
+        //         this.player.video.hoverThumbsInfoLoaded.then(info=>{
+        //             if(info && info.images && info.images.length){
+        //                 this.components.slider.prepareHoverThumbs(info);
+        //             }
+        //         });
+        //     }
+        //     // this.chatInterface.queueStart(vid, this.player.video.channel, this.player.video.channelId, this.player.video.startPosition);
+
+        //     // document.title = `${this.player.video.channelDisplay} | ${this.player.video.videoTitle}`;
+        // });
 
     }
 

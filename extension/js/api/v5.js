@@ -33,6 +33,11 @@ class V5Api extends AbstractApi{
         return this.call(url);
     }
 
+    clips(channel, limit=100, period="all", trending=false){
+        let url = `https://api.twitch.tv/kraken/clips/top?period=${period}&channel=${channel}&limit=${limit}&trending=${trending}`;
+        return this.call(url);
+    }
+
     comments(vId, ident){
         let url;
         if(Number.isInteger(ident)){
@@ -82,6 +87,34 @@ class V5Api extends AbstractApi{
     }
 }
 
+
 const v5Api = new V5Api();
 
-export {v5Api};
+class ClipsEndpoint{
+    call(params){
+        let p = v5Api.clips(params.channel);
+        return p.then(r=>{
+            let clips = [];
+            if (r && r.clips){
+                let clip;
+                for (clip of r.clips){
+                    clips.push({
+                        "id": clip.slug,
+                        "game": clip.game,
+                        "title": clip.title,
+                        "views": clip.views,
+                        "created_at": clip.created_at,
+                        "thumb": clip.thumbnails.medium,
+                        "vod_id": clip.vod && clip.vod.id,
+                        "vod_time": clip.vod && clip.vod.url.split("t=")[1],
+                    });
+                }
+            }
+            return clips;
+        });
+    }
+}
+
+const clipsEndpoint = new ClipsEndpoint();
+
+export {v5Api, clipsEndpoint};

@@ -44,6 +44,35 @@ class UndocumentedApi extends AbstractApi{
             return url;
         });
     }
+
+    getClipStatus(clipName){
+        let query = `{
+clip(slug: "${clipName}") {
+    broadcaster {
+      displayName
+    }
+    createdAt
+    curator {
+      displayName
+      id
+    }
+    durationSeconds
+    id
+    tiny: thumbnailURL(width: 86, height: 45)
+    small: thumbnailURL(width: 260, height: 147)
+    medium: thumbnailURL(width: 480, height: 272)
+    title
+    videoQualities {
+      frameRate
+      quality
+      sourceURL
+    }
+    viewCount
+    }
+}`;
+        let url = `https://gql.twitch.tv/gql?query=${query}`;
+        return this.call(url, true, false);
+    }              
 }
 
 const undocApi = new UndocumentedApi();

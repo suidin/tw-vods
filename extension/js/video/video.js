@@ -140,6 +140,45 @@ class Video{
     }
 }
 
+class Clip{
+    constructor(vid){
+        this.vid = vid;
+        this.loaded = this.loadData();
+        this.loaded = this.loaded.then(()=>{
+            return this.makeConfig();
+        });
+    }
+
+    startStream(){
+        return undocApi.getClipStatus(this.vid).then(url => {
+            debugger;
+            return this.loaded.then(()=>{
+                this.stream = new Stream(url, this.config);
+                return new Promise(resolve=>{
+                    this.stream.loadHls(resolve);
+                });
+            });
+        });
+    }
+
+    loadData(){
+        return new Promise(resolve=>{
+            resolve();
+        });
+    }
+
+    makeConfig(){
+        return utils.storage.getLastSetVolume().then(volume=>{
+            let config = {};
+            config.startPosition = 0;
+            volume = volume || 0.5;
+            config.volume = volume;
+
+            this.config = config;
+        });
+    }
+}
+
 
 class Live{
     constructor(vid){
@@ -169,4 +208,4 @@ class Live{
     
 }
 
-export {Video, Live};
+export {Video, Live, Clip};

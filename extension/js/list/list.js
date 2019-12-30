@@ -1,4 +1,4 @@
-import {VideoCards, StreamCards, GameCards} from './cardrenderer.js';
+import {VideoCards, StreamCards, GameCards, ClipCards} from './cardrenderer.js';
 import {AweSearcher} from './searcher.js';
 import {WatchLater} from './watchlater.js';
 import {Favourites} from './favs.js';
@@ -6,7 +6,7 @@ import {Favourites} from './favs.js';
 import {elements} from './elements.js';
 import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
-import {v5Api} from '../api/v5.js';
+import {v5Api, clipsEndpoint} from '../api/v5.js';
 import {HelixEndpoint} from '../api/helix.js';
 
 
@@ -19,6 +19,7 @@ const typeNames = {
     "livefavs": "Live Favourites",
     "archive": "Past Broadcasts",
     "highlight": "Highlights",
+    "clips": "Clips",
 }
 const defaultParams = {
     type: "live",
@@ -30,11 +31,13 @@ class Ui{
         this.streamsEndpoint = new HelixEndpoint("streams");
         this.userStreamsEndpoint = new HelixEndpoint("userStreams");
         this.videosEndpoint = new HelixEndpoint("videos");
+        this.clipsEndpoint = clipsEndpoint;
         this.userVideosEndpoint = new HelixEndpoint("userVideos");
         this.gamesEndpoint = new HelixEndpoint("topGames");
 
         this.streamCardRenderer = new StreamCards();
         this.videoCardRenderer = new VideoCards();
+        this.clipCardRenderer = new ClipCards();
         this.gameCardRenderer = new GameCards();
 
         this.favs = new Favourites();
@@ -159,44 +162,44 @@ class Ui{
             }
         });
 
-        document.addEventListener("keydown", e=>{
-            if (e.key === "Escape"){
-                e.preventDefault();
-                console.log("esc");
-                elements.optionsChannel.blur();
-                elements.optionsGame.blur();
-                return;
-            }
-            if (document.activeElement.tagName === "INPUT") return;
+        // document.addEventListener("keydown", e=>{
+        //     if (e.key === "Escape"){
+        //         e.preventDefault();
+        //         console.log("esc");
+        //         elements.optionsChannel.blur();
+        //         elements.optionsGame.blur();
+        //         return;
+        //     }
+        //     if (document.activeElement.tagName === "INPUT") return;
 
-            switch(e.key){
-                case "l":
-                    e.preventDefault();
-                    elements.optionsType.querySelector("[data-type='live']").click();
-                    elements.optionsGame.focus();
-                    break;
-                case "g":
-                    e.preventDefault();
-                    elements.optionsType.querySelector("[data-type='games']").click();
-                    break;
-                case "f":
-                    e.preventDefault();
-                    elements.optionsType.querySelector("[data-type='livefavs']").click();
-                    break;
-                case "v":
-                    e.preventDefault();
-                    elements.optionsType.querySelector("[data-type='archive']").click();
-                    elements.optionsChannel.focus();
-                    break;
-                case "h":
-                    e.preventDefault();
-                    elements.optionsType.querySelector("[data-type='highlight']").click();
-                    elements.optionsChannel.focus();
-                    break;
-                default:
-                    break;
-            }
-        });
+        //     switch(e.key){
+        //         case "l":
+        //             e.preventDefault();
+        //             elements.optionsType.querySelector("[data-type='live']").click();
+        //             elements.optionsGame.focus();
+        //             break;
+        //         case "g":
+        //             e.preventDefault();
+        //             elements.optionsType.querySelector("[data-type='games']").click();
+        //             break;
+        //         case "f":
+        //             e.preventDefault();
+        //             elements.optionsType.querySelector("[data-type='livefavs']").click();
+        //             break;
+        //         case "v":
+        //             e.preventDefault();
+        //             elements.optionsType.querySelector("[data-type='archive']").click();
+        //             elements.optionsChannel.focus();
+        //             break;
+        //         case "h":
+        //             e.preventDefault();
+        //             elements.optionsType.querySelector("[data-type='highlight']").click();
+        //             elements.optionsChannel.focus();
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        // });
     }
 
     loadWatchLater(){
@@ -351,7 +354,7 @@ class Ui{
     updateResultsTitle(params){
         let type = params.type;
         let typeName = typeNames[type];
-        if(type === "archive" || type === "highlight"){
+        if(type === "archive" || type === "highlight" || type === "clips"){
             let channel = params.channel;
             document.title = channel + " " + typeName;
             elements.channelTitleChannelName.textContent = `${channel}`;
@@ -400,6 +403,12 @@ class Ui{
             else if (params.type === "watchlater"){
                 this.endpoint = this.videosEndpoint;
                 this.cardRenderer = this.videoCardRenderer;
+
+                p = this.endpoint.call(params);
+            }
+            else if (params.type === "clips"){
+                this.endpoint = this.clipsEndpoint;
+                this.cardRenderer = this.clipCardRenderer;
 
                 p = this.endpoint.call(params);
             }
