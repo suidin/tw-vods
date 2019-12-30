@@ -100,6 +100,7 @@ class ClipsEndpoint{
                 for (clip of r.clips){
                     clips.push({
                         "id": clip.slug,
+                        "extUrl": clip.url,
                         "game": clip.game,
                         "title": clip.title,
                         "views": clip.views,

@@ -151,7 +151,7 @@ class ClipCards{
 
         let gameElem = `<div class="card__game"><a target="_blank" href="${location.pathname}?type=live&game=${encodeURIComponent(game)}">${game}</a></div>`;
         let titleElem = `<div title="${title}" class="card__title">${title}</div>`;
-        let thumbElem = `<a class="ext-player-link" href="${playerUrl}?cid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="${thumbUrl}" /></div></div>${viewersElem}</a>`;
+        let thumbElem = `<a class="ext-player-link" href="${video.extUrl}?cid=${id}" target="_blank"><div class="thumb-container"><div class="img-container"><img class="card-thumb" src="${thumbUrl}" /></div></div>${viewersElem}</a>`;
         let timePassedElem = `<div class="card__date">${when}</div>`;
         let elem = document.createElement("div");
         elem.className = "card card--video";
