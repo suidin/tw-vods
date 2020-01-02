@@ -3,6 +3,16 @@
         "scripts": ["js/background.js"],
         "persistent": false
     },
+    "content_scripts": [
+        {
+        "matches": [
+          "https://www.reddit.com/r/LivestreamFail/*"
+        ],
+        "js": ["contentScripts/reddit.js"]
+        }
+    ],
+
+
    "description": "Browse and Watch Twitch Videos",
 
    "incognito": "split",

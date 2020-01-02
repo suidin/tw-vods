@@ -3,7 +3,6 @@ import {storage} from './storage.js';
 import {Dialog} from './dialog.js';
 import {colors} from './colors.js';
 import {v5Api} from '../api/v5.js';
-import {helixApi} from '../api/helix.js';
 
 
 const htmlEntities = {
@@ -98,7 +97,7 @@ class FixedSizeArray{
 }
 
 
-class Uitility{
+class Utility{
     constructor(){
         this.storage = storage;
         this.colors = colors;
@@ -228,38 +227,7 @@ class Uitility{
         });
     }
 
-    getGames(...ids){
-        let ids_set = new Set(ids);
-        return this.storage.getGames().then(games=>{
-            let result = [];
-            let result_set = new Set();
-            if (games){
-                let game, id;
-                for (id in games){
-                    if(ids_set.has(id) && !result_set.has(id)){
-                        result.push(games[id]);
-                        result_set.add(id);
-                    }
-                }
-            }
-            let rest = [...ids].filter(x => !result_set.has(x));
-            if(rest.length === 0){
-                return result;
-            }
-            else{
-                return helixApi.games(rest).then(json=>{
-                    if(json && json.data && json.data.length){
-                        let game;
-                        for(game of json.data){
-                            this.storage.setGame(game.id, game);
-                            result.push(game);
-                        }
-                    }
-                    return result;
-                });
-            }
-        });
-    }
+
 
     promptClientId(){
         const promptText = "Please enter a valid twitch.tv Client ID or OAuth";
@@ -519,5 +487,5 @@ class Uitility{
     }
 
 }
-const utils = new Uitility();
+const utils = new Utility();
 export {utils, FixedSizeArray};

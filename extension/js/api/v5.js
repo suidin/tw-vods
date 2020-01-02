@@ -33,6 +33,11 @@ class V5Api extends AbstractApi{
         return this.call(url);
     }
 
+    clip(id){
+        let url = `https://api.twitch.tv/kraken/clips/${id}`;
+        return this.call(url);
+    }    
+
     clips(channel, limit=100, period="all", trending=false){
         let url = `https://api.twitch.tv/kraken/clips/top?period=${period}&channel=${channel}&limit=${limit}&trending=${trending}`;
         return this.call(url);

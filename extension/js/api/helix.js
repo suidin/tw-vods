@@ -1,4 +1,5 @@
 import {AbstractApi} from './core.js';
+import {utils} from '../utils/utils.js';
 
 
 class HelixApi extends AbstractApi{
@@ -98,6 +99,39 @@ class HelixApi extends AbstractApi{
         this.arrToHelixStr("login", usernames);
         let url = `https://api.twitch.tv/helix/users?${usersParam}`;
         return this.call(url);
+    }
+
+    getGames(...ids){
+        let ids_set = new Set(ids);
+        return utils.storage.getGames().then(games=>{
+            let result = [];
+            let result_set = new Set();
+            if (games){
+                let game, id;
+                for (id in games){
+                    if(ids_set.has(id) && !result_set.has(id)){
+                        result.push(games[id]);
+                        result_set.add(id);
+                    }
+                }
+            }
+            let rest = [...ids].filter(x => !result_set.has(x));
+            if(rest.length === 0){
+                return result;
+            }
+            else{
+                return this.games(rest).then(json=>{
+                    if(json && json.data && json.data.length){
+                        let game;
+                        for(game of json.data){
+                            utils.storage.setGame(game.id, game);
+                            result.push(game);
+                        }
+                    }
+                    return result;
+                });
+            }
+        });
     }
 }
 

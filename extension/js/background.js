@@ -1,3 +1,28 @@
+const fetchParams = {
+    "headers": {
+        "accept": "application/vnd.twitchtv.v5+json",
+        "Client-ID": "kimne78kx3ncx6brgo4mv6wki5h1ko"
+    },
+    "mode": "cors",
+    "credentials": "omit",
+    "method": "GET",
+}
+function getClip(slug){
+    let url = `https://api.twitch.tv/kraken/clips/${slug}`;
+    return fetch(url, fetchParams).then(r=>r.json());
+}
+function getClipVod(slug){
+    return getClip(slug).then(clip=>{
+        let vod = clip.vod;
+        if(vod && vod.url && vod.id){
+            return vod;
+        }
+    });
+}
+
+
+
+
 function getFirstPartyClientId(){
     let urlThatIncludesCoreScript = "https://www.twitch.tv/directory/all";
     let coreScriptUrlRegex = /<script src="(https:\/\/static\.twitchcdn\.net\/assets\/core-[^"]+)"/;
@@ -25,35 +50,52 @@ function openPlayer(queryStr){
     let newUrl = chrome.runtime.getURL("../player.html") + queryStr;
     chrome.tabs.create({ url: newUrl });
 }
-const twitchRegex = /twitch.tv\/([^\/]*)\/?(\d*)\??.*?(t=)?(\d*)?h?(\d*)?m?(\d*)?s?/
+
+const twitchRegex = /twitch.tv\/([^\/]*)\/?(\d*)\??.*?(t=)?(\d*)?h?(\d*)?m?(\d*)?s?/;
+function vodUrlToPlayerQueryString(vodUrl){
+    let match = twitchRegex.exec(vodUrl);
+    if(match){
+        if(match[1] === "videos"){
+            let vid = match[2] && parseInt(match[2]);
+            if(vid){
+                let queryStr = `?vid=${vid}`;
+                if (match[3] == "t="){
+                    let hours = match[6] && match[4] || 0;
+                    let mins = hours && match[5] || 0;
+                    let secs = hours && match[6] || mins && match[5] || match[4] || 0;
+                    secs = parseInt(secs) + parseInt(mins)*60 + parseInt(hours)*3600;
+                    queryStr += `&time=${secs}`;
+                }
+                return queryStr;
+            }
+        }
+        else{
+            let channel = match[1];
+            if(vodUrl.endsWith("videos"))
+            if(channel){
+                return `?channel=${channel}`;
+            }
+        }
+    }
+}
+
 chrome.browserAction.onClicked.addListener(function(tab) {
     chrome.tabs.getSelected(tab=>{
         if(tab.url){
-            let match = twitchRegex.exec(tab.url);
-            if(match){
-                if(match[1] === "videos"){
-                    let vid = match[2] && parseInt(match[2]);
-                    if(vid){
-                        let queryStr = `?vid=${vid}`;
-                        if (match[3] == "t="){
-                            let hours = match[6] && match[4] || 0;
-                            let mins = hours && match[5] || 0;
-                            let secs = hours && match[6] || mins && match[5] || match[4] || 0;
-                            secs = parseInt(secs) + parseInt(mins)*60 + parseInt(hours)*3600;
-                            queryStr += `&time=${secs}`;
-                        }
+            if (tab.url.startsWith("https://clips.twitch.tv")){
+                let slug = tab.url.split("/")[3];
+                getClipVod(slug).then(vod=>{
+                    let queryStr = vodUrlToPlayerQueryString(vod.url);
+                    if(queryStr){
                         openPlayer(queryStr);
-                        return;
                     }
-                }
-                else{
-                    let channel = match[1];
-                    if(tab.url.endsWith("videos"))
-                    if(channel){
-                        openPlayer(`?channel=${channel}`);
-                        return;
-                    }
-                }
+                });
+                return;
+            }
+            let queryStr = vodUrlToPlayerQueryString(tab.url);
+            if(queryStr){
+                openPlayer(queryStr);
+                return;
             }
         }
         openList();
@@ -132,7 +174,7 @@ chrome.runtime.onSuspend.addListener(function() {
     chrome.storage.local.set(storage.data);
 });
 
-updateStorageInterval = setInterval(()=>{
+const updateStorageInterval = setInterval(()=>{
     chrome.storage.local.set(storage.data);
 }, 60*1000);
 
@@ -181,5 +223,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     else if (request.event === "readyCheck"){
         sendResponse(ready);
+    }
+    else if (request.event === "openPlayer"){
+        openPlayer(request.queryStr);
     }
 });

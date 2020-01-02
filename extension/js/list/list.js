@@ -7,7 +7,7 @@ import {elements} from './elements.js';
 import {settings} from '../settings.js';
 import {utils} from '../utils/utils.js';
 import {v5Api, clipsEndpoint} from '../api/v5.js';
-import {HelixEndpoint} from '../api/helix.js';
+import {HelixEndpoint, helixApi} from '../api/helix.js';
 
 
 const watchLater = new WatchLater();
@@ -454,7 +454,7 @@ class Ui{
             game_ids.add(obj.game_id);
         }
 
-        return utils.getGames(...game_ids).then(games=>{
+        return helixApi.getGames(...game_ids).then(games=>{
             let game, obj;
             for(game of games){
                 for(obj of data){
