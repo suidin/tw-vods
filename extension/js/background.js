@@ -110,7 +110,7 @@ chrome.runtime.onInstalled.addListener(function (object) {
 let ready = false;
 class Storage{
     constructor(){
-        this.maxResumePositions = 1000;
+        this.maxResumePositions = 10000;
         this.maxFavourites = 200;
         this.data = {
             "userIds": {},

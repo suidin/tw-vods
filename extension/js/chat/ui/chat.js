@@ -289,7 +289,7 @@ class ReChatInterface extends ChatInterface{
             this.revertUntilAlign(secs+syncTime);
         }
         else if(0 < diff && diff < 33){
-            this.addNewMsgs(secs);
+            this.addNewMsgs(secs+syncTime);
         }
         else{
             this.chat.seek(secs+syncTime);
